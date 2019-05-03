@@ -1,0 +1,120 @@
+@import views.html.layout
+@import views.html.table.paginatedTable
+@import views.html.dataset.{datasetMenu}
+@import views.html.filter.filterWithJs
+@import org.ada.web.controllers.dataset.routes.{DataSetImportController => dataSetImportRoutes}
+@import org.ada.web.util.{formatTimeElement, toHumanReadableCamel, typeColumns}
+@import org.ada.server.models.{DataSpaceMetaInfo, Field, Filter, FilterShowFieldStyle}
+@import org.ada.server.models.dataimport._
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import reactivemongo.bson.BSONObjectID
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+
+@(
+    page: Page[DataSetImport],
+    conditions: Seq[FilterCondition],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit webContext: WebContext
+)
+
+@importLink(clazz: Class[_], title: String) = {
+    <li>
+        <a href="@dataSetImportRoutes.create(clazz.getName)">
+            @title
+        </a>
+    </li>
+}
+
+@actions = {
+    <div class="row">
+        <div class="col-md-10">
+            @filterWithJs(
+                Filter(conditions),
+                dataSetImportRoutes.find(),
+                Left(Seq(
+                    Field("dataSpaceName", Some("Data Space Name")),
+                    Field("dataSetName", Some("Data Set Name"))
+                )),
+                None,
+                Some(FilterShowFieldStyle.LabelsOnly)
+            )
+        </div>
+        <div class="dropdown pull-right">
+            <ul class="list-inline">
+                <li>
+                    <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-toggle="tooltip" title="Add Data Set Import">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        @importLink(classOf[CsvDataSetImport], "CSV Import")
+                        @importLink(classOf[JsonDataSetImport], "JSON Import")
+                        @importLink(classOf[TranSmartDataSetImport], "TranSmart Import")
+                        @importLink(classOf[RedCapDataSetImport], "Red Cap Import")
+                        @importLink(classOf[SynapseDataSetImport], "Synapse Import")
+                        @importLink(classOf[EGaitDataSetImport], "eGait Import")
+                    </ul>
+                </li>
+                <li>
+                    <a class="btn btn-success btn-sm" href="#" data-toggle="modal" data-target="#dataSetImportSelectionModal" title="Copy Data Set Import">
+                        <span class="glyphicon glyphicon-duplicate"></span>
+                    </a>
+                </li>
+            </ul>
+            @typeaheadSelectionModal("dataSetImportSelectionModal", "dataSetImport", "Data Set Import", dataSetImportRoutes.idAndNames, Some(dataSetImportRoutes.copy(BSONObjectID.generate)))
+        </div>
+    </div>
+}
+
+@scheduleTime(scheduledTime: ScheduledTime) = {
+    @Html(formatTimeElement(scheduledTime.hour, true, "&nbsp;&nbsp;&nbsp;&nbsp;") + formatTimeElement(scheduledTime.minute, true, "&nbsp;&nbsp;&nbsp;&nbsp;") + formatTimeElement(scheduledTime.second, false, "&nbsp;&nbsp;&nbsp;&nbsp;"))
+}
+
+@scheduleCheckbox(dataSetImport: DataSetImport) = {
+    <ul class="list-inline">
+        <li>
+            <input type="checkbox" class="no-rowClicked" @if(dataSetImport.scheduled) { checked="checked" } disabled="disabled"/>
+        </li>
+        @if(dataSetImport.scheduled) {
+            <li class="topVerticalAlign">
+                @scheduleTime(dataSetImport.scheduledTime.get)
+            </li>
+        }
+    </ul>
+}
+
+@executeLink(dataSetImport: DataSetImport) = {
+    <a class="btn btn-default btn-xs btn-clean no-rowClicked" href="#" onclick="submit('post', '@dataSetImportRoutes.execute(dataSetImport._id.get)'); return false;">
+        <span class="glyphicon glyphicon-play green" aria-hidden="true"></span>
+    </a>
+}
+
+@table = @{
+    paginatedTable(
+        page,
+        dataSetImportRoutes.find(_, _, conditions),
+        typeColumns[DataSetImport](
+            (Some("dataSpaceName"), "Data Space Name", _.dataSpaceName),
+            (Some("dataSetName"), "Data Set Name", _.dataSetName),
+            (Some("concreteClass"), "Type", {importInfo => toHumanReadableCamel(importInfo.getClass.getSimpleName)}),
+            (Some("timeCreated"), "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
+            (Some("timeLastExecuted"), "Time Last Executed", _.timeLastExecuted.map(_.format("yyyy-MM-dd HH:mm:ss")).getOrElse("")),
+            (Some("scheduled"), "Scheduled?", scheduleCheckbox),
+            (None, "Execute Now", executeLink)
+        ),
+        Some({ item : Any => dataSetImportRoutes.get(item.asInstanceOf[DataSetImport]._id.get)})
+    )
+}
+
+@layout.list(
+    "Data Set Import",
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    None,
+    Some(datasetMenu(dataSpaceMetaInfos))
+)

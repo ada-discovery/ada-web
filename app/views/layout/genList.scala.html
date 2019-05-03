@@ -1,0 +1,40 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(
+    domainName:  String,
+    count: Long,
+    actions: Html,
+    table: Html,
+    charts: Option[Html] = None,
+    sideBar: Option[Html] = None,
+    topContentBar: Option[Html] = None,
+    topResources: Option[Html] = None,
+    bottomResources: Option[Html] = None
+)(
+    implicit context: WebContext)
+)
+
+@main(Messages("overviewList.title", domainName), sideBar, topContentBar, topResources, bottomResources) {
+
+    <div class="page-header">
+        <h3>
+            @Messages("list.count.title", count, domainName)
+        </h3>
+    </div>
+
+    <div id="actions">
+        @actions
+    </div>
+    <hr/>
+
+    @if(charts.isDefined){
+        @charts.get
+
+        @if(count > 0) {
+            @collapsibleElement(table)
+        }
+    } else {
+        @table
+    }
+}

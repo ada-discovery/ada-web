@@ -1,0 +1,123 @@
+@import views.html.{exportModal, exportDropdown}
+@import views.html.elements.{labelValue, fieldTypeahead}
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.incal.core.FilterCondition
+
+@(
+    dataSetName: String,
+    exportCsvCall: (String, Seq[FilterCondition], Boolean) => Call,
+    exportJsonCall: (Seq[FilterCondition], Boolean) => Call,
+    showFieldStyle: Option[FilterShowFieldStyle.Value],
+    extraDropdownItems: Html = Html("")
+)(
+    implicit context: DataSetWebContext
+)
+
+@transmartModalBody(defaultDelimiter: String) = {
+    <fieldset>
+        @labelValue("delimiter", "Delimiter", labelGridWidth = 3) {
+            <input id="delimiter" name="delimiter" value="@defaultDelimiter">
+        }
+        @labelValue("visitFieldName", "Visit Field", labelGridWidth = 3) {
+            @fieldTypeahead(None, "visitField")
+        }
+        @labelValue("replaceEolWithSpace", "Remove \'\\r\'&\'\\n\'?", helpText = Some("Replace \'\\r\' and \'\\n\' with white space"), labelGridWidth = 3) {
+            <input type="checkbox" class="replaceEolWithSpaceCheckbox" checked="checked">
+            <input type="hidden" id="replaceEolWithSpace" name="replaceEolWithSpace" value="true">
+        }
+    </fieldset>
+}
+
+@displayChoiceElement = {
+    @labelValue("useDisplayValues", "Display Values?", helpText = Some("If checked, dates will be exported e.g. as '2019-01-01 12:32:54' otherwise as 1546342374000."), labelGridWidth = 3) {
+        <input type="checkbox" class="useDisplayValuesCheckbox">
+        <input type="hidden" id="useDisplayValues" name="useDisplayValues" value="false">
+    }
+}
+
+@extraCsvElements = {
+    @displayChoiceElement
+    @labelValue("escapeStringValues", "Escape Strings?", labelGridWidth = 3) {
+        <input type="checkbox" class="escapeStringValuesCheckbox">
+        <input type="hidden" id="escapeStringValues" name="escapeStringValues" value="false">
+    }
+}
+
+@tranSMARTDropdownItems = {
+    <li role="separator" class="divider"></li>
+    <li>
+        <a href="#" data-toggle="modal" data-target="#exportTranSMARTDataModal">
+            Export TranSMART Data
+        </a>
+    </li>
+    <li>
+        <a href="#" data-toggle="modal" data-target="#exportTranSMARTMappingModal">
+            Export TranSMART Mapping
+        </a>
+    </li>
+    @extraDropdownItems
+}
+
+@tranSMARTModals = {
+    @exportModal("exportTranSMARTDataModal", "CSV TranSMART Data Export", dataSetRouter.exportTranSMARTData, transmartModalBody("\\t"))
+    @exportModal("exportTranSMARTMappingModal", "CSV TranSMART Mapping Export", dataSetRouter.exportTranSMARTMapping, transmartModalBody("\\t"))
+}
+
+@exportDropdown(
+    exportCsvCall,
+    exportJsonCall,
+    Nil)(
+    tranSMARTDropdownItems,
+    tranSMARTModals,
+    extraCsvElements,
+    Some(displayChoiceElement)
+)
+
+<script type="text/javascript">
+
+    $(function() {
+        $("#visitFieldTypeahead").click(function() {
+            if(!$(this).hasClass("tt-input")) {
+                activateTranSMARTFieldTypeaheads();
+            }
+        })
+
+        $('.useDisplayValuesCheckbox').change( function(e) {
+            var checked = $(this).is(":checked");
+            $(this).parent().find('#useDisplayValues').val(checked)
+        });
+
+        $('.escapeStringValuesCheckbox').change( function(e) {
+            var checked = $(this).is(":checked");
+            $(this).parent().find('#escapeStringValues').val(checked)
+        });
+    })
+
+    function activateTranSMARTFieldTypeaheads() {
+        var showOption = @showFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
+
+        $.ajax({
+            url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
+            success: function (fieldNameAndLabels) {
+                var fieldNamesAndLabelsWithNone = fieldNameAndLabels.concat([["", "[None]"]])
+
+                populateFieldTypeahed($('#exportTranSMARTDataModal #visitFieldTypeahead'), $('#exportTranSMARTDataModal #visitFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahed($('#exportTranSMARTMappingModal #visitFieldTypeahead'), $('#exportTranSMARTMappingModal #visitFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+            },
+            error: showErrorResponse
+         });
+    }
+
+    var chartsExportFileName = '@{dataSetName.replaceAllLiterally(".","_").replaceAllLiterally(" ", "_").toLowerCase + "-charts"}'
+
+    function exportCharts(type) {
+        var chartIds = $.map($(".chart-holder"), function (chart, i) {
+            return chart.id;
+        })
+
+        Highcharts.exportCharts(chartIds, {type: type, filename: chartsExportFileName});
+    }
+</script>

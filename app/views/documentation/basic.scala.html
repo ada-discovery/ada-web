@@ -1,0 +1,89 @@
+@import views.html.documentation.core
+@import views.html.documentation.imageSection
+@import views.html.documentation.section
+@import views.html.documentation.sectionNavigation
+@import views.html.documentation.core
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.routes.CustomDirAssets
+
+@()(implicit context: WebContext)
+
+@core("Basics") {
+
+    @sectionNavigation()(
+        ("section_data_set_tree", "Data Set Tree"),
+        ("section_data_exploration", "Data Exploration"),
+        ("section_data_export", "Export")
+    )
+
+    @imageSection(id = Some("section_data_set_tree"), caption = Some("Data Set Tree"), picPath = Some("images/documentation/data_set_tree_2.png")) {
+        <p>
+            Imported data are organized hierarchically as a tree, which is located on the left side and is used for navigation.
+        </p>
+        <p>
+            There are three types of nodes:
+            <ul>
+                <li><b>Leaf nodes</b> represent data sets.</li>
+                <li><b>Inner nodes</b> are data spaces, which serve as data set folders.</li>
+                <li><b>Top-level nodes</b> are called studies.</li>
+            </ul>
+        </p>
+        <p>
+            Although, it is not recommended a single data set can reside at several locations in the tree.
+        </p>
+    }
+
+    @section(id = Some("section_data_exploration"), caption = Some("Data Exploration")) {
+        <p>
+            Each data set contains any number of <it>views</it>. View is a container of different filters, widgets, and tables.
+            Main view (usually called "Main") is invoked by default when a data set is selected in the navigation tree.
+        </p>
+        <p>
+            Graphical widgets, which represent the outcome of certain statistics (such as distribution or correlation) can be of 5 chart types: pie, column, bar, line, and polar.
+            The chart type of a widget can be dynamically changed by clicking  <img src="@CustomDirAssets.versioned("images/documentation/chart_type_change_button.png")"/> in the top left corner of the widget,
+            and choosing a new type. The chart will redrawn immediately after the selection.
+        </p>
+        <p>
+            Views are not static; they can be dynamically filtered. The easiest way to filter is to click on a desired category in a distribution widget (e.g., "Female").
+        </p>
+    } {
+        <div clas="row">
+            <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/views.png")"/>
+        </div>
+        <div clas="row" style="margin-top: 20px">
+            <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/chart_type_change_example.png")"/>
+        </div>
+    }
+
+    @section(id = Some("section_data_export"), caption = Some("Export"), withLine = false) {
+        <p>
+            Since one of the main functionalities of Ada is to provide comprehensive reports, which can be later included in other documents or post-processed, Ada provides several options for exporting.
+        </p>
+        <p>
+            More specifically, each (graphical) widget can be exported into four formats: PNG, JPEG, PDF, and SVG.
+            This can be achieved by clicking either <img src="@CustomDirAssets.versioned("images/documentation/chart_export_button.png")"/> in the top right corner of a specific widget,
+            or by selecting "Export charts as ..." in the Export menu located in the top right corner of the screen.
+        </p>
+        <p>
+            Besides the chart exports, data can be exported to CSV, JSON, or tranSMART file format, available in the Export menu.
+            These include the following options:
+            <ul>
+                <li><b>Export All as CSV/JSON</b> - As the name suggest, it exports the entire data set with all the rows and fields.</li>
+                <li><b>Export Filtered as CSV/JSON</b> - This selection exports only the filtered rows/items with all the fields.</li>
+                <li><b>Export Filtered Table as CSV/JSON</b> - This is the most conservative but probably the most preferred option. It exports only the filtered rows/items with the fields/columns from the view's table (located at the bottom).</li>
+                <li><b>Export as TranSMART Data</b> - It exports all the rows to the tranSMART data file format. It includes only the fields that are linked to a category.</li>
+                <li><b>Export as TranSMART Mapping</b> - It exports all the fields with a category (i.e., without data) to the tranSMART mapping file format.</li>
+            </ul>
+            For a CSV export, users can specify a delimiter (default ","), end-of-line String (default "\n"), and a replacement of the eol characters with white space (default yes).
+            A custom delimiter can be also entered for a TranSMART export.
+        </p>
+    } {
+        <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/chart_export_menu_example.png")"/>
+
+        <div class="panel panel-warning">
+            <div class="panel-heading"><strong>Note</strong></div>
+            <div class="panel-body">For a tab-delimited CSV export (i.e. TSV) specify "\t" as a delimiter. TranSMART data and mapping files use a tab delimiter by default (can be overridden if needed).</div>
+        </div>
+    }
+}

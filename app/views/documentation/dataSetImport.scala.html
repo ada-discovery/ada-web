@@ -1,0 +1,172 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.documentation.{core, section, imageSection, sectionNavigation}
+@import org.incal.play.routes.CustomDirAssets
+@import org.ada.web.controllers.routes
+
+@()(implicit context: WebContext)
+
+@core("Data Set Import") {
+
+    @section(rightPanelOffset = 0) {
+        <p>
+            To create, edit, delete, schedule, or execute a data set import, go to <i>Admin&rarr;Data Set Imports</i>. Ada currently provides six data import adapters,
+            three file-based: CSV, JSON, and tranSMART; and three RESTful-based: REDCap, Synapse, and eGaIT.
+        </p>
+
+        <p>
+            To create a new data set import, select a desired type in a drop down <img src="@CustomDirAssets.versioned("images/documentation/new_dropdown_button.png")"/> located on the right side.
+        </p>
+
+        <p>
+            If there is a data set import similar to the one you want to create, click <img src="@CustomDirAssets.versioned("images/documentation/copy_button.png")"/> located on the right side
+            and select the source import in an autocomplete textbox. Then edit it accordingly.
+        </p>
+
+        <p>
+            To execute a data set import click <img src="@CustomDirAssets.versioned("images/documentation/run_data_set_import_button.png")"/> at the associated row in the list table. Note that you do not need to wait for the import to fully proceed and meanwhile (as it is being executed) you can continue working at different sections of Ada.
+            Depending on the data set size an import might take several seconds to minutes to finish.
+        </p>
+    } {
+        <div class="row">
+            <div class="col-md-5">
+                <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/data_set_imports.png")"/>
+            </div>
+            <div class="col-md-7">
+                <div class="panel panel-warning">
+                    <div class="panel-heading"><strong>Note</strong></div>
+                    <div class="panel-body">Data sets can be imported only by admins! If you have data that you believe should be imported to (a specific instance of) Ada, <a href="@routes.AppController.contact()">contact your admin</a>.</div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @imageSection(caption = Some("Data Set Info"), picPath = Some("images/documentation/data_set_import-data_set_info_2.png"), picOffset = 0) {
+        <p>
+            This panel specifies the data set's identity info:
+            <ul>
+                <li><b>Data space name</b> usually corresponds to the study or project name and is manifested as a navigation tree node where a data set will be imported to.</b></li>
+                <li><b>Data set name</b> is the display name of a data set (can be changed later).</b></li>
+                <li><b>Data set id</b> is the unique data set identifier, which is automatically generated as <code>&lt;data_space_name&gt;.&lt;data_set_name&gt;</code> but can be overridden if needed.
+                    This identifier cannot be changed once a data set is imported.</b></li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(caption = Some("Setting"), picPath = Some("images/documentation/data_set_import-setting_2.png"), picOffset = 0) {
+        <p>
+            The technical setting of a data set containing, e.g., key field, default distribution field, and filter show style.
+            Note that this can (and most likely should) be changed after an import, so it is sufficient to specify only <b>Storage Type</b> (defaults to <code>Elastic Search</code>).
+        </p>
+    }
+
+    @imageSection(caption = Some("Schedule"), picPath = Some("images/documentation/data_set_import-schedule_2.png"), picOffset = 0) {
+        <p>
+            Schedule defined by hour, minute, and second of the day, when a data set import should be periodically executed.
+            In the schedule example of the right an import is set to be executed every day at 1am. Note that if scheduling is desired <code>Yes</code> must be checked (defaults to <code>No</code>).
+        </p>
+    }
+
+    @sectionNavigation(Some("Import Types"))(
+        ("section_csv", "CSV"),
+        ("section_json", "JSON"),
+        ("section_transmart", "tranSMART"),
+        ("section_redcap", "REDCap"),
+        ("section_synapse", "Synapse"),
+        ("section_egait", "eGAIT")
+    )
+
+    @imageSection(id = Some("section_csv"), caption = Some("CSV"), picPath = Some("images/documentation/data_set_import-csv_specifics_2.png"), picOffset = 0) {
+        <p>
+            One of the most common file-based import types for a csv file specified as
+            <ul>
+                <li><b>Source</b> is either local (uploaded by an admin through the browser) or server-stored, in which case a path needs to be provided.
+                    Note that once a data set import is created a local file (if specified) is uploaded to the Ada server and the type is switched automatically to server-side.</li>
+                <li><b>Delimiter</b> defaults to comma (<code>,</code>). For tab-delimited files enter<code>\t</code> as shown in the example.</li>
+                <li><b>EOL</b></li>
+                <li><b>Charset Name</b></li>
+                <li><b>Match Quotes</b></li>
+                <li><b>Infer Field Types</b> must be checked if field types are supposed to be inferred from the column values. Warning: if unchecked ALL fields/columns are considered to be Strings.</li>
+                <li><b>Inference Max Enum Values Count</b> defines the maximal number of distinct string values for which field enum type should be inferred. Defaults to <code>20</code>.</li>
+                <li><b>Inference Min Avg Values per Enum</b> defines the minimal allowed count per each distinct string value for which field enum type should be inferred. Defaults to <code>1.5</code>.</li>
+                <li><b>Array Delimiter</b></li>
+                <li><b>Boolean Include Numbers</b> says (if checked) that fields/columns containing solely <code>0</code> and <code>1</code> numeric values will be inferred as Booleans.</li>
+                <li><b>Save Batch Size</b></li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_json"), caption = Some("JSON"), picPath = Some("images/documentation/data_set_import-json_specifics_2.png"), picOffset = 0) {
+        <p>
+            File-based import for a json file specified as
+            <ul>
+                <li><b>Source</b></li>
+                <li><b>Charset Name</b></li>
+                <li><b>Infer Field Types</b></li>
+                <li><b>Inference Max Enum Values Count</b></li>
+                <li><b>Inference Min Avg Values per Enum</b></li>
+                <li><b>Array Delimiter</b></li>
+                <li><b>Boolean Include Numbers</b></li>
+                <li><b>Save Batch Size</b></li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_transmart"), caption = Some("tranSMART"), picPath = Some("images/documentation/data_set_import-transmart_specifics_2.png"), picOffset = 0) {
+        <p>
+            File-based import for <a href="http://transmartfoundation.org">tranSMART</a> data and mapping files specified as
+            <ul>
+                <li><b>Data Source</b></li>
+                <li><b>Mapping Source</b></li>
+                <li><b>Charset Name</b></li>
+                <li><b>Match Quotes</b></li>
+                <li><b>Infer Field Types</b></li>
+                <li><b>Inference Max Enum Values Count</b></li>
+                <li><b>Inference Min Avg Values per Enum</b></li>
+                <li><b>Array Delimiter</b></li>
+                <li><b>Boolean Include Numbers</b></li>
+                <li><b>Save Batch Size</b></li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_redcap"), caption = Some("REDCap"), picPath = Some("images/documentation/data_set_import-redcap_specifics_2.png"), picOffset = 0) {
+        <p>
+            RESTful-based import for a <a href="http://www.project-redcap.org">REDCap</a> data capture system specified as
+            <ul>
+                <li><b>URL</b></li>
+                <li><b>Token</b></li>
+                <li><b>Import Dictionary?</b></li>
+                <li><b>Event Names</b></li>
+                <li><b>Categories To Inherit From First Visit</b></li>
+                <li><b>Save Batch Size</b></li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_synapse"), caption = Some("Synapse"), picPath = Some("images/documentation/data_set_import-synapse_specifics_2.png"), picOffset = 0) {
+        <p>
+            RESTful-based import for <a href="https://www.synapse.org">Synapse</a>, <a href="http://sagebionetworks.org">Sage Bionetworks</a>'s data provenance system, specified as
+            <ul>
+                <li><b>Table Id</b></li>
+                <li><b>Batch Size</b></li>
+                <li><b>Download Column Files?</b></li>
+                <li><b>Bulk Download Group Number</b></li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_egait"), caption = Some("eGaIT"), picPath = Some("images/documentation/data_set_import-egait_specifics_2.png"), picOffset = 0, withLine = false) {
+        <p>
+            RESTful-based import for an <a href="http://www.egait.de">eGaIT</a> server storing shoe-sensor data specified as
+            <ul>
+                <li><b>Import Raw Data</b></li>
+            </ul>
+        </p>
+
+        <div class="panel panel-warning">
+            <div class="panel-heading"><strong>Note</strong></div>
+            <div class="panel-body">Due to the fact that eGaIT company does not exist anymore, this data set import adapter will be soon dereleased.</div>
+        </div>
+    }
+}

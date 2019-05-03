@@ -1,0 +1,31 @@
+@import org.ada.web.controllers.dataset.{DataSetWebContext, DataViewRouter}
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.DataView
+@import org.ada.server.models.Field
+@import org.ada.server.models.FilterShowFieldStyle
+@import reactivemongo.bson.BSONObjectID
+@import views.html.dataview.edit
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    domainName: String,
+    id : BSONObjectID,
+    form: Form[DataView],
+    nameFieldMap: Map[String,  Field],
+    idFilterNameMap: Map[BSONObjectID, String],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo],
+    showFieldStyle: Option[FilterShowFieldStyle.Value]
+)(
+    implicit context: DataSetWebContext
+)
+
+@edit(
+    domainName,
+    id,
+    form,
+    nameFieldMap,
+    idFilterNameMap,
+    dataSpaceMetaInfos,
+    showFieldStyle,
+    dataViewRouter.update
+)

@@ -1,0 +1,28 @@
+@import play.api.Configuration
+@import org.incal.play.routes.CustomDirAssets
+
+@()(implicit msg: Messages, configuration: Configuration)
+
+<footer>
+    <div align="center">
+        <hr/>
+        @configuration.getObjectList("footer.logos").map { configObjects =>
+            <ul class="list-inline">
+            @configObjects.map(_.toConfig).map { logoConfig =>
+                <li>
+                    <a target="_blank" href="@{logoConfig.getString("url")}">
+                        <img @if(logoConfig.hasPath("height")) {height="@logoConfig.getInt("height") px" } src="@CustomDirAssets.versioned(logoConfig.getString("logo"))"/>
+                    </a>
+                </li>
+            }
+            </ul>
+            <hr/>
+        }
+        <p class="text-muted" align="center">
+            Ada Discovery Analytics@configuration.getString("project.name").map(name => s": $name Project").getOrElse("") (Version @configuration.getString("app.version").get)
+        </p>
+        <p class="text-muted" align="center">
+            &copy; <a target="_blank" href="@configuration.getString("footer.url").getOrElse("http://wwwen.uni.lu")">@configuration.getString("footer.text").getOrElse("Université du Luxembourg")</a> 2016-@(new java.util.Date().format("yyyy")). All rights reserved.
+        </p>
+    </div>
+</footer>

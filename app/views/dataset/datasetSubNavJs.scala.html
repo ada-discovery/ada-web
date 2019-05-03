@@ -1,0 +1,58 @@
+@import org.incal.play.util.WebUtil.getParamValue
+@import org.ada.web.controllers.dataset.{DataSetRouter, DataViewRouter}
+@import reactivemongo.bson.BSONObjectID
+
+@()(implicit request: Request[_])
+
+@defining(getParamValue(request.uri, "dataSet").get) { dataSetId =>
+
+    <script type="text/javascript">
+        $(function () {
+                var getViewUrl = '@{Html(new DataSetRouter(dataSetId).getView(BSONObjectID.generate(), Nil, Nil, false).url)}'
+                var currentUrl = '@{Html(request.uri)}'
+
+                var currentCoreUrl = getCoreURL(currentUrl)
+                var currentParams = getQueryParams(currentUrl)
+
+                var currentDataSetId = currentParams["dataSet"]
+                var currentDataViewId = currentParams["dataViewId"]
+
+                $.ajax({
+                    url: '@Html(new DataViewRouter(dataSetId).idAndNamesAccessible.url)',
+                    success: function (data) {
+                        if (data.length > 0) {
+                            $.each(data, function (index, dataView) {
+                                var dataSetId = getQueryParams(getViewUrl)["dataSet"]
+                                var dataViewId = dataView._id.$oid
+
+                                var params = {
+                                    dataViewId: dataViewId,
+                                    dataSet: dataSetId
+                                };
+
+                                var coreUrl = getCoreURL(getViewUrl)
+                                var finalUrl = coreUrl + "?" + decodeURIComponent($.param(params));
+
+                                if (currentCoreUrl == coreUrl && dataViewId == currentDataViewId && dataSetId && currentDataSetId) {
+                                    $("#viewsDropdownDiv").append("<li class='active'><a href='" + finalUrl + "'>" + dataView.name + "</a></li>")
+                                } else {
+                                    $("#viewsDropdownDiv").append("<li><a href='" + finalUrl + "'>" + dataView.name + "</a></li>")
+                                }
+                            })
+                        } else {
+                            $("#viewsDiv").hide();
+                        }
+
+                        propagateActive();
+                    }
+                });
+
+                function propagateActive() {
+                    $("li.dropdown").each(function () {
+                        if ($(this).find("li.active").size() > 0)
+                            $(this).addClass("active")
+                    });
+                }
+        })
+    </script>
+}

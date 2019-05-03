@@ -1,0 +1,22 @@
+@import views.html.dataset.fixedTableRow
+@import views.html.dataset.view.viewCountFilter
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.web.controllers.dataset.TableViewData
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    viewParts: Seq[TableViewData],
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    hideCounts: Boolean
+)(
+    implicit dataSetWebContext: DataSetWebContext
+)
+
+@fixedTableRow("filtersTr"){
+    @viewParts.map { viewPart =>
+        <td style='padding-left: 10px; vertical-align:top'>
+            @viewCountFilter(viewPart.filter, viewPart.page.total, filterShowFieldStyle, hideCounts)
+        </td>
+    }
+}

@@ -1,0 +1,23 @@
+@import play.api.libs.json.Json
+@import org.ada.web.controllers.dataset.IndependenceTestResult.independenceTestResultFormat
+@import org.ada.web.util.toJsonHtml
+@import org.ada.web.models.IndependenceTestWidget
+
+@(
+    elementId: String,
+    widget: IndependenceTestWidget
+)
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var header ="<h4 align='center'> @widget.title </h4>"
+        var data = [@widget.data.map { case (fieldLabel, result) => ['@fieldLabel', JSON.parse('@{toJsonHtml(result)}') ], }]
+        var table = createIndependenceTestTable(data);
+
+        var div = $("<div style='position: relative; overflow: hidden; height: @{widget.displayOptions.height.getOrElse(400)}px; text-align: left; line-height: normal; z-index: 0;'>")
+        div.append(header)
+        div.append(table)
+
+        $('#' + '@elementId').html(div);
+    });
+</script>

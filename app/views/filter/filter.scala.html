@@ -1,0 +1,67 @@
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.server.models.{Field, Filter, Category}
+@import views.html.filter.{conditionPanel, conditionModal}
+
+@(
+    filter: Option[Filter],
+    showFieldStyle: Option[FilterShowFieldStyle.Value] = None,
+    enableListFilters: Boolean = false,
+    enableSaveFilter: Boolean = false,
+    filterElementId: String = "filterDiv",
+    categoriesOrCall: Option[Either[Traversable[Category], Call]] = None,
+    categoricalTreeId: String = "categoryTree",
+    filterLabel: String = "Filter"
+)(
+    implicit request: Request[_], webJarAssets: WebJarAssets
+)
+
+@saveFilterModalBody = {
+    <input id="saveFilterName" name="saveFilterName" value="" placeholder="Filter Name" onkeypress="submitModalOnEnter(event, this);">
+}
+
+@saveFilterModelButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" id="submitButton" data-dismiss="modal" class="btn btn-primary">OK</button>
+}
+
+@loadFilterModalBody = {
+    <input id="filterTypeahead" class="typeahead" style="width: 100%;" type="text" placeholder="Filter Name" value="" onkeypress="submitModalOnEnter(event, this);">
+    <input id="filterId" name="filterId" type="hidden" value="">
+}
+
+@loadFilterModelButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" id="submitButton" data-dismiss="modal" class="btn btn-primary">OK</button>
+}
+
+<div id="@filterElementId" class="filter-div">
+    @conditionModal(filterElementId, categoriesOrCall, categoricalTreeId, showFieldStyle)
+
+    @conditionPanel(filter, filterLabel)
+
+    <span class="filter-part">
+        <button id="showAddConditioButton" type="button" class="btn btn-sm btn-default" data-toggle="tooltip" title="Add Filter Condition">
+            <span class="glyphicon glyphicon-plus"></span>
+        </button>
+
+        @defining(enableSaveFilter && filter.isDefined && filter.get._id.isEmpty && filter.get.conditions.nonEmpty) { showPanel =>
+            <button id="saveFilterButton" type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#saveFilterModal@filterElementId" title="Save Filter" @if(!showPanel) {style="display:None"}>
+                <span class="glyphicon glyphicon glyphicon-save"></span>
+            </button>
+            @modal(s"saveFilterModal$filterElementId", "Save Filter", saveFilterModalBody, None, Some(saveFilterModelButtons))
+        }
+
+        @if(enableListFilters) {
+            <button id="loadFilterButton" type="button" class="btn btn-sm btn-default" title="Load Filter">
+                <span class="glyphicon glyphicon-book"></span>
+            </button>
+
+            @modal(s"loadFilterModal$filterElementId", "Load Filter", loadFilterModalBody, None, Some(loadFilterModelButtons))
+        }
+
+        <button id="rollbackFilterButton" type="button" class="btn btn-sm btn-default" title="Rollback Filter" style="display:None">
+            <span class="glyphicon glyphicon-arrow-left"></span>
+        </button>
+
+    </span>
+</div>

@@ -1,0 +1,43 @@
+@import views.html.layout
+@import views.html.elements.{inputText, select}
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.Category
+@import org.ada.server.models.Field
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    displayName: String,
+    fieldName: String,
+    form: Form[Field],
+    categories: Traversable[Category],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@elements = {
+    @inputText("field", "name", form)
+    @inputText("field", "label", form)
+    @inputText("field", "fieldType", form)
+    @inputText("field", "isArray", form)
+    @inputText("field", "numValues", form, Seq('_label -> "Enum Values"))
+    @inputText("field", "displayDecimalPlaces", form)
+    @inputText("field", "displayTrueValue", form)
+    @inputText("field", "displayFalseValue", form)
+    @inputText("field", "aliases", form)
+    @select("field", "categoryId", form, categories.map(cat => (cat._id.get.stringify, cat.name)).toSeq, true)
+}
+
+@layout.edit(
+    displayName,
+    "field",
+	form.errors,
+    elements,
+    dictionaryRouter.update(fieldName),
+    dictionaryRouter.plainList,
+    deleteCall = None,
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs())
+)

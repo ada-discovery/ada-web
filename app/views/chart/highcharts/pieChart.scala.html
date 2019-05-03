@@ -1,0 +1,26 @@
+@import org.ada.web.util.shorten
+@import org.ada.web.models.Count
+
+@(
+    title: String,
+    chartElementName: String,
+    showLabels: Boolean,
+    showLegend: Boolean,
+    elements: Seq[Count[String]]
+)
+
+<script type="text/javascript">
+    (function() {
+        var data = [ @elements.map { case Count(label, count, key) => {
+            name : '@shorten(label)', y : @count, key: '@key'
+        },}]
+
+        var series = [{
+            name: '@title',
+            colorByPoint: true,
+            data: data
+        }]
+
+        pieChart('@title', '@{chartElementName}', series, @showLabels, @showLegend);
+    })()
+</script>

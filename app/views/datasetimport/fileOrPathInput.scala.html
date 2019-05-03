@@ -1,0 +1,43 @@
+@import views.html.elements._
+
+@(
+    domainName: String,
+    sourceChoiceElName: String,
+    sourceChoiceLabel: String,
+    fileElName: String,
+    pathElName: String,
+    form: Form[_]
+)(implicit msg: Messages)
+
+@labelValue(sourceChoiceElName, sourceChoiceLabel){
+    <label class="radio-inline"><input type="radio" name="@sourceChoiceElName" value="1" checked="checked">Local file</label>
+    <label class="radio-inline"><input type="radio" name="@sourceChoiceElName" value="2">Server-side path</label>
+}
+<div id="importFileDiv">
+    @inputFile(domainName, form(fileElName), Seq('_label -> ""))
+</div>
+<div id="pathDiv">
+    @inputText(domainName, pathElName, form, Seq('_label -> "", 'style -> "display:none"))
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        if ($('#@pathElName').val()) {
+            $('input[name="@sourceChoiceElName"][value="1"]').attr('checked', '')
+            $('input[name="@sourceChoiceElName"][value="2"]').attr('checked', 'checked')
+            $('#@fileElName').hide()
+            $('#@pathElName').show()
+        }
+    });
+
+    $('input[name="@sourceChoiceElName"]').change(function() {
+        var importLocalFile = $('input[name="@sourceChoiceElName"]:checked').val() == "1"
+        if (importLocalFile) {
+            $('#@fileElName').show()
+            $('#@pathElName').hide()
+        } else {
+            $('#@fileElName').hide()
+            $('#@pathElName').show()
+        }
+    })
+</script>

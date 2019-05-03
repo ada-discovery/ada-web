@@ -1,0 +1,21 @@
+@import views.html.layout
+@import views.html.dataspace.elements
+@import org.ada.web.controllers.dataset.routes.{DataSpaceMetaInfoController => dataSpaceMetaInfoRoutes}
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+
+@(
+    form: Form[DataSpaceMetaInfo]
+)(
+	implicit context: WebContext
+)
+
+@layout.create(
+    "Data Space Meta Info",
+	"dataSpaceMetaInfo",
+	form = form,
+	elements = elements(form, 0, 0, Map[String, Int](), None),
+	saveCall = dataSpaceMetaInfoRoutes.save(),
+	listCall = dataSpaceMetaInfoRoutes.listAll()
+)

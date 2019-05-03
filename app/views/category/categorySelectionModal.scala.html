@@ -1,0 +1,48 @@
+@import org.ada.web.controllers.dataset.{CategoryRouter}
+@import play.api.mvc.Flash
+@import play.api.i18n.Messages
+@import org.ada.server.models.FilterShowFieldStyle
+
+@(
+    modalName: String,
+    routers: CategoryRouter,
+    call: Option[Call] = None
+)(
+    implicit flash: Flash, msg: Messages, request: Request[_]
+)
+
+@selectionModalBody = {
+    <input id="categoryTypeahead" class="typeahead" style="width: 100%;" type="text" placeholder="Category Name" value="">
+    <input id="categoryId" name="categoryId" type="hidden" value="">
+}
+
+@selectionModalButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    @if(call.isDefined) {
+        <button type="submit" id="submitButton" data-dismiss="modal" class="btn btn-primary">OK</button>
+    } else {
+        <button type="button" id="submitButton" data-dismiss="modal" class="btn btn-primary">OK</button>
+    }
+}
+
+@modal(modalName, "Choose Category", selectionModalBody, call, Some(selectionModalButtons))
+
+<script type="text/javascript" defer="defer">
+    $.ajax({
+        url: '@Html(routers.idAndNames.url)',
+        success: function (data) {
+            var typeaheadData = data.map( function(item, index) {
+                return {name: item._id.$oid, label: item.name};
+            });
+            populateFieldTypeahed(
+                $('#categoryTypeahead'),
+                $('#categoryId'),
+                typeaheadData,
+                @FilterShowFieldStyle.LabelsOnly.id
+            );
+        },
+        error: function(data){
+            showErrorResponse(data)
+        }
+    });
+</script>

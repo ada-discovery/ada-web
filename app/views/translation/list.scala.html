@@ -1,0 +1,63 @@
+@import views.html.layout
+@import views.html.table.paginatedTable
+@import views.html.filter.{filter, filterWithJs}
+@import org.ada.web.util.typeColumns
+@import org.ada.server.models.Field
+@import org.ada.server.models.Filter
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.server.models.Translation
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+@import org.ada.web.controllers.routes
+
+@(
+    page: Page[Translation],
+    conditions: Seq[FilterCondition]
+)(
+    implicit context: WebContext
+)
+
+@actions = {
+    <div class="row">
+        <div class="col-md-8">
+            @filterWithJs(
+                Filter(conditions),
+                routes.TranslationController.find(),
+                Left(Seq(
+                    Field("original", Some("Original")),
+                    Field("translated", Some("Translated"))
+                )),
+                None,
+                Some(FilterShowFieldStyle.LabelsOnly)
+            )
+        </div>
+        <div class="col-md-4">
+            <a class="btn btn-success btn-sm pull-right" id="add" href="@routes.TranslationController.create()" title="Add New">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </a>
+        </div>
+    </div>
+}
+
+@table = @{
+    paginatedTable(
+        page,
+        routes.TranslationController.find(_, _, conditions),
+        typeColumns[Translation](
+            (Some("original"), "Original", _.original),
+            (Some("translated"), "Translated", _.translated)
+        ),
+        Some({ item : Any => routes.TranslationController.get(item.asInstanceOf[Translation]._id.get)})
+    )
+}
+
+@layout.list(
+    "translation",
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    None
+)

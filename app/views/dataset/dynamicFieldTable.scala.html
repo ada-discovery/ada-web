@@ -1,0 +1,117 @@
+@import views.html.table.{dynamicTable, displayTable}
+@import views.html.filter.{jsTreeImport, categoricalTree}
+@import org.ada.web.util.typeColumns
+@import org.ada.server.field.FieldUtil.nameOrLabel
+@import org.ada.server.models.{Field, Category, FilterShowFieldStyle}
+
+@(
+    tableId: String,
+    items: Traversable[Field],
+    sortable: Boolean = false,
+    gridWidth: Int = 5,
+    extraActions: Option[Html] = None,
+    categoriesOrCall: Option[Either[Traversable[Category], Call]] = None,
+    categoricalTreeId: String = "categoryTree",
+    showFieldStyle: Option[FilterShowFieldStyle.Value] = None
+)(
+    implicit request: Request[_], webJarAssets: WebJarAssets
+)
+
+@categoryTreeNodeSelectedJsFun = {
+    function(node) {
+        if (node.type.startsWith("field-")) {
+            var text = node.text
+            var nonNullCount = node.data.nonNullCount
+            if (nonNullCount) {
+                var lastIndex = text.lastIndexOf(" (" + nonNullCount + ")")
+                text = text.substring(0, lastIndex)
+            }
+            $('#modal-fields #fieldName').val(node.id);
+            $('#modal-fields #fieldTypeahead').val(text)
+        }
+    }
+}
+
+@modalInner = {
+    <div id="categoryDiv" class="row collapse" style="padding-bottom: 20px">
+        @if(categoriesOrCall.isDefined) {
+            @categoricalTree(categoricalTreeId, categoriesOrCall.get, Some(categoryTreeNodeSelectedJsFun))
+        }
+    </div>
+    <div class="row">
+        <div id="modal-fields" class="col-md-6">
+            <input type="text" id="fieldTypeahead" class="typeahead typeahead-full-width">
+            <input type="hidden" id="fieldName">
+        </div>
+        @if(categoriesOrCall.isDefined) {
+            <div class="pull-right" style="padding-right: 17px">
+                <a id="showCategoryTreeButton" class="btn btn-sm btn-default" data-toggle="tooltip" onclick="initCategoricalTreeIfNeeded();" title="Show Category Tree">
+                    <span class="glyphicon glyphicon-leaf" aria-hidden="true"></span>
+                </a>
+            </div>
+        }
+    </div>
+}
+
+@fieldNameElement(field: Field) = {
+    <input type="hidden" id="fieldName" value="@field.name">
+}
+
+@table = {
+    @displayTable(
+        items,
+        typeColumns[Field](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (None, "", fieldNameElement),
+            (Some("label"), "", nameOrLabel(showFieldStyle.getOrElse(FilterShowFieldStyle.LabelsOnly)))
+        )
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        return row.find('#fieldName').val().trim();
+    }
+}
+
+@itemToRowJsFun = {
+    function(values) {
+        var row = null
+        if (values["fieldName"]) {
+            var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
+            var fieldNameColumn = "<td><input type='hidden' id='fieldName' value='" + values["fieldName"] + "'/></td>";
+            var fieldLabelColumn = "<td>" + values["fieldTypeahead"] + "</td>";
+
+            // create row
+            row = $("<tr></tr>")
+            row.append(checkboxColumn)
+            row.append(fieldNameColumn)
+            row.append(fieldLabelColumn)
+        }
+
+        return row;
+    }
+}
+
+@jsTreeImport()
+
+@dynamicTable(tableId, table, sortable, rowToModelJsFun, itemToRowJsFun, modalInner, extraActions, gridWidth, false, false)
+
+<script type="text/javascript">
+    $(function () {
+        @if(categoriesOrCall.isDefined) {
+            $("#@categoricalTreeId").on('open_node.jstree', function (event, data) {
+                data.instance.set_type(data.node, 'category-open');
+            });
+
+            $("#@categoricalTreeId").on('close_node.jstree', function (event, data) {
+                data.instance.set_type(data.node, 'category');
+            });
+        }
+    })
+
+    function initCategoricalTreeIfNeeded() {
+        $("#@categoricalTreeId").jsTreeWidget('init');
+        $('#categoryDiv').collapse("toggle")
+    }
+</script>

@@ -1,0 +1,53 @@
+@(
+    modalId : String,
+    title: String,
+    modalBody: Html,
+    call: Option[Call],
+    buttons: Option[Html] = None,
+    modalClass: Option[String] = None
+)
+
+@modalInner = {
+    <div class="modal-body">
+        @modalBody
+    </div>
+    <div class="modal-footer">
+        @if(buttons.isEmpty) {
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" id="submitButton" class="btn btn-primary">OK</button>
+        } else {
+            @buttons.get
+        }
+    </div>
+}
+
+<div class="modal fade" id="@modalId" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog @{modalClass.getOrElse("")}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" aria-label="Pull Right" data-dismiss="modal" onclick="moveModalRight('@{modalId}');"><span aria-hidden="true">&rightarrow;</span></button>
+                <h4 class="modal-title">@title</h4>
+            </div>
+            @if(call.isDefined) {
+                <form id="@{modalId}Form" action="@call">
+                    @modalInner
+                </form>
+            } else {
+                @modalInner
+            }
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        // params passed to the form's action as a call (url) are ignored... need to add them manually
+        var params = getQueryParams('@call')
+        addParams($("#@{modalId}Form"), params)
+
+        $('#@{modalId}').find('button[type="submit"]').click(function(){
+            $('#@{modalId}').modal('hide');
+        });
+    })
+</script>

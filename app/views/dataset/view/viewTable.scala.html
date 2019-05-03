@@ -1,0 +1,28 @@
+@import views.html.dataset.jsonTable
+@import play.api.libs.json.JsObject
+@import org.ada.server.models.{Field, Filter}
+@import org.ada.web.controllers.dataset.DataSetRouter
+@import org.incal.play.Page
+
+@(
+    page: Page[JsObject],
+    filter: Option[Filter],
+    tableFields: Traversable[Field],
+    withRowClickableJs: Boolean = false
+)(
+    implicit request: Request[_], dataSetRouter: DataSetRouter
+)
+
+@if(page.items.nonEmpty) {
+    @jsonTable(
+        page,
+        tableFields,
+        dataSetRouter.generateTable(_, _,
+            tableFields.map(_.name).toSeq,
+            filter.map(_.conditionsOrId).getOrElse(Left(Nil))
+        ),
+        Some(dataSetRouter.get),
+        withRowClickableJs,
+        true
+    )
+}

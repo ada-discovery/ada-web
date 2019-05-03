@@ -1,0 +1,8 @@
+@import views.html.widget.widgetJs
+@import org.ada.web.models.Widget
+
+@(widgets : Traversable[Widget])
+
+@widgets.map { widget =>
+    @widgetJs(widget)
+}

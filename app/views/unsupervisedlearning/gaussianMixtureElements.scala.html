@@ -1,0 +1,16 @@
+@import views.html.elements.{inputText, checkbox, select}
+@import play.api.i18n.Messages
+@import org.ada.server.models.ml.unsupervised.GaussianMixture
+
+@(form: Form[GaussianMixture])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[GaussianMixture].getName}">
+
+@inputText("kMeans", "name", form)
+
+<hr/>
+
+@inputText("kMeans", "k", form)
+@inputText("kMeans", "maxIteration", form)
+@inputText("kMeans", "tolerance", form)
+@inputText("kMeans", "seed", form)

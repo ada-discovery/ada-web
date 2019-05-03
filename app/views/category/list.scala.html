@@ -1,0 +1,148 @@
+@import org.ada.server.models.{Category, DataSpaceMetaInfo, Field, Filter, FilterShowFieldStyle}
+@import views.html.layout
+@import views.html.table.paginatedTable
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import views.html.category.treeChart
+@import views.html.filter.{filter, filterWithJs}
+@import org.ada.web.util.typeColumns
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+
+@(
+    domainName : String,
+    page: Page[Category],
+    conditions: Seq[FilterCondition],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@modalBody = {
+    <input id="categoryName" name="categoryName" value="" title="Category Name">
+}
+@buttons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" id="submitButton" onclick="addCategory();" data-dismiss="modal" class="btn btn-primary">OK</button>
+}
+
+@actions = {
+    <div class="row">
+        <div class="col-md-9">
+            @filterWithJs(
+                Filter(conditions),
+                categoryRouter.plainList,
+                Left(Seq(
+                    Field("name", Some("Name")),
+                    Field("label", Some("Label"))
+                )),
+                showFieldStyle = Some(FilterShowFieldStyle.LabelsOnly)
+            )
+        </div>
+        <div class="pull-right">
+            <a class="btn btn-info btn-sm" id="collapseAll" href="#" data-toggle="tooltip" title="Collapse All" onclick="$('#treeDiv').tree('collapseAll');return false;">
+                <span class="glyphicon glyphicon-resize-small" aria-hidden="true"></span>
+            </a>
+            <a class="btn btn-info btn-sm" id="expandAll" href="#" data-toggle="tooltip" title="Expand All" onclick="$('#treeDiv').tree('expandAll');return false;">
+                <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
+            </a>
+            <a class="btn btn-info btn-sm" data-toggle="modal" data-target="#addCategoryModal" title="Add New">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </a>
+        </div>
+        @modal("addCategoryModal", "Add New Category", modalBody, None, Some(buttons))
+    </div>
+    <script type="text/javascript">
+        function addCategory() {
+            var name = $('#categoryName').val();
+            $('#categoryName').val("");
+            categoryJsRoutes.org.ada.web.controllers.dataset.CategoryDispatcher.saveForName(name).ajax( {
+                success: function(id) {
+                    $('#treeDiv').tree('addToRoot', id, name);
+                    showMessage("The category '" + name + "' successfully created.");
+                },
+                error: function(data){
+                    showError( data.responseText );
+                }
+            });
+        }
+
+        $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip({
+                placement : 'bottom'
+            });
+
+            $("#categoryName").keydown(function(event) {
+                if (event.keyCode == 13) {
+                    $('#addCategoryModal').modal('hide');
+                    addCategory();
+                }
+            });
+
+            $('#addCategoryModal').on('shown.bs.modal', function () {
+                $('#categoryName').focus();
+            })
+        });
+    </script>
+}
+
+@editableCategoryLabelInput(category: Category) = {
+    <input type="text" class="no-rowClicked categoryLabel" value='@{category.label.getOrElse("")}'/>
+}
+
+@table = @{
+    paginatedTable(
+        page,
+        categoryRouter.list(_, _, conditions),
+        typeColumns[Category](
+            (Some("name"), "Name", _.name),
+            (Some("label"), "Label", editableCategoryLabelInput)
+        ),
+        Some({ item : Any => categoryRouter.get(item.asInstanceOf[Category]._id.get)}),
+        Some("id", {any:Any => any.asInstanceOf[Category]._id.get.stringify}),
+        Some("categoryTable")
+    )
+}
+
+@layout.list(
+    domainName,
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    Some(treeChart(categoryRouter, categoryJsRouter)),
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs())
+)
+
+@helper.javascriptRouter("categoryJsRoutes")(
+    categoryJsRouter.updateLabel,
+    categoryJsRouter.saveForName,
+    categoryJsRouter.get,
+    categoryJsRouter.relocateToParent
+)
+
+<script type="text/javascript">
+    $(function () {
+        $(".categoryLabel").on("keydown",function(e) {
+            if(e.keyCode == 13) {
+                var id = getNearestRowId($(this), "id");
+                var label = $(this).val();
+                var that = $(this)
+                if (label) {
+                    categoryJsRoutes.org.ada.web.controllers.dataset.CategoryDispatcher.updateLabel(id, label).ajax( {
+                        success: function() {
+                            showMessage("The category '" + id + "' has been successfully relabeled to '" + label + "'.");
+                        },
+                        error: function(data){
+                            showError( data.responseText );
+                        }
+                    });
+                }
+                var inputs = that.closest('tbody').find('.fieldLabel');
+                inputs.eq( inputs.index(that)+ 1 ).focus();
+            }
+        });
+    })
+</script>

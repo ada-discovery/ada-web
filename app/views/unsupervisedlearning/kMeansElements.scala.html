@@ -1,0 +1,20 @@
+@import views.html.elements.{inputText, checkbox, select}
+@import play.api.i18n.Messages
+@import org.ada.server.models.ml.unsupervised.KMeans
+@import org.ada.server.models.ml.unsupervised.KMeansInitMode
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[KMeans])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[KMeans].getName}">
+
+@inputText("kMeans", "name", form)
+
+<hr/>
+
+@inputText("kMeans", "k", form)
+@inputText("kMeans", "maxIteration", form)
+@inputText("kMeans", "tolerance", form)
+@inputText("kMeans", "seed", form)
+@select("kMeans", "initMode", form, enumToValueString(KMeansInitMode), true)
+@inputText("kMeans", "initSteps", form)

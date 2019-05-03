@@ -1,0 +1,129 @@
+@import org.ada.server.models
+@import org.ada.server.models.{Field,DataSpaceMetaInfo,FilterShowFieldStyle}
+@import views.html.dataset.widgetsScreen
+@import views.html.elements.fieldTypeaheadDiv
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    dataSetName: String,
+    filterSpec: models.Filter,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    field: Option[Field],
+    groupField: Option[Field],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@extraActions = {
+    <div class="pull-right">
+        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#dataViewSelectionModal" title="Add Cumulative Count To View">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>To View
+        </button>
+    </div>
+}
+
+@bottomResources = {
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.calcCumulativeCount,
+        dataSetJsRouter.getWidgets
+    )
+
+    @helper.javascriptRouter("dataViewJsRoutes")(
+        dataViewJsRouter.addCumulativeCount
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            populateFullTypeahead("field", true);
+            populateCategoricalTypeahead("groupField")
+
+            $('#inputDiv #fieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    calcCumulativeCount();
+                    return false;
+                }
+            });
+
+            $('#inputDiv #groupFieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    var groupFieldTypeahedVal = $('#inputDiv #groupFieldTypeahead').val();
+                    if (!groupFieldTypeahedVal)
+                        $('#inputDiv #groupFieldName').val("");
+
+                    calcCumulativeCount();
+                    return false;
+                }
+            });
+
+            $("#dataViewSelectionModal #submitButton").on("click", addCumulativeCountToView)
+
+            activateAllFilters(function(filterOrId) {calcCumulativeCount()});
+        });
+
+        function calcCumulativeCount() {
+            var fieldName = $("#inputDiv #fieldName").val();
+            var fieldLabel = $("#inputDiv #fieldTypeahead").val();
+
+            var groupFieldName = $("#inputDiv #groupFieldName").val();
+            var groupFieldLabel = $("#inputDiv #groupFieldTypeahead").val();
+            if (!groupFieldName)
+                groupFieldName = null
+
+            var filterOrId = $(".filter-div").multiFilter('getIdOrModel')
+            var filterOrIdJson = JSON.stringify(filterOrId);
+
+            if (!fieldName) {
+                showError("Cumulative count calculation cannot be launched. No field specified.");
+            } else {
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.calcCumulativeCount(fieldName, groupFieldName, filterOrIdJson).ajax(
+                    handleResponse("Cumulative count calculation finished.")
+                );
+
+                hideErrors()
+                showMessage("Cumulative count calculation for the field '" + fieldLabel + "' launched.")
+            }
+        }
+
+        function addCumulativeCountToView() {
+            var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+            var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+
+            var fieldName = $('#inputDiv #fieldName').val()
+            var fieldLabel = $("#inputDiv #fieldTypeahead").val();
+
+            var groupFieldName = $('#inputDiv #groupFieldName').val()
+            if (groupFieldName == "")
+                groupFieldName = null
+
+            if (fieldName) {
+                dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addCumulativeCount(dataViewId, fieldName, groupFieldName).ajax( {
+                    success: function() {
+                        showMessage("Cumulative count for the field '" + fieldLabel + "' have been successfully added to the view '" + dataViewName + "'.");
+                    },
+                    error: function(data){
+                        showErrorResponse(data);
+                    }
+                });
+            }
+        }
+    </script>
+}
+
+@inputElements = {
+    @fieldTypeaheadDiv(field, Some("col-lg-3 col-md-6"), "field", "Field")
+    @fieldTypeaheadDiv(groupField, Some("col-lg-3 col-md-6"), "groupField", "Group Field")
+}
+
+@widgetsScreen(
+    Messages("cumulativeCount.title", dataSetName),
+    Seq(filterSpec),
+    filterShowFieldStyle,
+    dataSpaceMetaInfos,
+    inputElements,
+    Some(extraActions),
+    bottomResources,
+    true
+)

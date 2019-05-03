@@ -1,0 +1,72 @@
+@import org.ada.server.models.FilterShowFieldStyle.NamesAndLabels
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.server.models.FieldTypeId
+
+@(
+    filterElementIds: Seq[String],
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value]
+)(
+    implicit context: DataSetWebContext
+)
+
+@typeaheadJsImport()
+
+<script type="text/javascript">
+    $(function () {
+        populateFieldTypeahedFromUrl(
+            $('#inputFieldNameDiv #fieldTypeahead'),
+            $('#inputFieldNameDiv #fieldName'),
+            '@Html(dataSetRouter.allFields.url)',
+            @filterShowFieldStyle.getOrElse(NamesAndLabels).id
+        )
+
+        $.ajax({
+            url: '@Html(filterRouter.idAndNamesAccessible.url)',
+            success: function (data) {
+                var typeaheadData = data.map(function (item, index) {
+                    return {name: item._id.$oid, label: item.name};
+                });
+                @filterElementIds.map { filterElementId =>
+                    populateFieldTypeahed(
+                        $('#@{filterElementId}NameTypeahead'),
+                        $('#@{filterElementId}Id'),
+                        typeaheadData,
+                        @FilterShowFieldStyle.LabelsOnly.id
+                    );
+                }
+            }
+        });
+    });
+
+    function addAllFields() {
+        $.ajax({
+            url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
+            success: function (data) {
+                $.each(data, function(index, fieldNameLabel) {
+                    var values = {};
+                    values["fieldName"] = fieldNameLabel[0];
+                    values["fieldTypeahead"] = fieldNameLabel[1] ? fieldNameLabel[1] : fieldNameLabel[0];
+
+                    $('#inputFieldNameDiv').dynamicTable('addTableRow', values)
+                });
+            }
+        });
+    }
+
+    function addAllNumericalFields() {
+        $.ajax({
+            url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Integer, FieldTypeId.Double, FieldTypeId.Date)).url)',
+            success: function (data) {
+                $.each(data, function(index, fieldNameLabel) {
+                    var values = {};
+                    values["fieldName"] = fieldNameLabel[0];
+                    values["fieldTypeahead"] = fieldNameLabel[1] ? fieldNameLabel[1] : fieldNameLabel[0];
+
+                    $('#inputFieldNameDiv').dynamicTable('addTableRow', values)
+                });
+            }
+        });
+    }
+</script>

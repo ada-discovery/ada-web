@@ -1,0 +1,28 @@
+@import views.html.dataset.filter.dataSetFilter
+@import org.ada.server.models.{Filter, FilterShowFieldStyle}
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    filter: Option[Filter],
+    count: Long,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    hideCounts: Boolean
+)(
+    implicit dataSetWebContext: DataSetWebContext
+)
+
+<div class="row filter-count-div" @if(hideCounts) { style="display:none" }>
+    <div class="col-md-12">
+        <ul class="list-inline">
+            <li>Count:</li>
+            <li class="count-div"><h3>@count</h3></li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        @dataSetFilter(filter, filterShowFieldStyle)
+        <input type="hidden" class="count-hidden" value="@count">
+    </div>
+</div>

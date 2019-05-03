@@ -1,0 +1,34 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.documentation.core
+@import views.html.documentation.section
+@import org.incal.play.routes.CustomDirAssets
+
+@()(implicit context: WebContext)
+
+@core("Technology") {
+
+    @section(withLine = false) {
+        <p>
+            Ada has a modular, lightweight, layered architecture, centered around <a href="https://www.scala-lang.org">Scala</a> stack, with a strong focus on performance.
+            Scala is a modern functional and object-oriented JVM language developed by academics at <a href="https://www.epfl.ch">EPFL</a>.
+        </p>
+
+        <p>
+            The main libraries include <a href="https://www.playframework.com">Play Framework</a> for web, <a href="http://spark.apache.org">Spark</a> for distributed computing and machine learning, and <a href="https://akka.io/">Akka</a> for streaming.
+            Ada persists data in two popular NoSQL databases, Elastic Search and Mongo, which provide flexible, schema-free JSON storage. As a matter of fact, JSON in Ada is prominently used coast-to-coast.
+        </p>
+
+        <p>
+            Ada is packed and compiled using Play sbt scripts as a standalone application with an embedded Netty server, which can be deployed anywhere.
+        </p>
+    } {
+        <div clas="row">
+            <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/scala.png")"/>
+        </div>
+        <div clas="row" style="margin-top: 40px">
+            <hr/>
+            <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/architecture.png")"/>
+        </div>
+    }
+}

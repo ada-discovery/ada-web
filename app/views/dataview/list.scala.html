@@ -1,0 +1,74 @@
+@import views.html.layout
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import views.html.table.paginatedTable
+@import views.html.dataview.dataViewSelectionModal
+@import views.html.filter.{filter, filterWithJs}
+@import org.ada.web.util.typeColumns
+@import org.ada.web.controllers.dataset.{DataSetWebContext, DataViewJsRouter, DataViewRouter}
+@import org.ada.server.models.{DataView, DataSpaceMetaInfo, Field, Filter}
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+
+@(
+    domainName : String,
+    page: Page[DataView],
+    conditions: Seq[FilterCondition],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@actions = {
+    <div class="row">
+        <div class="col-md-10">
+            @filterWithJs(
+                Filter(conditions),
+                dataViewRouter.plainList,
+                Left(Seq(Field("name", None)))
+            )
+        </div>
+
+        <div class="pull-right">
+            <ul class="list-inline">
+                <li>
+                    <a class="btn btn-success btn-sm pull-right" href="@dataViewRouter.create" data-toggle="tooltip" title="Add New View">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </a>
+                </li>
+                <li>
+                    <a class="btn btn-success btn-sm pull-right" href="#" data-toggle="modal" data-target="#dataViewSelectionModal" title="Copy View">
+                        <span class="glyphicon glyphicon-duplicate"></span>
+                    </a>
+                </li>
+            </ul>
+            @dataViewSelectionModal("dataViewSelectionModal", dataViewRouter, Some(dataViewRouter.copy(BSONObjectID.generate)))
+        </div>
+    </div>
+}
+
+@table = {
+    @paginatedTable(
+        page,
+        dataViewRouter.list(_, _, conditions),
+        typeColumns[DataView](
+            (Some("name"), "Name", _.name),
+            (Some("default"), "Default?", _.default.toString),
+            (Some("timeCreated"), "Time Created", _.timeCreated.toString),
+            (Some("createdById"), "Created By", _.createdBy.map(_.ldapDn).getOrElse("") )
+        ),
+        Some({ item : Any => dataViewRouter.get(item.asInstanceOf[DataView]._id.get)})
+    )
+}
+
+@layout.list(
+    domainName,
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    None,
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs())
+)

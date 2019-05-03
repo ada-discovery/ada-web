@@ -1,0 +1,64 @@
+@import views.html.layout
+@import views.html.table.paginatedTable
+@import views.html.filter.{filter, filterWithJs}
+@import org.ada.web.util.typeColumns
+@import org.ada.server.models.Field
+@import org.ada.server.models.Filter
+@import org.ada.server.models.HtmlSnippet
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+@import org.ada.web.controllers.routes
+
+@(
+    page: Page[HtmlSnippet],
+    conditions: Seq[FilterCondition]
+)(
+    implicit context: WebContext
+)
+
+@actions = {
+    <div class="row">
+        <div class="col-md-8">
+            @filterWithJs(
+                Filter(conditions),
+                routes.HtmlSnippetController.find(),
+                Left(Seq(
+                    Field("snippetId", Some("Snippet Id"))
+                )),
+                None,
+                Some(FilterShowFieldStyle.LabelsOnly)
+            )
+        </div>
+        <div class="col-md-4">
+            <a class="btn btn-success btn-sm pull-right" id="add" href="@routes.HtmlSnippetController.create()" title="Add New">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </a>
+        </div>
+    </div>
+}
+
+@table = @{
+    paginatedTable(
+        page,
+        routes.HtmlSnippetController.find(_, _, conditions),
+        typeColumns[HtmlSnippet](
+            (Some("snippetId"), "Snippet Id", _.snippetId),
+            (Some("active"), "Active?", _.active),
+            (Some("timeCreated"), "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
+            (Some("createdById"), "Created By", _.createdById.map(_.stringify).getOrElse(""))
+        ),
+        Some({ item : Any => routes.HtmlSnippetController.get(item.asInstanceOf[HtmlSnippet]._id.get)})
+    )
+}
+
+@layout.list(
+    "HTML Snippet",
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    None
+)

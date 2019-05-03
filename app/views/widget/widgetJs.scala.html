@@ -1,0 +1,30 @@
+@import views.html.chart.highcharts
+@import views.html.widget.textual
+@import org.ada.web.util.widgetElementId
+@import org.ada.web.models._
+
+@(widget: Widget)
+
+@{
+    if(widget.displayOptions.isTextualForm)
+        widget match {
+            case x: CategoricalCountWidget => textual.categoricalCount(widgetElementId(x), x)
+            case x: NumericalCountWidget[_] => textual.numericalCount(widgetElementId(x), x)
+            case x: BasicStatsWidget => textual.basicStats(widgetElementId(x), x)
+            case _ => throw new IllegalArgumentException(s"Textual form of the widget '$widget' is unknown.")
+        }
+    else
+        widget match {
+            case x: CategoricalCountWidget => highcharts.categoricalCountWidget(widgetElementId(x), x)
+            case x: NumericalCountWidget[_] => highcharts.numericalCountWidget(widgetElementId(x), x)
+            case x: ScatterWidget[_, _] => highcharts.scatterChart(widgetElementId(x), x)
+            case x: ValueScatterWidget[_, _, _] => highcharts.valueScatterChart(widgetElementId(x), x)
+            case x: BoxWidget[_] => highcharts.boxPlot(widgetElementId(x), x)
+            case x: HeatmapWidget => highcharts.heatmap(widgetElementId(x), x)
+            case x: LineWidget[_] => highcharts.lineChart(widgetElementId(x), x)
+            case x: BasicStatsWidget => textual.basicStats(widgetElementId(x), x)
+            case x: IndependenceTestWidget => textual.independenceTest(widgetElementId(x), x)
+            case x: HtmlWidget => ""  // no-op
+            case _ => throw new IllegalArgumentException(s"Widget '$widget' is unknown.")
+        }
+}

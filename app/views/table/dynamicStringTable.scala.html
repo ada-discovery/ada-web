@@ -1,0 +1,54 @@
+@import views.html.table.{displayTable, dynamicTable}
+@import org.ada.web.util.typeColumns
+
+@(
+    domainName: String,
+    items: Traversable[String],
+    sortable: Boolean = false,
+    addModalInner: Option[Html] = None,
+    extraActions: Option[Html] = None,
+    multi: Boolean = false,
+    gridWidth: Int = 4
+)
+
+@defaultModalInner = {
+    <input text="text" id="newItem" value="">
+}
+
+@table = {
+    @displayTable(
+        items,
+        typeColumns[String](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (Some("name"), "Name", identity)
+        )
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        return row.find('#name').text().trim();
+    }
+}
+
+@itemToRowJsFun = {
+    function(values) {
+        var input = values["newItem"];
+        var items = []
+        if (@multi) {
+            items = input.split(",").map(function(item) {
+                return item.trim();
+            })
+        } else {
+            items = [input.trim()]
+        }
+
+        var rows = items.map(function(item) {
+            return "<tr><td><input type='checkbox' class='table-selection'></input></td><td id='name'>" + item + "</td></tr>";
+        })
+
+        return rows.join();
+    }
+}
+
+@dynamicTable(domainName, table, sortable, rowToModelJsFun, itemToRowJsFun, addModalInner.getOrElse(defaultModalInner), extraActions, gridWidth = gridWidth)

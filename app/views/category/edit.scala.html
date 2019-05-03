@@ -1,0 +1,62 @@
+@import views.html.layout
+@import views.html.table.{dynamicStringTable, dynamicTableJsImport}
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import views.html.elements._
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.server.models.{DataSpaceMetaInfo,FilterShowFieldStyle,Category}
+@import org.ada.server.models
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    displayName: String,
+    id : BSONObjectID,
+    form: Form[Category],
+    categories: Traversable[Category],
+    fields: Traversable[models.Field],
+    showFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@addModalInner = {
+    <input type="text" id="newItemTypeahead" class="typeahead">
+    <input type="hidden" id="newItem">
+}
+
+@elements = {
+    @inputText("category", "name", form)
+    @inputText("category", "label", form)
+    @select("category", "parentId", form, categories.map(cat => (cat._id.get.stringify, cat.name)).toSeq, true)
+
+    @dynamicTableJsImport()
+    @typeaheadJsImport()
+
+    @labelValue("fields", attributeLabel("category", "fields")){
+        @dynamicStringTable("field", fields.map(_.name), true, Some(addModalInner))
+    }
+
+    <script type="text/javascript">
+        $(function () {
+            populateFieldTypeahedFromUrl(
+                $('#newItemTypeahead'),
+                $('#newItem'),
+                '@Html(dataSetRouter.allFields.url)',
+                @showFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
+            );
+        })
+    </script>
+}
+
+@layout.edit(
+    displayName,
+    "category",
+	form.errors,
+    elements,
+    categoryRouter.update(id),
+    categoryRouter.plainList,
+    Some(categoryRouter.delete(id)),
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs())
+)

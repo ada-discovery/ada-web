@@ -1,0 +1,34 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.documentation.core
+@import views.html.documentation.section
+@import org.incal.play.routes.CustomDirAssets
+
+@()(implicit context: WebContext)
+
+@core("Machine Learning") {
+
+    @section(withLine = false) {
+        <p>
+            Ada offers advanced machine learning functionality backed by <a href="https://spark.apache.org/docs/latest/ml-guide.html">Spark ML library</a>, which
+            is a popular compute grid library for an efficient large-scale data processing and analysis.
+        </p>
+        <p>
+            Spark has been developed in Scala, and so it pairs well with functional programming. Nevertheless, Java, Python, and R adapters are available too.
+            Besides scalability and a community support, one of the superior features compared to other compute/ML platforms, is that the libraries or class binaries
+            that implement the tasks to be executed are streamed to compute nodes if not available locally.
+        </p>
+        <p>
+            From Spark, Ada integrated several classification (e.g., random forest), regression (e.g., gradient boost regression tree), and clustering routines (e.g., bisecting k-means)
+            with a wide range of evaluation metrics (accuracy, AUROC, AUPR, R2, RNMSE, etc.).
+        </p>
+
+        <p>
+            On the top of that, ML results can be saved, queried, and visualized, and even exported to a (new) data set directly in Ada.
+        </p>
+    } {
+        <div clas="row">
+            <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/spark.jpeg")"/>
+        </div>
+    }
+}

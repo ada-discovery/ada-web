@@ -1,0 +1,14 @@
+@import org.ada.web.controllers.dataset.{DataViewRouter, DataViewJsRouter}
+@import org.incal.play.controllers.WebContext
+@import views.html.typeaheadSelectionModal
+@import org.incal.play.controllers.WebContext._
+
+@(
+    modalId: String,
+    dataViewRouter: DataViewRouter,
+    submitCall: Option[Call] = None
+)(
+    implicit context: WebContext
+)
+
+@typeaheadSelectionModal(modalId, "dataView", "Data View", dataViewRouter.idAndNamesAccessible, submitCall)

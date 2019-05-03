@@ -1,0 +1,26 @@
+@import views.html.layout
+@import views.html.elements._
+@import org.ada.server.models.{DataView, FilterShowFieldStyle}
+@import org.ada.web.controllers.dataset.{DataSetWebContext, DataViewRouter}
+@import views.html.dataview.elements
+@import views.html.dataview.activateTypeahead
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    displayName : String,
+	form: Form[DataView],
+    showFieldStyle: Option[FilterShowFieldStyle.Value]
+)(
+    implicit context: DataSetWebContext
+)
+
+@layout.create(
+    displayName,
+    "dataView",
+	form,
+    elements(form, Map(), Map(), dataSetRouter.allFields, showFieldStyle),
+    dataViewRouter.save,
+    dataViewRouter.plainList
+)
+
+@activateTypeahead(showFieldStyle)

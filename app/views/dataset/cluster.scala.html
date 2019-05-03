@@ -1,0 +1,168 @@
+@import reactivemongo.play.json.BSONFormats._
+@import views.html.layout.main
+@import views.html.chart.highcharts.highchartsJsImport
+@import views.html.elements._
+@import views.html.dataset.datasetSubNavWithJs
+@import views.html.mlRun.{inputFieldAndFilterResources, mlElements, trainingSettingFields}
+@import play.api.i18n.Messages
+@import org.ada.server.models.{DataSpaceMetaInfo, FilterShowFieldStyle}
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.controllers.ml.routes
+
+@(
+    dataSetName: String,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@bottomResources = {
+    @inputFieldAndFilterResources(
+        Seq("filter"),
+        filterShowFieldStyle
+    )
+    @highchartsJsImport()
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.cluster
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            $.ajax({
+                url: '@Html(routes.UnsupervisedLearningController.idAndNames.url)',
+                success: function (data) {
+                    var typeaheadData = data.map(function (item, index) {
+                        return {name: item._id.$oid, label: item.name};
+                    });
+                    populateFieldTypeahed(
+                        $('#mlModelTypeahead'),
+                        $('#mlModelId'),
+                        typeaheadData,
+                        @FilterShowFieldStyle.LabelsOnly.id
+                    );
+                }
+            });
+
+            $('#mlModelTypeahead, #filterNameTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    launch();
+                }
+            });
+
+            $('#launchButton').on('click', function() {
+                launch();
+            })
+        });
+
+        function launch() {
+            var mlModelId = $("#mlModelId").val();
+            var mlModelName = $("#mlModelTypeahead").val();
+
+            $('#inputFieldNameDiv').dynamicTable('updateModelFromTable');
+            var inputFieldNames = $("#inputFieldNameDiv").dynamicTable('getModel')
+
+            var filterId = ($('#filterNameTypeahead').val()) ? $("#filterId").val() : null
+//            var filterOrId = (filterId) ? JSON.stringify({'$oid': filterId}) : "[]"
+
+            var pcaDims = $("#pcaDims").val()
+            if (!pcaDims)
+                pcaDims = null
+
+            var featuresNormalizationType = $("#featuresNormalizationType").val()
+            if (!featuresNormalizationType)
+                featuresNormalizationType = null
+
+            $('#countDiv').html("");
+            $('#scatterPanelDiv').html("");
+            $('#pcaScatterDiv').html("")
+            $("#independenceTestPanelDiv").html("");
+
+            if (!mlModelId) {
+                showError("ML clusterization cannot be launched. No model selected.");
+                return
+            }
+
+            if (inputFieldNames.length == 0) {
+                showError("ML clusterization cannot be launched. No input fields selected.");
+                return
+            }
+
+            dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.cluster(mlModelId, inputFieldNames, filterId, featuresNormalizationType, pcaDims).ajax( {
+                success: function(data) {
+                    showMessage("'" + mlModelName + "'clusterization finished.")
+
+                    var scatters = data.scatters;
+                    var classSizes = data.classSizes;
+
+                    var rowData = classSizes.map(function(item, index){return [index + 1, item]});
+                    var total = classSizes.reduce(function (a, b) {
+                        return a + b;
+                    });
+                    var rowDataWithTotal = rowData.concat([["Total", total]])
+
+                    var table = createTable(["Class", "Count"], rowDataWithTotal);
+                    $("#countDiv").html(table);
+
+                    var i;
+                    for(i = 1; i < scatters.length; i++) {
+                        var divClass = 'col-md-4 col-md-offset-1'
+                        var div = "<div class='" + divClass + "'><div id='scatterDiv" + i + "' class='chart-holder'></div></div>"
+                        $("#scatterPanelDiv").append(div);
+                    }
+
+                    drawScatter(scatters[0], 'pcaScatterDiv', 600);
+
+                    for(i = 1; i < scatters.length; i++) {
+                        drawScatter(scatters[i], 'scatterDiv' + i, 350);
+                    };
+
+                    var table = createIndependenceTestTable(data.testResults, true)
+                    $("#independenceTestPanelDiv").html(table);
+                },
+                error: showErrorResponse
+            });
+
+            showMessage("Clusterization using the ML model '" + mlModelName + "' launched.")
+            addSpinner($("#countDiv"))
+        }
+
+        function drawScatter(scatter, divId, height) {
+            scatterChart(scatter.title, divId, scatter.xAxisCaption, scatter.yAxisCaption, scatter.data, true, null, height, true, false);
+        }
+    </script>
+}
+
+@main(Messages("clusterization.title", dataSetName), Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs()), None, Some(bottomResources)) {
+
+    <div class="page-header">
+        <h3>
+        @Messages("clusterization.title", dataSetName)
+        </h3>
+    </div>
+
+    @mlElements(
+        includeOutputField = false,
+        includeFeatureSelectionNum = false
+    )
+
+    <div class="row">
+        <div id='countDiv' class='col-md-4 col-md-offset-4'>
+        </div>
+    </div>
+
+    <div class="row">
+        <div id='pcaScatterDiv' class='col-md-10 col-md-offset-1 chart-holder'>
+        </div>
+    </div>
+
+    <div id="scatterPanelDiv" class="row">
+    </div>
+
+    <div class="row">
+        <div id="independenceTestPanelDiv" class='col-md-8 col-md-offset-2'>
+        </div>
+    </div>
+}

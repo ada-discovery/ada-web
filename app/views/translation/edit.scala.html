@@ -1,0 +1,25 @@
+@import views.html.layout
+@import views.html.elements.editableTextElements
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.server.models.Translation
+@import org.incal.play.controllers.{WebContext, IdForm}
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.routes
+
+@(
+    data: IdForm[BSONObjectID, Translation]
+)(
+    implicit context: WebContext
+)
+
+@layout.edit(
+    "Translation",
+    "translation",
+	errors = data.form.errors,
+    elements = editableTextElements("translation", data.form),
+	updateCall = routes.TranslationController.update(data.id),
+	cancelCall = routes.TranslationController.listAll(),
+    deleteCall = Some(routes.TranslationController.delete(data.id)),
+    None,
+    None
+)

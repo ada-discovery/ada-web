@@ -1,0 +1,38 @@
+@import org.incal.play.Page
+@(
+    page: Page[_],
+    refreshCall: (Int, Option[String]) => Call,
+    isAjaxRefresh: Boolean = false
+)
+
+@link(page: Int)(title: Html) = {
+    @if(isAjaxRefresh) {
+        <a href="#" onclick="loadNewTableContent(this, '@refreshCall(page, None).url', null, 'POST'); return false">@title</a>
+    } else {
+        <a href="@refreshCall(page, None)">@title</a>
+    }
+}
+
+<ul class="pager">
+    @page.prev.map { page =>
+        <li class="previous">
+            @link(page){&larr; Previous}
+        </li>
+    }.getOrElse {
+        <li class="previous disabled">
+            <a>&larr; Previous</a>
+        </li>
+    }
+<li class="current">
+    <a>Displaying @(page.offset + 1) to @(page.offset + page.items.size) of @page.total</a>
+</li>
+    @page.next.map { page =>
+        <li class="next">
+            @link(page){Next &rarr;}
+        </li>
+    }.getOrElse {
+        <li class="next disabled">
+            <a>Next &rarr;</a>
+        </li>
+    }
+</ul>

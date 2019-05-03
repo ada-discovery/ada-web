@@ -1,0 +1,68 @@
+@import org.ada.web.models.BoxWidget
+
+@(
+    elementId: String,
+    widget: BoxWidget[_]
+)
+
+<script type="text/javascript">
+    $(function () {
+        var isDate = @{widget.data.headOption.map(_._2.median.isInstanceOf[java.util.Date]).getOrElse(false)};
+        var dataType = (isDate) ? 'datetime' : null;
+
+        var data = [
+            @widget.data.map { case (group, quartiles) =>
+            [
+                @quartiles.toSeq.map(x => x match {
+                    case x: java.util.Date => x.getTime.toString
+                    case _ => x.toString
+                }).mkString(",")
+            ],
+            }
+        ]
+
+        var categories = [ @widget.data.map { case (group, _) => "@group", } ]
+
+        var min = @if(widget.min.isDefined) {
+            @if(widget.min.get.isInstanceOf[java.util.Date]) {
+                @{widget.min.get.asInstanceOf[java.util.Date].getTime}
+            } else {
+                @{widget.min.get}
+            }
+        } else {
+            null
+        }
+
+        var max = @if(widget.max.isDefined) {
+            @if(widget.max.get.isInstanceOf[java.util.Date]) {
+                @{widget.max.get.asInstanceOf[java.util.Date].getTime}
+            } else {
+                @{widget.max.get}
+            }
+        } else {
+            null
+        }
+
+        var pointFormat = (isDate) ?
+            '- Upper 1.5 IQR: {point.high:%Y-%m-%d}<br/>' +
+            '- Q3: {point.q3:%Y-%m-%d}<br/>' +
+            '- Median: {point.median:%Y-%m-%d}<br/>' +
+            '- Q1: {point.q1:%Y-%m-%d}<br/>' +
+            '- Lower 1.5 IQR: {point.low:%Y-%m-%d}<br/>'
+                :
+            '- Upper 1.5 IQR: {point.high}<br/>' +
+            '- Q3: {point.q3}<br/>' +
+            '- Median: {point.median}<br/>' +
+            '- Q1: {point.q1}<br/>' +
+            '- Lower 1.5 IQR: {point.low}<br/>'
+
+        var xCaption =
+            @if(widget.xAxisCaption.isDefined) {
+                '@widget.xAxisCaption.get'
+            } else {
+                null
+            }
+
+        boxPlot("@widget.title", "@{elementId}", categories, xCaption, '@widget.yAxisCaption', data, min, max, pointFormat, @widget.displayOptions.height.getOrElse(400), dataType)
+    });
+</script>

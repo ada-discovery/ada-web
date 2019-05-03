@@ -1,0 +1,46 @@
+@import views.html.layout.formErrors
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+
+@(
+    displayName: String,
+    messagePrefix: String,
+    errors: Seq[FormError],
+    elements: Html,
+    updateCall: Call,
+    cancelCall: Call,
+    deleteCall: Option[Call] = None,
+    sideBar: Option[Html] = None,
+    topContentBar: Option[Html] = None,
+    bottomResources: Option[Html] = None,
+    formArgs: Seq[(Symbol, String)] = Nil
+)(
+    implicit context: WebContext
+)
+
+@main(Messages("edit.title", displayName), sideBar, topContentBar, None, bottomResources, Some(formErrors(messagePrefix, errors))) {
+
+    <div class="page-header">
+        <h3>@Messages("edit.title", displayName)</h3>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+        @helper.form(action = updateCall, formArgs: _*) {
+            <fieldset>
+                @elements
+            </fieldset>
+
+            <hr/>
+
+            <div class="actions pull-right">
+                <input type="submit" value="Update" class="btn btn-primary">
+                <a href="@cancelCall" class="btn btn-default">Cancel</a>
+                @if(deleteCall.isDefined) {
+                    <a href="#" class="btn btn-danger" onclick='submit("post", "@deleteCall.get")'>Delete</a>
+                }
+            </div>
+        }
+        </div>
+    </div>
+}

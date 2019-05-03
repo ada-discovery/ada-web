@@ -1,0 +1,21 @@
+@import org.ada.server.models.LdapUser
+@import views.html.elements.value
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.ada.web.controllers.routes
+
+@(item: LdapUser)(implicit context: WebContext)
+
+@elements = {
+    @value("ldapUser", "LDAP DN", item.uid)
+    @value("ldapUser", "Name", item.name)
+    @value("ldapUser", "Email", item.email)
+    @value("ldapUser", "Organisatorical Unit", item.ou)
+    @value("ldapUser", "Groups", item.permissions.mkString(", "))
+}
+
+@layout.show(
+    "LDAP user",
+    elements,
+    Some(routes.LdapUserController.listAll())
+)

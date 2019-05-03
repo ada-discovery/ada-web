@@ -1,0 +1,26 @@
+@(
+    orderByFieldName: String,
+    refreshCall: (Int, Option[String]) => Call,
+    isAjaxRefresh: Boolean = false
+)(
+    fieldName: Option[String],
+    label: String
+)
+
+@link = {
+    @if(isAjaxRefresh) {
+        <a href="#" onclick="loadNewTableContent(this, '@refreshCall(0, fieldName).url', null, 'POST'); return false">@label</a>
+    } else {
+        <a href="@refreshCall(0, fieldName)">@label</a>
+    }
+}
+
+@if(fieldName.isDefined) {
+    <th class="col header @if(orderByFieldName == fieldName.get) {glyphicon glyphicon-chevron-down} @if(orderByFieldName == "-" + fieldName.get) {glyphicon glyphicon-chevron-up}">
+        @link
+    </th>
+} else {
+    <th class="col header">
+        @label
+    </th>
+}

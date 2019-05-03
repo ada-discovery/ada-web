@@ -1,0 +1,10 @@
+@import views.html.attributeLabel
+
+@(domainName: String, errors : Seq[FormError])(implicit msg: play.api.i18n.Messages)
+
+@errors.map{ error =>
+    <div class="alert alert-dismissable alert-danger">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        @Messages(error.message, attributeLabel(domainName, error.key))
+    </div>
+}

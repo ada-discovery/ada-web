@@ -1,0 +1,46 @@
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+
+@(
+	displayName: String,
+	elements: Html,
+    cancelCall: Option[Call] = None,
+    editCall: Option[Call] = None,
+	deleteCall: Option[Call] = None,
+	sideBar: Option[Html] = None,
+	topContentBar: Option[Html] = None,
+	isFullDisplayName: Boolean = false
+)(
+	implicit context: WebContext
+)
+
+@main(if(isFullDisplayName) displayName else Messages("show.title", displayName), sideBar, topContentBar) {
+
+	<div class="page-header">
+		<h3>@{if(isFullDisplayName) displayName else Messages("show.title", displayName)}</h3>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<fieldset>
+			    @elements
+			</fieldset>
+
+
+            @if(editCall.isDefined || cancelCall.isDefined) {
+				<hr/>
+                <div class="actions pull-right">
+                    @if(editCall.isDefined) {
+                        <a href="@editCall.get" class="btn btn-primary">Edit</a>
+                    }
+                    @if(cancelCall.isDefined) {
+                        <a href="@cancelCall.get" class="btn btn-default">Cancel</a>
+                    }
+					@if(deleteCall.isDefined) {
+						<a href="#" class="btn btn-danger" onclick='submit("post", "@deleteCall.get")'>Delete</a>
+					}
+                </div>
+            }
+		</div>
+	</div>
+}

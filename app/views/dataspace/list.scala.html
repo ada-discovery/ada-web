@@ -1,0 +1,54 @@
+@import views.html.layout
+@import views.html.table.paginatedTable
+@import views.html.filter.{filter, filterWithJs}
+@import org.ada.web.controllers.dataset.routes.{DataSpaceMetaInfoController => dataSpaceMetaInfoRoutes}
+@import org.ada.server.models.{DataSpaceMetaInfo, Field, Filter}
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+
+@(
+    page: Page[DataSpaceMetaInfo],
+    conditions: Seq[FilterCondition]
+)(
+    implicit context: WebContext
+)
+
+@actions = {
+    <div class="row">
+        <div class="col-md-8">
+            @filterWithJs(
+                Filter(conditions),
+                dataSpaceMetaInfoRoutes.find(),
+                Left(Seq(
+                    Field("name", Some("Name"))
+                ))
+            )
+        </div>
+        <div class="col-md-4">
+            <a class="btn btn-success btn-sm pull-right" id="add" href="@dataSpaceMetaInfoRoutes.create()">Add a new data space</a>
+        </div>
+    </div>
+}
+
+@table = @{
+    paginatedTable(
+        page,
+        dataSpaceMetaInfoRoutes.find(_, _, conditions),
+        Seq(
+            (Some("name"), "Name", {item : Any => Html(item.asInstanceOf[DataSpaceMetaInfo].name)}),
+            (Some("timeCreated"), "Time Created", {item : Any => Html(item.asInstanceOf[DataSpaceMetaInfo].timeCreated.toString)})
+        ),
+        Some({ item : Any => dataSpaceMetaInfoRoutes.edit(item.asInstanceOf[DataSpaceMetaInfo]._id.get)})
+    )
+}
+
+@layout.list(
+    "Data Space",
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    None
+)

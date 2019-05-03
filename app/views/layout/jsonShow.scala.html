@@ -1,0 +1,63 @@
+@import views.html.layout.main
+@import views.html.elements.{value => elementValue}
+@import play.api.libs.json.{JsObject, JsNull, JsValue}
+@import org.ada.server.dataaccess.JsonUtil
+@import play.api.libs.json.JsReadable
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(
+	domainName : String,
+	item: JsObject,
+	listCall: Call,
+	deleteCall: Option[Call] = None,
+	nonNullOnly: Boolean = true,
+    fieldNameLabelAndRendererMap: Map[String, (String, JsReadable => String)] = Map(),
+	sideBar: Option[Html] = None,
+    topContentBar: Option[Html] = None
+)(
+	implicit context: WebContext
+)
+
+@main(Messages("show.title", domainName), sideBar, topContentBar) {
+
+	<div class="page-header">
+		<h3>@Messages("show.title", domainName)</h3>
+	</div>
+
+	<div class="row">
+		<fieldset>
+			@item.fields.sortBy(_._1).map { case (fieldName, value) =>
+				@if(!nonNullOnly || value != JsNull) {
+					@elementValue(
+                        fieldName,
+                        fieldNameLabelAndRendererMap.get(fieldName).map(_._1.take(30)).getOrElse(
+                            attributeLabel(
+                                domainName,
+                                JsonUtil.unescapeKey(fieldName).take(30)
+                            )
+                        ),
+                        fieldNameLabelAndRendererMap.get(fieldName).map(_._2.apply(value)).getOrElse(
+                            JsonUtil.toString(value).getOrElse("")
+                        ),
+                        false,
+						None,
+						3
+                    )
+				}
+			}
+		</fieldset>
+
+		<div class="actions" align="center">
+			<a href="@listCall" class="btn btn-default">Go Back</a>
+			@if(deleteCall.isDefined) {
+				<a href="#" class="btn btn-danger" onclick='submit("post", "@deleteCall.get")'>Delete</a>
+			}
+		</div>
+	<!--
+		<div class="col-md-3">
+			info()
+		</div>
+	-->
+	</div>
+}

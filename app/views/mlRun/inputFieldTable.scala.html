@@ -1,0 +1,37 @@
+@import views.html.elements.{labelValue, selectEnum}
+@import views.html.elements.{fieldTypeahead, typeahead}
+@import views.html.table.dynamicTableJsImport
+@import views.html.dataset.dynamicFieldTable
+@import org.incal.spark_ml.models.VectorScalerType
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    extraFieldButtons: Option[Html] = None
+)(
+    implicit context: DataSetWebContext
+)
+
+@fieldButtons = {
+    <a id="addAllFieldsButton" class="btn btn-info btn-sm" href="#" onclick="addAllFields();" data-toggle="tooltip" title="Add All Fields">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> All
+    </a>
+    @if(extraFieldButtons.isDefined) {
+        @extraFieldButtons.get
+    }
+}
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = @{
+    labelValue(key, label, false, None, 4)(valueElement)
+}
+
+@labelValueAux("inputFieldNames", "Input Fields") {
+    @dynamicFieldTable(
+        "inputFieldName",
+        Nil,
+        false,
+        12,
+        Some(fieldButtons),
+        Some(Right(dataSetRouter.getCategoriesWithFieldsAsTreeNodes(Left(Nil))))
+    )
+}

@@ -1,0 +1,52 @@
+@import views.html.dataset.dataSetExportDropdown
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.server.models.FilterShowFieldStyle
+
+@(
+    dataViewId: BSONObjectID,
+    dataSetName: String,
+    showFieldStyle: Option[FilterShowFieldStyle.Value]
+)(
+    implicit context: DataSetWebContext
+)
+
+@extraDropdownItems = {
+    <li role="separator" class="divider"></li>
+    <li>
+        <a href="#" onclick="exportCharts('image/png');">
+            Export Charts as PNG
+        </a>
+    </li>
+    <li>
+        <a href="#" onclick="exportCharts('image/svg+xml');">
+            Export Charts as SVG
+        </a>
+    </li>
+    <li>
+        <a href="#" onclick="exportCharts('application/pdf');">
+            Export Charts as PDF
+        </a>
+    </li>
+}
+
+@dataSetExportDropdown(
+    dataSetName,
+    dataSetRouter.exportViewAsCsv(dataViewId, _, true, None, _, _, true, true),
+    dataSetRouter.exportViewAsJson(dataViewId, _, _, true),
+    showFieldStyle,
+    extraDropdownItems
+)
+
+<script type="text/javascript">
+    var chartsExportFileName = '@{dataSetName.replaceAllLiterally(".","_").replaceAllLiterally(" ", "_").toLowerCase + "-charts"}'
+
+    function exportCharts(type) {
+        var chartIds = $.map($(".chart-holder"), function (chart, i) {
+            return chart.id;
+        })
+
+        Highcharts.exportCharts(chartIds, {type: type, filename: chartsExportFileName});
+    }
+</script>

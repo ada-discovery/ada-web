@@ -1,0 +1,181 @@
+@import views.html.dataset.widgetsScreen
+@import views.html.elements.fieldTypeaheadDiv
+@import views.html.elements.{selectEnum, labelValue}
+@import org.ada.server.models._
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.incal.play.routes.CustomDirAssets
+
+@(
+    dataSetName: String,
+    filterSpec: Filter,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    xField: Option[Field],
+    yField: Option[Field],
+    valueField: Option[Field],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@extraActions = {
+    <div class="pull-right">
+        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#dataViewSelectionModal" title="Add Heatmap To View">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>To View
+        </button>
+    </div>
+}
+
+@bottomResources = {
+
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-62349a9.min.js")"></script>
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-wrapper.min.js")"></script>
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.calcHeatmap,
+        dataSetJsRouter.getWidgets
+    )
+
+    @helper.javascriptRouter("dataViewJsRoutes")(
+        dataViewJsRouter.addHeatmap,
+        dataViewJsRouter.addGridDistribution
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            $("#widgetsDiv").html("<div id='spinnerDiv' class='row'></div><div id='heatmapDiv' class='chart-holder'></div>")
+
+            populateMultiNumericalTypeahead(["xField", "yField", "valueField"], true);
+
+            $('#inputDiv #xFieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    calcHeatmap();
+                    return false;
+                }
+            });
+
+            $('#inputDiv #yFieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    calcHeatmap();
+                    return false;
+                }
+            });
+
+            $('#inputDiv #valueFieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    var valueFieldTypeahedVal = $('#inputDiv #valueFieldTypeahead').val();
+                    if (!valueFieldTypeahedVal)
+                        $('#inputDiv #valueFieldName').val("")
+
+                    calcHeatmap();
+                    return false;
+                }
+            });
+
+            $('#inputDiv #aggType').keypress(function (e) {
+                if (e.which == 13) {
+                    calcHeatmap();
+                    return false;
+                }
+            });
+
+            $("#dataViewSelectionModal #submitButton").on("click", addHeatmapToView)
+
+            activateAllFilters(function(filterOrId) {calcHeatmap()});
+
+            $("#heatmapDiv").ada_charts({chartType: 'heatmap'})
+        });
+
+        function calcHeatmap() {
+            var xFieldName = $("#inputDiv #xFieldName").val();
+            var xFieldLabel = $("#inputDiv #xFieldTypeahead").val();
+
+            var yFieldName = $("#inputDiv #yFieldName").val();
+            var yFieldLabel = $("#inputDiv #yFieldTypeahead").val();
+
+            var valueFieldName = $("#inputDiv #valueFieldName").val();
+            var valueFieldLabel = $("#inputDiv #valueFieldTypeahead").val();
+            if (!valueFieldName)
+                valueFieldName = null
+
+            var aggType = $("#inputDiv #aggType").val();
+            if (!aggType)
+                aggType = null
+
+            var filterOrId = $(".filter-div").multiFilter('getIdOrModel')
+            var filterOrIdJson = JSON.stringify(filterOrId);
+
+            if (!xFieldName || !yFieldName) {
+                showError("Heatmap calculation cannot be launched. No x or y field specified.");
+            } else {
+                var ajaxHandler = handleHeatmapResponse("Agg: ", "Heatmap generation finished.")
+
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.calcHeatmap(xFieldName, yFieldName, valueFieldName, aggType, filterOrIdJson).ajax(ajaxHandler);
+
+                hideErrors();
+                showMessage("Heatmap calculation for the fields '" + xFieldLabel + "' and '" + yFieldLabel + "' launched.")
+            }
+        }
+
+        function addHeatmapToView() {
+            var xFieldName = $("#inputDiv #xFieldName").val();
+            var xFieldLabel = $("#inputDiv #xFieldTypeahead").val();
+
+            var yFieldName = $("#inputDiv #yFieldName").val();
+            var yFieldLabel = $("#inputDiv #yFieldTypeahead").val();
+
+            var valueFieldName = $("#inputDiv #valueFieldName").val();
+            var valueFieldLabel = $("#inputDiv #valueFieldTypeahead").val();
+            if (!valueFieldName)
+                valueFieldName = null
+
+            var aggType = $("#inputDiv #aggType").val();
+            if (!aggType)
+                aggType = null
+
+            var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+            var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+
+            if (!xFieldName || !yFieldName) {
+                showError("No x or y field specified.");
+            } else {
+                if (valueFieldName && aggType)
+                    dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addHeatmap(dataViewId, xFieldName, yFieldName, valueFieldName, aggType).ajax({
+                        success: function () {
+                            showMessage("Heatmap for the fields '" + xFieldLabel + "' and '" + yFieldLabel + "' has been successfully added to the view '" + dataViewName + "'.");
+                        },
+                        error: showErrorResponse
+                    });
+                else
+                    dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addGridDistribution(dataViewId, xFieldName, yFieldName).ajax({
+                        success: function () {
+                            showMessage("Grid distribution (count) for the fields '" + xFieldLabel + "' and '" + yFieldLabel + "' has been successfully added to the view '" + dataViewName + "'.");
+                        },
+                        error: showErrorResponse
+                    });
+            }
+        }
+    </script>
+}
+
+@inputElements = {
+    @fieldTypeaheadDiv(xField, Some("col-md-12 top-padded"), "xField", "X Field")
+    @fieldTypeaheadDiv(yField, Some("col-md-12 top-padded"), "yField", "Y Field")
+    @fieldTypeaheadDiv(valueField, Some("col-md-12 top-padded"), "valueField", "Value Field")
+
+    <div class="col-md-12 aligned-container top-padded">
+        <label for="aggType" style="margin-right: 40px;">Aggregation Type</label>
+        @selectEnum("aggType", AggType, true, Some("input-lg-full"))
+    </div>
+}
+
+@widgetsScreen(
+    Messages("heatmap.title", dataSetName),
+    Seq(filterSpec),
+    filterShowFieldStyle,
+    dataSpaceMetaInfos,
+    inputElements,
+    Some(extraActions),
+    bottomResources,
+    widgetsDivOnRight = true
+)

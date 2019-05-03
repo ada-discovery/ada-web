@@ -1,0 +1,31 @@
+@import org.ada.web.models.HeatmapWidget
+
+@(
+    elementId: String,
+    widget: HeatmapWidget
+)
+
+@valueOrNull(value: Option[Double]) = @{
+    if(value.isDefined) value.get.toString else "null"
+}
+
+<script type="text/javascript">
+    $(function () {
+        var xCategories =  [ @widget.xCategories.map { cat => '@cat', } ]
+        var yCategories =  [ @widget.yCategories.map { cat => '@cat', } ]
+        var data = [ @widget.data.zipWithIndex.map { case (seq, i) =>
+            @seq.zipWithIndex.map { case (value, j) => [@i, @j, @{valueOrNull(value)}],}
+        }]
+
+        var xCaption = null
+        if (@{widget.xAxisCaption.isDefined})
+            xCaption = '@{widget.xAxisCaption.get}'
+
+        var yCaption = null
+        if (@{widget.yAxisCaption.isDefined})
+            yCaption = '@{widget.yAxisCaption.get}'
+
+        var height = @widget.displayOptions.height.getOrElse(400)
+        heatmapChart('@widget.title', '@elementId', xCategories, yCategories, xCaption, yCaption, data, @{widget.min.getOrElse(null)}, @{widget.max.getOrElse(null)}, @{widget.twoColors}, height)
+    });
+</script>

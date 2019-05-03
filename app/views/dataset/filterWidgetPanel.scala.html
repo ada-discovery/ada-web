@@ -1,0 +1,37 @@
+@import views.html.widget.widgetPanel
+@import org.ada.web.util.widgetElementId
+@import org.ada.web.models.{Widget, CategoricalCountWidget, ScatterWidget}
+
+@(
+    filterElementName: String,
+    widgets: Traversable[Widget],
+    gridElementWidth: Int = 3
+)
+
+@widgetPanel(widgets, gridElementWidth)
+
+@jsListenToPointSelected(chartElementName : String, fieldName : String) = {
+    $('#@chartElementName').on('pointSelected', function(event, data) {
+        var condition = { fieldName : "@fieldName", conditionType : "=", value : data.key};
+        $('#@filterElementName').multiFilter('addConditionsAndSubmit', [condition]);
+    });
+}
+
+@jsListenToAreaSelection(chartElementName : String, xFieldName : String, yFieldName: String) = {
+    $('#@chartElementName').on('areaSelected', function(event, data) {
+        var conditions = [{ fieldName : "@xFieldName", conditionType : ">=", value : data.xMin.toString()}, { fieldName : "@xFieldName", conditionType : "<=", value : data.xMax.toString()}, { fieldName : "@yFieldName", conditionType : ">=", value : data.yMin.toString()}, { fieldName : "@yFieldName", conditionType : "<=", value : data.yMax.toString()}]
+        $('#@filterElementName').multiFilter('addConditionsAndSubmit', conditions);
+    });
+}
+
+<script type="text/javascript">
+    $(function () {
+        @widgets.map{ widget =>
+            @{widget match {
+                case x: CategoricalCountWidget => jsListenToPointSelected(widgetElementId(x), x.fieldName)
+                case x: ScatterWidget[_, _] => jsListenToAreaSelection(widgetElementId(x), x.xFieldName, x.yFieldName)
+                case _ => ""
+            }
+        }
+    }});
+</script>

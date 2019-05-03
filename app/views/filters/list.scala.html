@@ -1,0 +1,61 @@
+@import views.html.layout
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import views.html.table.paginatedTable
+@import views.html.filter.{filter, filterWithJs}
+@import org.ada.server.models.{Field, Filter}
+@import org.ada.web.util.typeColumns
+@import org.ada.web.controllers.dataset.{DataSetWebContext, FilterRouter}
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+
+@(
+    domainName : String,
+    page: Page[Filter],
+    conditions: Seq[FilterCondition],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@actions = {
+    <div class="row">
+        <div class="col-md-10">
+            @filterWithJs(
+                Filter(conditions),
+                filterRouter.plainList,
+                Left(Seq(Field("name", None)))
+            )
+        </div>
+        <div class="col-md-2">
+            <a class="btn btn-success btn-sm pull-right" href="@filterRouter.create" data-toggle="tooltip" title="Add New Filter">
+                <span class="glyphicon glyphicon-plus"></span>
+            </a>
+        </div>
+    </div>
+}
+
+@table = {
+    @paginatedTable(
+        page,
+        filterRouter.list(_, _, conditions),
+        typeColumns[Filter](
+            (Some("name"), "Name", _.name.getOrElse("")),
+            (Some("createdById"), "Created By", _.createdBy.map(_.ldapDn).getOrElse("") ),
+            (Some("timeCreated"), "Time Created", _.timeCreated.map(_.format("yyyy-MM-dd HH:mm:ss")).getOrElse(""))
+        ),
+        Some({ item : Any => filterRouter.get(item.asInstanceOf[Filter]._id.get)})
+    )
+}
+
+@layout.list(
+    domainName,
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    None,
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs())
+)

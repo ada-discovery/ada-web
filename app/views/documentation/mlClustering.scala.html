@@ -1,0 +1,26 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.documentation.core
+@import views.html.documentation.imageSection
+
+@()(implicit context: WebContext)
+
+@core("Clustering") {
+
+    @imageSection(picPath = Some("images/documentation/scatter.png"), withLine = false) {
+        <p>
+            Models:
+            <ul>
+                <li>K-means</li>
+                <li>Bisecting k-means</li>
+                <li>Gaussian mixture</li>
+                <li>LDA</li>
+            </ul>
+        </p>
+
+        <p>
+            Clustering results are visualized as scatters for all the numerical input variables with clusters, also with principal components.
+            Significance of the variables for a produced clustering (i.e., categorical class membership) is checked with ANOVA and Chi-square tests.
+        </p>
+    }
+}

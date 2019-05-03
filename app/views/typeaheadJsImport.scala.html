@@ -1,0 +1,6 @@
+@import org.incal.play.routes.CustomDirAssets
+
+@()(implicit webJarAssets: WebJarAssets)
+
+<link rel="stylesheet" type="text/css" media="screen" href="@CustomDirAssets.versioned("stylesheets/typeahead.min.css")">
+<script src="@routes.WebJarAssets.at(webJarAssets.locate("typeahead.bundle.min.js"))"></script>

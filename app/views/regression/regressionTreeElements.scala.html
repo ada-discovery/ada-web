@@ -1,0 +1,20 @@
+@import views.html.elements.{inputText, select}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.regression.RegressionTree
+@import org.incal.spark_ml.models.regression.RegressionTreeImpurity
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[RegressionTree])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[RegressionTree].getName}">
+
+@inputText("regressionTree", "name", form)
+
+<hr/>
+
+@inputText("regressionTree", "core.maxDepth", form)
+@inputText("regressionTree", "core.maxBins", form)
+@inputText("regressionTree", "core.minInstancesPerNode", form)
+@inputText("regressionTree", "core.minInfoGain", form)
+@inputText("regressionTree", "core.seed", form)
+@select("regressionTree", "impurity", form, enumToValueString(RegressionTreeImpurity), true)

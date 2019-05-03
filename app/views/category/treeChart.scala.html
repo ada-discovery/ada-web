@@ -1,0 +1,52 @@
+@import org.ada.web.controllers.dataset.CategoryRouter
+@import org.ada.web.controllers.dataset.CategoryJsRouter
+@import org.incal.play.routes.CustomDirAssets
+
+@(
+    router : CategoryRouter,
+    jsRouter: CategoryJsRouter)(
+    implicit request: Request[_], webJarAssets: WebJarAssets
+)
+
+<link rel="stylesheet" type="text/css" media="screen" href="@CustomDirAssets.versioned("stylesheets/tree.min.css")">
+<script src="@routes.WebJarAssets.at(webJarAssets.locate("d3.min.js"))"></script>
+<script src="@routes.WebJarAssets.at(webJarAssets.locate("jquery-ui.min.js"))"></script>
+<script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/tree.min.js")"></script>
+
+<div id="treeDiv" name="treeDiv" class="treeDiv"></div>
+<script>
+    $.ajax({
+        url: '@router.getCategoryD3Root',
+            success: function (data) {
+                $("#treeDiv").tree({
+                    jsonData: data,
+                    duration: 700,
+                    width: "100%",
+                    height: 700,
+                    showNodeFun: function(data) {
+                        if (data._id) {
+                            var id = data._id.$oid
+                            var r = categoryJsRoutes.org.ada.web.controllers.dataset.CategoryDispatcher.get(id);
+                            submit('get', r.url, getQueryParams(r.url))
+                        }
+                    },
+                    dragRelocateToParent: function(node, parent) {
+                        if (node._id) {
+                            var id = node._id.$oid
+                            var parentId = "";
+                            if (parent._id)
+                                parentId = parent._id.$oid;
+                            categoryJsRoutes.org.ada.web.controllers.dataset.CategoryDispatcher.relocateToParent(id, parentId).ajax( {
+                                success: function() {
+                                    showMessage("The category '" + node.name + "' successfully relocated to '" + parent.name + "'.");
+                                },
+                                error: function(data){
+                                    showError( data.responseText );
+                                }
+                            });
+                        }
+                    }
+                });
+            },
+        });
+</script>

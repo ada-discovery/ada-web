@@ -1,0 +1,91 @@
+@import views.html.table.{displayTable, dynamicTable}
+@import views.html.elements.labelValue
+@import org.ada.web.util.typeColumns
+
+@(
+    items: Traversable[(String, Double)]
+)
+
+@outputValueElement(item: (String, Double)) = {
+    <input type="text" id="outputValue" style="width:80px" value="@item._1">
+}
+
+@samplingRatioElement(item: (String, Double)) = {
+    <input type="text" id="samplingRatio" style="width:80px" value="@item._1">
+}
+
+@table = {
+    @displayTable(
+        items,
+        typeColumns[(String, Double)](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (None, "Output Value", outputValueElement),
+            (None, "Sampling Ratio", samplingRatioElement)
+        )
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        var model = rowToModel(row);
+        return JSON.stringify(model);
+    }
+}
+
+@modalItemToRowJsFun = {
+    function(values) {
+        var outputValue = values["outputValue"].trim()
+        var samplingRatio = values["samplingRatio"].trim()
+
+        var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
+        var outputValueColumn = "<td><input type='text' id='outputValue' style='width:80px' value='" + outputValue + "'/></td>";
+        var samplingRatioColumn = "<td><input type='text' id='samplingRatio' style='width:80px' value='" + samplingRatio + "'/></td>";
+
+        // create row
+        var row = $("<tr></tr>")
+        row.append(checkboxColumn)
+        row.append(outputValueColumn)
+        row.append(samplingRatioColumn)
+
+        return row;
+    }
+}
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = {
+    @labelValue(key, label, false, None, 4)(valueElement)
+}
+
+@modalInner(modalName: String) = {
+    <div class="row">
+         @labelValueAux("outputValue", "Output Value") {
+            <input type="text" id="outputValue">
+         }
+
+         @labelValueAux("samplingRatio", "Sampling Ratio") {
+             <input type="text" id="samplingRatio">
+         }
+    </div>
+}
+
+@dynamicTable("samplingRatio", table, true, rowToModelJsFun, modalItemToRowJsFun, modalInner("add_samplingRatioModal"), None, 12)
+
+<script type="text/javascript">
+     function setIfNotNull(item, fieldName, value) {
+        if (value != null)
+            item[fieldName] = value
+     }
+
+    function rowToModel(row) {
+        var output = {};
+
+        function getValue(x) { return getRowValue(row, x) }
+
+        // field path
+        setIfNotNull(output, "outputValue", getValue("outputValue"))
+
+        // processing type
+        setIfNotNull(output, "samplingRatio", getValue("samplingRatio"))
+
+        return output;
+    }
+</script>

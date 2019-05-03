@@ -1,0 +1,22 @@
+@import play.api.libs.json.{JsObject, JsNull}
+@import views.html.table.{header, displayTable}
+
+@(
+   items : Traversable[_],
+   currentOrderBy: String,
+   listCall : (Int, String) => Call,
+   columns : Traversable[(Option[String], String, (Any => Html))],
+   rowClickCall : Option[Any => Call] = None
+)
+
+@listCallAux(newPage : Int, newOrderBy : Option[String]) = @{
+    listCall(newPage, newOrderBy.map { nOrderBy =>
+        if (nOrderBy == currentOrderBy) {
+            "-" + currentOrderBy
+        } else if (("-" + nOrderBy) == currentOrderBy) {
+            nOrderBy
+        } else nOrderBy
+    }.getOrElse(currentOrderBy))
+}
+
+@displayTable(items, columns, Some(header(currentOrderBy, listCallAux)), rowClickCall)

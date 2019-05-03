@@ -1,0 +1,86 @@
+@import play.api.libs.json.Json
+@import org.ada.server.models.{Field, Filter}
+@import org.ada.web.controllers.FilterConditionExtraFormats.coreFilterConditionFormat
+@import org.ada.web.util.toJsonHtml
+
+@(
+    filter: Option[Filter],
+    submitCall: Call,
+    fieldsOrCall: Either[Traversable[Field], Call],
+    filterSubmitParamName: String,
+    filterElementId: String,
+    createSubmissionJson: Option[Html] = None,
+    submitAjaxFun: Option[Html] = None,
+    listFiltersCall: Option[Call] = None,
+    saveFilterAjaxFun: Option[Html] = None,
+    categoryTreeElementId: Option[String] = None
+)(
+    implicit request: Request[_], webJarAssets: WebJarAssets
+)
+
+@fieldNameLabelsAsString = @{
+    fieldsOrCall match {case Left(fields) =>
+        Html(
+            Json.stringify(
+                Json.toJson(
+                    fields.map { field =>
+                        Json.obj("name" -> field.name, "label" -> field.label)
+                    }
+                )
+            )
+        )
+    }
+}
+
+@fieldsUrl = @{
+    fieldsOrCall match {case Right(call) => call.url}
+}
+
+<script type="text/javascript">
+    $(function () {
+        var jsConditions = JSON.parse('@{toJsonHtml(filter.map(_.conditions).getOrElse(Nil))}');
+
+        var filterId = @if(filter.isDefined && filter.get._id.isDefined) { '@filter.get._id.get.stringify' } else { null }
+
+        var fieldNameAndLabels = @if(fieldsOrCall.isLeft) { JSON.parse('@fieldNameLabelsAsString') } else { null }
+
+        var getFieldsUrl = @if(fieldsOrCall.isRight) {'@fieldsUrl'} else { null }
+
+        var listFiltersUrl = @if(listFiltersCall.isDefined) {'@listFiltersCall.get.url'} else { null }
+
+        var submitAjaxFun = @if(submitAjaxFun.isDefined) { @{submitAjaxFun.get} } else { null }
+
+        var createSubmissionJson = @if(createSubmissionJson.isDefined) { @createSubmissionJson } else {null}
+
+        var saveFilterAjax = @if(saveFilterAjaxFun.isDefined) { @saveFilterAjaxFun.get } else { null }
+
+        @if(categoryTreeElementId.isDefined) {
+            $("#@{filterElementId}").multiCategoryFilter({
+                jsonConditions: jsConditions,
+                fieldNameAndLabels: fieldNameAndLabels,
+                getFieldsUrl: getFieldsUrl,
+                submitUrl: '@submitCall.url',
+                submitAjaxFun: submitAjaxFun,
+                listFiltersUrl: listFiltersUrl,
+                saveFilterAjaxFun: saveFilterAjax,
+                filterSubmitParamName: '@filterSubmitParamName',
+                filterId: filterId,
+                createSubmissionJson: createSubmissionJson,
+                categoryTreeElementId: '@categoryTreeElementId.get'
+            })
+        } else {
+            $("#@{filterElementId}").multiFilter({
+                jsonConditions: jsConditions,
+                fieldNameAndLabels: fieldNameAndLabels,
+                getFieldsUrl: getFieldsUrl,
+                submitUrl: '@submitCall.url',
+                submitAjaxFun: submitAjaxFun,
+                listFiltersUrl: listFiltersUrl,
+                saveFilterAjaxFun: saveFilterAjax,
+                filterSubmitParamName: '@filterSubmitParamName',
+                filterId: filterId,
+                createSubmissionJson: createSubmissionJson
+            })
+        }
+    })
+</script>

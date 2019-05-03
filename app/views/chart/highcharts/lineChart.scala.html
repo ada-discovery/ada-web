@@ -1,0 +1,31 @@
+@import org.ada.web.models.LineWidget
+
+@(
+    elementId: String,
+    widget: LineWidget[_]
+)
+
+<script type="text/javascript">
+    (function() {
+        var isDate = @{widget.data.headOption.map(_._2.headOption.map(_._1.isInstanceOf[java.util.Date])).flatten.getOrElse(false)};
+        var isDouble = @{widget.data.headOption.map(_._2.headOption.map(_._1.isInstanceOf[Double])).flatten.getOrElse(false)};
+        var dataType = (isDate) ? 'datetime' : null;
+        var datas = [@widget.data.map { singleSeries => {name: '@singleSeries._1', data: [@singleSeries._2.map { case (x, y) => [@x, @y], }]}, }];
+
+        var seriesSize = datas.length
+        var showLegend = seriesSize > 1
+
+        var height = @widget.displayOptions.height.getOrElse(400)
+        var pointFormat = function () {
+            return numericalPointFormat(isDate, isDouble, this, 3, 3);
+        }
+        var yAxisCaption = '@widget.yAxisCaption'
+
+        var xMin = (@{widget.xMin.isDefined}) ? @{widget.xMin.get} : null
+        var xMax = (@{widget.xMax.isDefined}) ? @{widget.xMax.get} : null
+        var yMin = (@{widget.yMin.isDefined}) ? @{widget.yMin.get} : null
+        var yMax = (@{widget.yMax.isDefined}) ? @{widget.yMax.get} : null
+
+        lineChart('@widget.title', '@{elementId}', null, datas, '@widget.xAxisCaption', '@widget.yAxisCaption', showLegend, true, pointFormat, height, dataType, false, false, false, xMin, xMax, yMin, yMax);
+    })
+</script>

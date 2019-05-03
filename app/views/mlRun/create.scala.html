@@ -1,0 +1,170 @@
+@import views.html.layout.main
+@import views.html.chart.highcharts.highchartsJsImport
+@import views.html.elements._
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import views.html.mlRun.{inputFieldAndFilterResources, mlElements, trainingSettingFields}
+@import views.html.classificationrun.samplingTable
+@import views.html.table.dynamicTableJsImport
+@import views.html.elements.{fieldTypeahead, typeahead}
+@import play.api.i18n.Messages
+@import org.ada.server.models.{DataSpaceMetaInfo, FieldTypeId, FilterShowFieldStyle}
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.incal.spark_ml.models.classification.ClassificationEvalMetric
+
+@(
+    title: String,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo],
+    firstColumnContent: Html,
+    secondColumnContent: Html,
+    extraBottomResources: Html,
+    extraOutput: Option[Html] = None
+)(
+    implicit context: DataSetWebContext
+)
+
+@bottomResources = {
+    @inputFieldAndFilterResources(
+        Seq("filter", "replicationFilter"),
+        filterShowFieldStyle
+    )
+    @highchartsJsImport()
+
+    <script type="text/javascript">
+
+        function populateFullTypeahead(fieldPrefix, isFucus) {
+            var url = '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Enum, FieldTypeId.String, FieldTypeId.Boolean, FieldTypeId.Double, FieldTypeId.Integer, FieldTypeId.Date)).url)'
+            populateCustomFieldTypeaheadFromUrl(fieldPrefix, url, isFucus)
+        }
+
+        function populateCategoricalTypeahead(fieldPrefix, isFucus) {
+            var url = '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Enum, FieldTypeId.String, FieldTypeId.Boolean)).url)'
+            populateCustomFieldTypeaheadFromUrl(fieldPrefix, url, isFucus)
+        }
+
+        function populateNumericalTypeahead(fieldPrefix, isFucus) {
+           var url = '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Integer, FieldTypeId.Double, FieldTypeId.Date)).url)'
+            populateCustomFieldTypeaheadFromUrl(fieldPrefix, url, isFucus)
+        }
+
+        function populateMultiNumericalTypeahead(fieldPrefixes, isFucus) {
+            var url = '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Integer, FieldTypeId.Double, FieldTypeId.Date)).url)'
+            populateCustomFieldTypeaheadFromUrl(fieldPrefixes, url, isFucus)
+        }
+
+        function populateCustomFieldTypeaheadFromUrl(fieldPrefix, url, isFocus) {
+            var typeaheadElement = $('#inputDiv #' + fieldPrefix + 'Typeahead');
+            var nameElement = $('#inputDiv #' + fieldPrefix + 'Name');
+            var focusFun = (isFocus) ? function() {setTimeout(function(){ $(typeaheadElement).focus();}, 250)} : null
+
+            populateFieldTypeahedFromUrl(
+                typeaheadElement,
+                nameElement,
+                url,
+                @filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id,
+                focusFun
+            )
+        }
+
+        function populateIdLabelTypeaheadFromUrl(fieldPrefix, url, isFocus) {
+            var typeaheadElement = $('#inputDiv #' + fieldPrefix + 'Typeahead');
+            var idElement = $('#inputDiv #' + fieldPrefix + 'Id');
+            var focusFun = (isFocus) ? function() {setTimeout(function(){ $(typeaheadElement).focus();}, 250)} : null
+
+            $.ajax({
+                url: url,
+                success: function (data) {
+                    var typeaheadData = data.map(function (item, index) {
+                        return {name: item._id.$oid, label: item.name};
+                    });
+                    populateFieldTypeahed(
+                        typeaheadElement,
+                        idElement,
+                        typeaheadData,
+                        @FilterShowFieldStyle.LabelsOnly.id
+                    );
+                }
+            });
+        }
+
+        function intValue(value) {
+            var intValue = null;
+            if (value && value.length > 0) {
+                intValue = parseInt(value)
+                if (isNaN(intValue)) {
+                    intValue = null
+                }
+            }
+            return intValue;
+        }
+
+        function intOrSeqValue(value) {
+            var result = null;
+            if (value && value.length > 0) {
+                if (!value.includes(",")) {
+                    result = intValue(value)
+                } else {
+                    result = value.split(",").map(function(item) {
+                        return intValue(item.trim());
+                    })
+                }
+            }
+            return result;
+        }
+
+        function floatValue(value) {
+            var floatValue = null;
+            if (value && value.length > 0) {
+                floatValue = parseFloat(value)
+                if (isNaN(floatValue)) {
+                    floatValue = null
+                }
+            }
+            return floatValue;
+        }
+
+    </script>
+
+    @extraBottomResources
+}
+
+@main(title, Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs()), None, Some(bottomResources)) {
+
+    <div class="page-header">
+        <h3>
+            @title
+        </h3>
+    </div>
+
+    @dynamicTableJsImport()
+
+    <form id="inputDiv">
+        <fieldset>
+            <div class="row">
+                <div class="col-lg-6 col-md-12">
+                    <div class="row">
+                        @firstColumnContent
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <div class="row">
+                        @secondColumnContent
+                    </div>
+                </div>
+            </div>
+            <div class="actions pull-right">
+                <button id="launchButton" type="button" class="btn btn-primary">Submit</button>
+            </div>
+        </fieldset>
+    </form>
+
+
+    <hr/>
+
+    <div class="row">
+        <div id='outputDiv' class='col-md-6 col-md-offset-3'>
+        </div>
+        @extraOutput.getOrElse("")
+    </div>
+}

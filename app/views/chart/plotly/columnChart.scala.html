@@ -1,0 +1,31 @@
+@import org.ada.web.util.shorten
+
+@(title : String, chartElementName : String, yAxisCaption : String, elements : Seq[(String, Any)])
+
+<h3>@title</h3>
+<div id="@chartElementName"></div>
+<script type="text/javascript">
+
+        ID = document.getElementById('@chartElementName');
+
+        var data = [{
+            x: [
+                @elements.map { case (label, _) =>
+                    '@shorten(label)',
+                }
+            ],
+            y: [
+                @elements.map { case (_, value) =>
+                @value,
+                }
+            ],
+            type: 'bar'
+        }];
+
+        var layout = {
+            //height: 380,
+            //width: 480
+        };
+
+        Plotly.newPlot(ID, data, layout);
+</script>

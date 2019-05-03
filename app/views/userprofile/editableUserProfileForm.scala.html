@@ -1,0 +1,7 @@
+@import views.html.elements.{inputText, checkboxGroup}
+
+@** Very similar to editableUserForm.scala.html, but with key fields hidden from user **@
+@(domainName: String, form: Form[_])(implicit msg: play.api.i18n.Messages)
+
+@inputText(domainName, "name", form)
+@inputText(domainName, "affiliation", form)

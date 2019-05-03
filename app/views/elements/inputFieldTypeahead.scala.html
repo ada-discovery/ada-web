@@ -1,0 +1,16 @@
+@import elements.{labelValue, typeahead}
+@import org.ada.server.models.Field
+
+@(
+    domainName: String,
+    fieldName: String,
+    form: Form[_],
+    args: Seq[(Symbol, Any)] = Nil,
+    labelGridWidth: Int = 2
+)(
+    implicit msg: play.api.i18n.Messages
+)
+
+@labelValue(fieldName + "Name", attributeLabel(domainName, fieldName + "Name")) {
+    @typeahead(fieldName + "Typeahead", fieldName + "Name", "Field", value = form(fieldName + "Name").value, extraClass = Some("form-control"))
+}

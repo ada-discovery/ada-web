@@ -1,0 +1,27 @@
+@import org.ada.server.models.Filter
+@import org.ada.web.controllers.dataset.TableViewData
+@import views.html.filter.{filter => filterUI}
+@import org.ada.web.controllers.dataset.DataSetRouter
+@import org.ada.server.models.FilterShowFieldStyle
+@import scala.util.Random
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    filter: Option[Filter],
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    filterElementId: Option[String] = None,
+    filterLabel: String = "Filter"
+)(
+    implicit dataSetWebContext: DataSetWebContext
+)
+
+@filterUI(
+    filter,
+    filterShowFieldStyle,
+    true,
+    true,
+    filterElementId.getOrElse("filter" + Random.nextLong()),
+    Some(Right(dataSetRouter.getCategoriesWithFieldsAsTreeNodes(filter.map(_.conditionsOrId).getOrElse(Left(Nil))))),
+    filterLabel = filterLabel
+)

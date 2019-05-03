@@ -1,0 +1,381 @@
+@import org.ada.server.models.Field
+@import org.ada.server.models.Filter
+@import org.ada.server.models.CorrelationType
+@import org.ada.server.models.FilterShowFieldStyle
+@import views.html.layout
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs, filterWidgetPanel}
+@import views.html.table.paginatedTable
+@import views.html.chart.highcharts.highchartsJsImport
+@import views.html.widget.widgetPanelJs
+@import views.html.modal
+@import views.html.exportDropdown
+@import views.html.dataview.dataViewSelectionModal
+@import views.html.category.categorySelectionModal
+@import views.html.filter.{filter, filterWithJs}
+@import org.ada.web.util.typeColumns
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.dataaccess.JsonUtil
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.models.Widget
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+
+@(
+    domainName : String,
+    page: Page[Field],
+    conditions: Seq[FilterCondition],
+    widgets: Traversable[Widget],
+    fieldNameLabels: Traversable[(String, Option[String])],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@actions = {
+    <div class="row">
+        <div class="col-md-10">
+            @filterWithJs(
+                Filter(conditions),
+                dictionaryRouter.plainList,
+                Left(fieldNameLabels.map { case (name, label) => Field(name, label)}),
+                showFieldStyle = Some(FilterShowFieldStyle.LabelsOnly)
+            )
+        </div>
+        <div class="pull-right">
+            <ul class="list-inline">
+                <li>
+                    @exportDropdown(
+                        dictionaryRouter.exportCsv(_, true, None, _, _),
+                        dictionaryRouter.exportJson,
+                        conditions
+                    )()
+                </li>
+                <li>
+                    <div class="dropdown">
+                        <button class="btn btn-info btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="@dictionaryRouter.setDefaultLabels">
+                                    Set Default Labels
+                                </a>
+                            </li>
+                            <li>
+                                <a href="@dictionaryRouter.convertLabelsToCamelCase">
+                                    Convert Labels to Camelcase
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    @dataViewSelectionModal("dataViewSelectionModal", dataViewRouter)
+    @categorySelectionModal("categorySelectionModal", categoryRouter)
+}
+
+@editableFieldLabelInput(field: Field) = {
+    <input type="text" class="no-rowClicked fieldLabel" value='@{field.label.getOrElse("")}'/>
+}
+
+@isArrayCheckbox(field: Field) = {
+    <input type="checkbox" class="no-rowClicked" @if(field.isArray) { checked="checked" } disabled="disabled"/>
+}
+
+@table = {
+    <div class="pull-right dropdown">
+        <button class="btn btn-info btn-sm dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>To
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="#" onclick="addFieldDistributions();return false" data-toggle="tooltip" title="Add Distributions To View">
+                    Distributions
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="addFieldCumulativeCounts();return false" data-toggle="tooltip" title="Add Cumulative Counts To View">
+                    Cumulative Counts
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="addFieldBoxPlots();return false" data-toggle="tooltip" title="Add Box Plots To View">
+                    Box Plots
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="addFieldBasicStats();return false" data-toggle="tooltip" title="Add Basic Stats To View">
+                    Basic Stats
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="addFieldCorrelation('@CorrelationType.Pearson');return false" data-toggle="tooltip" title="Add Pearson Correlation To View">
+                    Pearson Correlation
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="addFieldCorrelation('@CorrelationType.Matthews');return false" data-toggle="tooltip" title="Add Matthews Correlation To View">
+                    Matthews Correlation
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="addTableFields();return false" data-toggle="tooltip" title="Add To View">
+                    Table
+                </a>
+            </li>
+            <li role="separator" class="divider"></li>
+            <li>
+                <a href="#" data-toggle="modal" data-target="#categorySelectionModal" title="Add To Category">
+                    Category
+                </a>
+            </li>
+        </ul>
+    </div>
+    @paginatedTable(
+        page,
+        dictionaryRouter.list(_, _, conditions),
+        typeColumns[Field](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (Some("name"), "Name", {field => JsonUtil.unescapeKey(field.name)}),
+            (Some("label"), "Label", editableFieldLabelInput),
+            (Some("fieldType"), "Type", _.fieldType),
+            (Some("isArray"), "Is Array?", isArrayCheckbox),
+            (Some("categoryId"), "Category", _.category.map(_.name).getOrElse(""))
+        ),
+        Some({ item : Any => dictionaryRouter.get(item.asInstanceOf[Field].name)}),
+        Some("id", {any:Any => any.asInstanceOf[Field].name}),
+        Some("dictionaryTable")
+    )
+}
+
+@bottomResources = {
+    @highchartsJsImport()
+    @widgetPanelJs(widgets)
+}
+
+@layout.list(
+    domainName,
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    Some(filterWidgetPanel("filterDiv", widgets, 6)),
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs()),
+    None,
+    Some(bottomResources)
+)
+
+@helper.javascriptRouter("dataViewJsRoutes")(
+    dataViewJsRouter.addDistributions,
+    dataViewJsRouter.addCumulativeCounts,
+    dataViewJsRouter.addBoxPlots,
+    dataViewJsRouter.addBasicStats,
+    dataViewJsRouter.addScatter,
+    dataViewJsRouter.addCorrelation,
+    dataViewJsRouter.addTableFields
+)
+
+@helper.javascriptRouter("dictionaryJsRoutes")(
+    dictionaryJsRouter.updateLabel
+)
+
+@helper.javascriptRouter("categoryJsRoutes")(
+    categoryJsRouter.addFields
+)
+
+<script type="text/javascript">
+    $(function () {
+        $("#inferModal").modal()
+        $(".fieldLabel").on("keydown",function(e) {
+            if(e.keyCode == 13) {
+                var id = getNearestRowId($(this), "id");
+                var label = $(this).val();
+                var that = $(this)
+                if (label) {
+                    dictionaryJsRoutes.org.ada.web.controllers.dataset.DictionaryDispatcher.updateLabel(id, label).ajax( {
+                        success: function() {
+                            showMessage("The field '" + id + "' has been successfully relabeled to '" + label + "'.");
+                        },
+                        error: function(data) {
+                            showErrorResponse(data);
+                        }
+                    });
+                }
+                var inputs = that.closest('tbody').find('.fieldLabel');
+                inputs.eq( inputs.index(that)+ 1 ).focus();
+            }
+        });
+
+        $("#categorySelectionModal #submitButton").on("click", addFieldsToCategory)
+    })
+
+    function addFieldDistributions() {
+        var handler = function(e) {
+            addFieldDistributionsToView();
+        };
+
+        $("#dataViewSelectionModal #submitButton").one( "click", handler );
+        $("#dataViewSelectionModal").modal('show');
+    }
+
+    function addFieldCumulativeCounts() {
+        var handler = function(e) {
+            addFieldCumulativeCountsToView();
+        };
+
+        $("#dataViewSelectionModal #submitButton").one( "click", handler );
+        $("#dataViewSelectionModal").modal('show');
+    }
+
+    function addFieldBoxPlots() {
+        var handler = function(e) {
+            addFieldBoxPlotsToView();
+        };
+
+        $("#dataViewSelectionModal #submitButton").one( "click", handler );
+        $("#dataViewSelectionModal").modal('show');
+    }
+
+    function addFieldBasicStats() {
+        var handler = function(e) {
+            addFieldBasicStatsToView();
+        };
+
+        $("#dataViewSelectionModal #submitButton").one( "click", handler );
+        $("#dataViewSelectionModal").modal('show');
+    }
+
+    function addFieldCorrelation(correlationType) {
+        var handler = function(e) {
+            addFieldCorrelationToView(correlationType);
+        };
+
+        $("#dataViewSelectionModal #submitButton").one( "click", handler );
+        $("#dataViewSelectionModal").modal('show');
+    }
+
+    function addTableFields() {
+        var handler = function(e) {
+            addTableFieldsToView();
+        };
+
+        $("#dataViewSelectionModal #submitButton").one( "click", handler );
+        $("#dataViewSelectionModal").modal('show');
+    }
+
+    function addFieldDistributionsToView() {
+        var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+        var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+        var fieldNames = getCheckedTableIds("dictionaryTable", "id")
+
+        dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addDistributions(dataViewId, fieldNames).ajax( {
+            success: function() {
+                showMessage("Distributions for the field(s) '" + fieldNames + "' have been successfully added to the view '" + dataViewName + "'.");
+            },
+            error: function(data){
+                showErrorResponse(data);
+            }
+        });
+    }
+
+    function addFieldCumulativeCountsToView() {
+        var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+        var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+        var fieldNames = getCheckedTableIds("dictionaryTable", "id")
+
+        dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addCumulativeCounts(dataViewId, fieldNames).ajax( {
+            success: function() {
+                showMessage("Cumulative Counts for the field(s) '" + fieldNames + "' have been successfully added to the view '" + dataViewName + "'.");
+            },
+            error: function(data){
+                showErrorResponse(data);
+            }
+        });
+    }
+
+    function addFieldBoxPlotsToView() {
+        var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+        var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+        var fieldNames = getCheckedTableIds("dictionaryTable", "id")
+
+        dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addBoxPlots(dataViewId, fieldNames).ajax( {
+            success: function() {
+                showMessage("Box plots for the field(s) '" + fieldNames + "' have been successfully added to the view '" + dataViewName + "'.");
+            },
+            error: function(data){
+                showErrorResponse(data);
+            }
+        });
+    }
+
+    function addFieldBasicStatsToView() {
+        var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+        var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+        var fieldNames = getCheckedTableIds("dictionaryTable", "id")
+
+        dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addBasicStats(dataViewId, fieldNames).ajax( {
+            success: function() {
+                showMessage("Basic stats for the field(s) '" + fieldNames + "' have been successfully added to the view '" + dataViewName + "'.");
+            },
+            error: function(data){
+                showErrorResponse(data);
+            }
+        });
+    }
+
+    function addFieldCorrelationToView(correlationType) {
+        var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+        var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+        var fieldNames = getCheckedTableIds("dictionaryTable", "id")
+
+        if (fieldNames.length == 0) {
+            showError("No fields defined.");
+        } else {
+            dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addCorrelation(dataViewId, correlationType).ajax({
+                data: {
+                    "fieldNames": fieldNames
+                },
+                success: function() {
+                    showMessage(correlationType + " correlation for the field(s) '" + fieldNames.join(", ") + "' has been successfully added to the view '" + dataViewName + "'.");
+                },
+                error: showErrorResponse
+            });
+        }
+    }
+
+    function addTableFieldsToView() {
+        var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+        var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+        var fieldNames = getCheckedTableIds("dictionaryTable", "id")
+
+        dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addTableFields(dataViewId, fieldNames).ajax( {
+            success: function() {
+                showMessage("Field(s) '" + fieldNames + "' have been successfully added to the table of the view '" + dataViewName + "'.");
+            },
+            error: function(data){
+                showErrorResponse(data);
+            }
+        });
+    }
+
+    function addFieldsToCategory() {
+        var categoryId = $("#categorySelectionModal #categoryId").val().trim()
+        var categoryName = $("#categorySelectionModal #categoryTypeahead").val().trim()
+        var fieldNames = getCheckedTableIds("dictionaryTable", "id")
+
+        categoryJsRoutes.org.ada.web.controllers.dataset.CategoryDispatcher.addFields(categoryId, fieldNames).ajax( {
+            success: function() {
+                showMessage("Field(s) '" + fieldNames + "' have been successfully added to the category '" + categoryName + "'.");
+            },
+            error: function(data){
+                showErrorResponse(data);
+            }
+        });
+    }
+</script>

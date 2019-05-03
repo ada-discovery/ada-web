@@ -1,0 +1,53 @@
+@import views.html.dataset.datasetMenu
+@import org.ada.server.models.DataSpaceMetaInfo
+@import be.objectify.deadbolt.scala.views.html.{subjectPresent, subjectPresentOr, restrictOr}
+@import org.incal.play.security.SecurityRole
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.dataset.{routes => dataSetRoutes}
+@import org.ada.web.controllers.routes
+
+@(
+    userName: String,
+    dataSpacesNum: Int,
+    dataSetsNum: Int,
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: WebContext
+)
+
+@badge(text: Int) = {
+    <span class="badge badge-success"><b><h5>@text</h5></b></span>
+}
+
+@noDataSetsErrorMessage = {
+    @restrictOr(roles = List(Array(SecurityRole.admin))) {
+        @messageBox {
+            No data sets available. Go <a href="@dataSetRoutes.DataSetImportController.find()">here</a> and import one.
+        }
+    } {
+        @messageBox {
+            No data sets available. <a href="@routes.AppController.contact()">Contact your admin</a> to give you a permission.
+        }
+    }
+}
+
+@messageBox(message: Html) = {
+    <div class="alert alert-dismissable alert-danger">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        @message
+    </div>
+}
+
+@main("Studies/Data Sets", Some(datasetMenu(dataSpaceMetaInfos)), extraMessages = if (dataSetsNum == 0) Some(noDataSetsErrorMessage) else None) {
+
+    <div class="page-header">
+        <h1>Studies</h1>
+    </div>
+
+    <div class="row-fluid">
+        <h3><i>Welcome @userName!</i></h3>
+        <br/>
+        You have currently access to @badge(dataSetsNum) data sets organized into @badge(dataSpacesNum) data spaces out of which @badge(dataSpaceMetaInfos.size) are the top level ones (studies/projects).
+    </div>
+}

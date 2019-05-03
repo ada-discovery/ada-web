@@ -1,0 +1,36 @@
+@import org.ada.web.util.shorten
+@import org.ada.web.util.toChartData
+@import org.ada.web.models.Count
+@import org.ada.web.models.CategoricalCountWidget
+@import org.ada.server.models.ChartType
+
+@(
+    elementId: String,
+    widget: CategoricalCountWidget
+)
+
+<script type="text/javascript">
+    $(function () {
+        var categories = @if(widget.data.isEmpty) {
+            []
+        } else {
+            [ @widget.data.head._2.map { count => '@count.value',}];
+        }
+        var datas = [@toChartData(widget).map { singleSeries => {
+            name: '@singleSeries._1',
+            data: [@singleSeries._2.map { case (name, y, key) => {name: '@name', y: @y, key: '@key' }, }]
+        }, }];
+        var totalCounts = [@widget.data.map { series => @{if(widget.isCumulative) series._2.map(_.count).max else series._2.map(_.count).sum}, }];
+        var seriesSize = datas.length
+        var height = @widget.displayOptions.height.getOrElse(400)
+        var pointFormat = function () {
+            return (@widget.useRelativeValues) ? categoricalPercentPointFormat(this) : categoricalCountPointFormat(totalCounts, this);
+        }
+        var yAxisCaption = (@widget.useRelativeValues) ? '%' : 'Count'
+
+        $('#@elementId').on('chartTypeChanged', function(event, chartType) {
+            plotCategoricalChart(chartType, categories, datas, seriesSize, '@widget.title', yAxisCaption, '@{elementId}', @widget.showLabels, @widget.showLegend, height, pointFormat);
+        });
+        plotCategoricalChart('@widget.displayOptions.chartType', categories, datas, seriesSize, '@widget.title', yAxisCaption, '@{elementId}', @widget.showLabels, @widget.showLegend, height, pointFormat)
+    });
+</script>

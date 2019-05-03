@@ -1,0 +1,21 @@
+@import views.html.layout
+@import views.html.elements.editableTextElements
+@import org.ada.server.models.Translation
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.ada.web.controllers.routes
+
+@(
+	form: Form[Translation]
+)(
+    implicit context: WebContext
+)
+
+@layout.create(
+    "Translation",
+	"translation",
+	form = form,
+	elements = editableTextElements("translation", form),
+	saveCall = routes.TranslationController.save(),
+	listCall = routes.TranslationController.listAll()
+)

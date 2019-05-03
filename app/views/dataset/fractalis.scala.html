@@ -1,0 +1,139 @@
+@import org.ada.server.models.Field
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.FilterShowFieldStyle
+@import reactivemongo.play.json.BSONFormats._
+@import views.html.layout.main
+@import views.html.dataset.datasetSubNavWithJs
+@import play.api.i18n.Messages
+@import play.api.Play.current
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.incal.play.routes.CustomDirAssets
+
+@(
+    domainName: String,
+    fractalisServerUrl: String,
+    sessionId: String,
+    field: Option[Field],
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@actions = {
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
+            <input id="fieldTypeahead" class="typeahead typeahead-large" type="text" placeholder="Field Name" value="@field.map(_.labelOrElseName)">
+            <input id="fieldName" name="fieldName" type="hidden" value="@field.map(_.name)">
+        </div>
+        <div class="pull-right">
+            <button id="fractalisAddButton" type="button" class="btn btn-default btn-lg">Add</button>
+            <select id="widgetSelection" class="input-lg">
+                <option value="correlation-analysis">Scatter</option>
+                <option value="boxplot">Box Plot</option>
+                <option value="pca-analysis">PCA</option>
+            </select>
+        </div>
+    </div>
+}
+
+@bottomResources = {
+    @typeaheadJsImport()
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.getField
+    )
+
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/fractal-0.5.0.min.js")"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            populateFieldTypeahedFromUrl(
+                $('#fieldTypeahead'),
+                $('#fieldName'),
+                '@Html(dataSetRouter.allFields.url)',
+                @filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
+            )
+
+            function addFieldToFractalis() {
+                var fieldName = $("#fieldName").val();
+                var fieldLabel = $("#fieldTypeahead").val();
+
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getField(fieldName).ajax( {
+                    success: function(field) {
+                        fjs.loadData([
+                            {
+                                dictionary: {
+                                    name: fieldName,
+                                    projection: fieldName,
+                                    label: fieldLabel,
+                                    fieldType: field.fieldType,
+                                    numValues: field.numValues,
+                                    isArray: field.isArray
+                                },
+                                data_set: '@context.dataSetId'
+                            }
+                        ])
+                        showMessage("Field " + fieldLabel + " has been submitted to Fractalis.")
+                    },
+                    error: function(data){
+                        showError( data.responseText );
+                    }
+                });
+            }
+
+            $('#fieldTypeahead').on('typeahead:selected', function(e, data) {
+                addFieldToFractalis();
+            });
+
+            $('#fieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    addFieldToFractalis();
+                }
+            });
+
+            $('#fractalisAddButton').click(addWidget);
+
+            const fjs = fractal.init({
+                handler: 'ada',
+                dataSource: "https://" + location.host,
+                fractalisNode: '@fractalisServerUrl',
+                getAuth () {
+                    return {token: "@Html(sessionId)"}
+//                    return {token: getCookie("PLAY2AUTH_SESS_ID")}
+                },
+                options: {
+                    controlPanelPosition: 'right'
+                }
+            })
+
+            fjs.clearCache();
+
+            function addWidget() {
+                var widgetType = $("#widgetSelection").val()
+                var randomNum = Math.random().toString()
+                var divName = widgetType + "-div" + randomNum.split('.')[1]
+
+                $("#widgetsDiv").append('<div class="col-md-6 col-sm-12" id="' + divName + '" style="height: 30vw"></div>')
+                fjs.setChart(widgetType, '#' + divName)
+            }
+        });
+    </script>
+}
+
+@main(Messages("fractalis.title", domainName), Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs()), None, Some(bottomResources)) {
+
+    <div class="page-header">
+        <h3>
+            @Messages("fractalis.title", domainName)
+        </h3>
+    </div>
+
+    <div id="actions">
+        @actions
+    </div>
+    <hr/>
+    <div id="widgetsDiv" class="row">
+    </div>
+}

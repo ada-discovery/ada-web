@@ -1,0 +1,36 @@
+@(element: Html)
+
+<div align="middle">
+    <div class="well">
+        <div class="row">
+            <span id="arrowUp" class="glyphicon glyphicon-arrow-up"></span>
+        </div>
+        <div class="row">
+            <button id="showHideTableButton" type="button" class="btn btn-default btn-sm" data-toggle="collapse" data-target="#table-panel">
+                Hide Table</button>
+        </div>
+        <div class="row">
+            <span id="arrowDown" class="glyphicon glyphicon-arrow-down" style="display:none"></span>
+        </div>
+    </div>
+</div>
+
+<div id="table-panel" class="collapse in">
+    @element
+</div>
+
+<script type="text/javascript">
+        var tableShown = true
+        $('#showHideTableButton').on('click', function() {
+            if (tableShown) {
+                $('#arrowUp').hide();
+                $('#arrowDown').show();
+                $('#showHideTableButton').html("Show Table");
+            } else {
+                $('#arrowUp').show();
+                $('#arrowDown').hide();
+                $('#showHideTableButton').html("Hide Table");
+            }
+            tableShown = !tableShown;
+        });
+</script>

@@ -1,0 +1,15 @@
+@import org.ada.web.models.Widget
+@import views.html.widget.widget
+
+@(
+    widgets : Traversable[Widget],
+    gridWidth: Int = 3
+)
+
+<div class="row">
+    @widgets.map { widgetSpec =>
+        <div class="col-md-@{widgetSpec.displayOptions.gridWidth.getOrElse(gridWidth)} @{if(widgetSpec.displayOptions.gridOffset.isDefined) "col-md-offset-" + widgetSpec.displayOptions.gridOffset.get.toString}">
+            @widget(widgetSpec)
+        </div>
+    }
+</div>

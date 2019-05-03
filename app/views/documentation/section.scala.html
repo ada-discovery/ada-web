@@ -1,0 +1,21 @@
+@(
+    id: Option[String] = None,
+    caption: Option[String] = None,
+    rightPanelOffset: Int = 1,
+    rightPanelWidth: Int = 5,
+    withLine: Boolean = true)(
+    leftContent: Html)(
+    rightContent: Html = Html("")
+)
+
+<div @if(id.isDefined) { id="@id.get"} class="row documentation">
+    <div class="col-md-@{12 - rightPanelWidth}">
+        @if(caption.isDefined) {<h3 class="documentation-caption">@caption.get</h3>}
+        @leftContent
+    </div>
+    <div class="col-md-offset-@rightPanelOffset col-md-@{rightPanelWidth - rightPanelOffset}">
+        @rightContent
+    </div>
+</div>
+
+@if(withLine) { <hr/> }

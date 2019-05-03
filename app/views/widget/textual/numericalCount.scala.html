@@ -1,0 +1,54 @@
+@import org.ada.web.util.shorten
+@import org.ada.server.models.ChartType
+@import org.ada.web.models.NumericalCountWidget
+@import views.html.table.displayTable
+@import org.ada.web.util.{typeColumns, typeColumn}
+@import java.text.SimpleDateFormat
+@import org.ada.web.models.Count
+
+@(
+    elementId : String,
+    widget: NumericalCountWidget[_]
+)
+
+@displayValue(x: Any) = @{
+    x match {
+        case x: java.util.Date => new SimpleDateFormat("yyyy-MM-dd").format(x)
+        case _ => x.toString
+    }
+}
+
+@countTableAux(groupName: String, data: Traversable[Count[_]]) = {
+    @displayTable(
+        data,
+        typeColumns[Count[_]](
+            (None, shorten(widget.fieldLabel, 15), {x => displayValue(x.value)}),
+            (None, shorten(groupName, 15), _.count)
+        )
+    )
+}
+
+@countTable = {
+    <table align="center">
+        <tr class="vertical-divider" valign='top'>
+            @widget.data.map{ case (a, b) =>
+                <td>
+                    @countTableAux(a, b)
+                </td>
+            }
+        </tr>
+    </table>
+}
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var header ="<h4 align='center'> @widget.title </h4>"
+        var table = "@Html(countTable.toString().replaceAll("\n","").replaceAll("\"","\'"))";
+
+        var div = $("<div style='position: relative; overflow: hidden; height: @{widget.displayOptions.height.getOrElse(400)}px; text-align: left; line-height: normal; z-index: 0;'>")
+        div.append(header)
+        div.append(table)
+
+        $('#' + '@elementId').html(div);
+    });
+</script>

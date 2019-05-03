@@ -1,0 +1,43 @@
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+
+@(
+    itemName: String,
+    title: Option[String],
+    count: Long,
+    actions: Option[Html],
+    table: Option[Html] = None,
+    widgets: Option[Html] = None,
+    sideBar: Option[Html] = None,
+    topContentBar: Option[Html] = None,
+    topResources: Option[Html] = None,
+    bottomResources: Option[Html] = None
+)(
+    implicit context: WebContext
+)
+
+@main(title.getOrElse(Messages("overviewList.title", itemName)), sideBar, topContentBar, topResources, bottomResources) {
+
+    <div class="page-header">
+        <h3>
+            @Messages("list.count.title", count, itemName)
+        </h3>
+    </div>
+
+    @if(actions.isDefined) {
+        <div id="actions">
+            @actions.get
+        </div>
+        <hr/>
+    }
+
+    @if(widgets.isDefined){
+        @widgets.get
+
+        @if(table.isDefined && count > 0) {
+            @collapsibleElement(table.get)
+        }
+    } else {
+        @table
+    }
+}

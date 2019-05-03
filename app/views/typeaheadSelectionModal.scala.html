@@ -1,0 +1,39 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(
+    modalId: String,
+    itemId: String,
+    itemText: String,
+    idAndNamesCall: Call,
+    submitCall: Option[Call] = None
+)
+
+@modalBody = {
+    <input id="@{itemId}Typeahead" class="typeahead" style="width: 100%;" type="text" placeholder="@itemText" value="" onkeypress="submitModalOnEnter(event, this);">
+    <input id="@{itemId}Id" name="@{itemId}Id" type="hidden" value="">
+}
+
+@modalButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    @if(submitCall.isDefined) {
+        <button type="submit" id="submitButton" data-dismiss="modal" class="btn btn-primary">OK</button>
+    } else {
+        <button type="button" id="submitButton" data-dismiss="modal" class="btn btn-primary">OK</button>
+    }
+}
+
+@modal(modalId, s"Choose $itemText", modalBody, submitCall, Some(modalButtons))
+
+<script type="text/javascript">
+    $(function () {
+        var typeaheadElement = $('#@{modalId} #@{itemId}Typeahead');
+        var idElement = $('#@{modalId} #@{itemId}Id')
+
+        populateIdNameTypeahedFromUrl(typeaheadElement, idElement, '@Html(idAndNamesCall.url)');
+
+        $("#@{modalId}").on('shown.bs.modal', function () {
+            typeaheadElement.focus();
+        })
+    })
+</script>

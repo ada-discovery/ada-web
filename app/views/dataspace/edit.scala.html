@@ -1,0 +1,31 @@
+@import views.html.layout
+@import views.html.dataspace.elements
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import org.ada.web.controllers.dataset.routes.{DataSpaceMetaInfoController => dataSpaceMetaInfoRoutes}
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+
+@(
+    id: BSONObjectID,
+    form: Form[DataSpaceMetaInfo],
+    nestedDataSpaceCount: Int,
+    nestedDataSetCount: Int,
+    dataSetIdSizeMap: Map[String, Int],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: WebContext
+)
+
+@layout.edit(
+    "Study",
+    "dataSpaceMetaInfo",
+	form.errors,
+    elements(form, nestedDataSpaceCount, nestedDataSetCount, dataSetIdSizeMap, Some(id)),
+    dataSpaceMetaInfoRoutes.update(id),
+    dataSpaceMetaInfoRoutes.get(id),
+    Some(dataSpaceMetaInfoRoutes.delete(id)),
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    None
+)

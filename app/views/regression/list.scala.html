@@ -1,0 +1,81 @@
+@import views.html.layout
+@import views.html.table.paginatedTable
+@import views.html.dataset.datasetMenu
+@import views.html.filter.filterWithJs
+@import org.ada.web.controllers.ml.routes.{RegressorController => regressorRoutes}
+@import org.ada.web.util.{formatTimeElement, toHumanReadableCamel, typeColumns}
+@import org.ada.server.models.{DataSpaceMetaInfo, Field, FilterShowFieldStyle}
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.incal.spark_ml.models.regression._
+@import org.ada.server.models.Filter
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+
+@(
+    page: Page[Regressor],
+    conditions: Seq[FilterCondition],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit webContext: WebContext
+)
+
+@importLink(clazz: Class[_], title: String) = {
+    <li>
+        <a href="@regressorRoutes.create(clazz.getName)">
+        @title
+        </a>
+    </li>
+}
+
+@actions = {
+    <div class="row">
+        <div class="col-md-10">
+            @filterWithJs(
+                Filter(conditions),
+                regressorRoutes.find(),
+                Left(Seq(
+                    Field("name", Some("Name"))
+                )),
+                None,
+                Some(FilterShowFieldStyle.LabelsOnly)
+            )
+        </div>
+        <div class="dropdown pull-right">
+            <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-toggle="tooltip" title="Add Regression">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                @importLink(classOf[LinearRegression], "Linear Regression")
+                @importLink(classOf[GeneralizedLinearRegression], "Generalized Linear Regression")
+                @importLink(classOf[RegressionTree], "Regression Tree")
+                @importLink(classOf[RandomRegressionForest], "Random Regression Forest")
+                @importLink(classOf[GradientBoostRegressionTree], "Gradient Boost Regression Tree")
+            </ul>
+        </div>
+    </div>
+}
+
+@table = @{
+    paginatedTable(
+        page,
+        regressorRoutes.find(_, _, conditions),
+        typeColumns[Regressor](
+            (Some("concreteClass"), "Type", {classification => toHumanReadableCamel(classification.getClass.getSimpleName)}),
+            (Some("name"), "Name", _.name.getOrElse("")),
+            (Some("timeCreated"), "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss"))
+        ),
+        Some({ item : Any => regressorRoutes.get(item.asInstanceOf[Regressor]._id.get)})
+    )
+}
+
+@layout.list(
+    "Regression",
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    None,
+    Some(datasetMenu(dataSpaceMetaInfos))
+)

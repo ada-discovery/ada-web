@@ -1,0 +1,12 @@
+@import reactivemongo.bson.BSONObjectID
+
+@(
+    id: BSONObjectID,
+    fieldName: String,
+    fieldLabel: String,
+    isArray: Boolean
+)
+
+<a href="#" onclick="showJsonFieldValue('@id.stringify', '@fieldName', '@fieldLabel', @isArray);">
+    <span class="glyphicon glyphicon-list"></span>
+</a>

@@ -1,0 +1,16 @@
+@import helper.{inputText, FieldConstructor}
+@import views.html.elements.{inputFieldText, labelValue}
+
+@(
+    domainName : String,
+    fieldName : String,
+    form: Form[_],
+    helpText: Option[String]
+)(
+    implicit msg: play.api.i18n.Messages
+)
+
+@labelValue(fieldName, attributeLabel(domainName, fieldName), false, helpText){
+    <label class="radio-inline"><input type="radio" name="@fieldName" value="true" @if(form(fieldName).value.isDefined && form(fieldName).value.get.equals("true")) { checked="checked" }>Yes</label>
+    <label class="radio-inline"><input type="radio" name="@fieldName" value="false" @if(form(fieldName).value.isEmpty || form(fieldName).value.get.equals("false")) { checked="checked" }>No</label>
+}

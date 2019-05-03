@@ -1,0 +1,243 @@
+@import views.html.elements.{inputText, labelValue}
+@import views.html.table.{dynamicStringTable, dynamicTableJsImport}
+@import play.api.i18n.Messages
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.User
+@import org.ada.web.controllers.UserDataSetPermissions
+@import org.ada.web.controllers.DataSetControllerActionNames
+
+@(
+    form: Form[User],
+    metaInfos: Traversable[DataSpaceMetaInfo],
+    controllerActionNames: DataSetControllerActionNames
+)(
+    implicit msg: Messages, webJarAssets: WebJarAssets
+)
+
+@dynamicTableJsImport()
+
+@dataSetSelection = {
+    @labelValue("dataSetPermission", "DS Id") {
+        <select id="permission-dataSetId" name="permission-dataSetId" class="form-control">
+        @metaInfos.flatMap(_.dataSetMetaInfos).toSeq.sortBy(_.id).map { dataSet =>
+            <option value="@{dataSet.id}">@{dataSet.id}</option>
+        }
+        </select>
+    }
+}
+
+@addCustomDataSetPermissionModalBody = {
+    <div class="row">
+
+        @dataSetSelection
+
+        @labelValue("dataSetPermission", "Controller") {
+            <select id="permission-controller" name="permission-controller" class="form-control" onchange="updateActionItems()">
+                <option value="" selected>ALL</option>
+                <option value="dataSet">dataSet</option>
+                <option value="field">field</option>
+                <option value="category">category</option>
+                <option value="filter">filter</option>
+                <option value="dataview">dataview</option>
+                <option value="classificationRun">classificationRun</option>
+                <option value="regressionRun">regressionRun</option>
+                <option value="temporalClassificationRun">temporalClassificationRun</option>
+                <option value="temporalRegressionRun">temporalRegressionRun</option>
+            </select>
+        }
+
+        <div id="permission-actionDiv" style="display:none">
+            @labelValue("dataSetPermission", "Action") {
+                <select id="permission-action" name="permission-action" class="form-control">
+                    <option value=""></option>
+                </select>
+            }
+        </div>
+    </div>
+}
+
+@addViewOnlyDataSetPermissionsModalBody = {
+    <div class="row">
+        @dataSetSelection
+    </div>
+}
+
+@addStandardDataSetPermissionsModalBody = {
+    <div class="row">
+        @dataSetSelection
+    </div>
+}
+
+@addCustomDataSetPermissionModalButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-primary" id="addCustomDataSetPermissionSubmitButton" data-dismiss="modal">OK</button>
+}
+
+@addViewOnlyDataSetPermissionsModalButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-primary" onclick="addViewOnlyPermissions(); return false;" data-dismiss="modal">OK</button>
+}
+
+@addStandardDataSetPermissionsModalButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-primary" onclick="addStandardPermissions(); return false;" data-dismiss="modal">OK</button>
+}
+
+@extraButtons = {
+    <span class="dropdown">
+        <a class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown" href="#" title="Add Data Set Permission(s)">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            DS
+            <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="#" data-toggle="modal" data-target="#addViewOnlyDataSetPermissionsModal" title="Custom Permission">
+                    View-Only
+                </a>
+            </li>
+            <li>
+                <a href="#" data-toggle="modal" data-target="#addStandardDataSetPermissionsModal" title="Custom Permission">
+                    Standard
+                </a>
+            </li>
+            <li>
+                <a href="#" data-toggle="modal" data-target="#addCustomDataSetPermissionModal" title="Custom Permission">
+                    Custom
+                </a>
+            </li>
+        </ul>
+        @modal("addViewOnlyDataSetPermissionsModal", "Add View-Only Data Set Permissions", addViewOnlyDataSetPermissionsModalBody, None, Some(addViewOnlyDataSetPermissionsModalButtons))
+        @modal("addStandardDataSetPermissionsModal", "Add Standard Data Set Permissions", addStandardDataSetPermissionsModalBody, None, Some(addStandardDataSetPermissionsModalButtons))
+        @modal("addCustomDataSetPermissionModal", "Add Custom Data Set Permission", addCustomDataSetPermissionModalBody, None, Some(addCustomDataSetPermissionModalButtons))
+    </span>
+}
+
+@inputText("user", "name", form)
+@inputText("user", "email", form)
+@labelValue("user", "Roles"){
+    @dynamicStringTable("role", form.value.map(_.roles).getOrElse(Nil))
+}
+@labelValue("user", "Permissions"){
+    @dynamicStringTable("permission", form.value.map(_.permissions.sorted).getOrElse(Nil), false, None, Some(extraButtons), true, 8)
+}
+
+@actionNamesAsString(list: Traversable[String]) = @{
+    Html(list.map(s => "\"" + s + "\"").mkString(","))
+}
+
+<script type="text/javascript">
+    $(function () {
+        handleModalButtonEnterPressed("addCustomDataSetPermissionModal", "addCustomDataSetPermissionSubmitButton", addCustomDataSetPermission, true)
+        $("#permission-controller").val("")
+    })
+
+    var dataSetActionNames = [@actionNamesAsString(controllerActionNames.dataSetActions)]
+    var fieldActionNames = [@actionNamesAsString(controllerActionNames.fieldActions)]
+    var categoryActionNames = [@actionNamesAsString(controllerActionNames.categoryActions)]
+    var filterActionNames = [@actionNamesAsString(controllerActionNames.filterActions)]
+    var dataViewActionNames = [@actionNamesAsString(controllerActionNames.dataViewActions)]
+    var classificationRunActionNames = [@actionNamesAsString(controllerActionNames.classificationRunActions)]
+    var regressionRunActionNames = [@actionNamesAsString(controllerActionNames.regressionRunActions)]
+    var temporalClassificationRunActionNames = [@actionNamesAsString(controllerActionNames.temporalClassificationRunActions)]
+    var temporalRegressionRunActionNames = [@actionNamesAsString(controllerActionNames.temporalRegressionRunActions)]
+
+    function updateActionItems() {
+        var permission_controller = $('#permission-controller').val()
+        var actions = []
+
+        switch (permission_controller) {
+            case "dataSet":
+                actions = dataSetActionNames;
+                break;
+            case "field":
+                actions = fieldActionNames;
+                break;
+            case "category":
+                actions = categoryActionNames;
+                break;
+            case "filter":
+                actions = filterActionNames;
+                break;
+            case "dataview":
+                actions = dataViewActionNames;
+                break;
+            case "classificationRun":
+                actions = classificationRunActionNames;
+                break;
+            case "regressionRun":
+                actions = regressionRunActionNames;
+                break;
+            case "temporalClassificationRun":
+                actions = temporalClassificationRunActionNames;
+                break;
+            case "temporalRegressionRun":
+                actions = temporalRegressionRunActionNames;
+                break;
+        }
+
+        if (actions.length == 0)
+            $('#permission-actionDiv').hide()
+        else
+            $('#permission-actionDiv').show()
+
+        populateActions(actions)
+    }
+
+    function addViewOnlyPermissions() {
+        var permissions = [@{Html(UserDataSetPermissions.viewOnly.map("\"" + _ + "\"").mkString(","))}]
+
+        var dataSetId = $('#addViewOnlyDataSetPermissionsModal #permission-dataSetId').val()
+        var dsPermissionPrefix = "DS:" + dataSetId + "."
+
+        var values = $.map(permissions, function(permission, index) {
+            var entry = {};
+            entry["newItem"] = dsPermissionPrefix + permission;
+
+            return entry;
+        });
+
+        $('#permissionDiv').dynamicTable('addTableRows', values)
+    }
+
+    function addStandardPermissions() {
+        var permissions = [@{Html(UserDataSetPermissions.standard.map("\"" + _ + "\"").mkString(","))}]
+
+        var dataSetId = $('#addStandardDataSetPermissionsModal #permission-dataSetId').val()
+        var dsPermissionPrefix = "DS:" + dataSetId + "."
+
+        var values = $.map(permissions, function(permission, index) {
+            var entry = {};
+            entry["newItem"] = dsPermissionPrefix + permission;
+
+            return entry;
+        });
+
+        $('#permissionDiv').dynamicTable('addTableRows', values)
+    }
+
+    function addCustomDataSetPermission() {
+        var dataSetId = $('#addCustomDataSetPermissionModal #permission-dataSetId').val()
+        var controller = $('#addCustomDataSetPermissionModal #permission-controller').val()
+        var action = $('#addCustomDataSetPermissionModal #permission-action').val()
+
+        var dsPermission = "DS:" + dataSetId
+        if (controller) {
+            dsPermission = dsPermission + "." + controller
+            if (action)
+                dsPermission = dsPermission + "." + action
+        }
+
+        var values = {};
+        values["newItem"] = dsPermission;
+        $('#permissionDiv').dynamicTable('addTableRow', values)
+    }
+
+    function populateActions(values) {
+        $('#permission-action').html("");
+        $('#permission-action').append($('<option>', { value : '' }).text('ALL'));
+        $.each(values, function(i, val) {
+            $('#permission-action').append($('<option>', { value : val }).text(val));
+        });
+    }
+</script>

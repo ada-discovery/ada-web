@@ -1,0 +1,44 @@
+@import views.html.layout.carousel
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.routes.CustomDirAssets
+@import org.ada.web.controllers.routes
+
+@(customHtml: Option[String])(implicit context: WebContext)
+
+@main(
+    title = Messages("homepage.title", context.configuration.getString("project.name").getOrElse("")),
+    showMessageBox = false
+) {
+
+    <div class="page-header">
+        <div class="row">
+            <div class="col-md-12 aligned-container">
+            <div class="col-md-9 col-sm-12">
+                @Messages("homepage.title", context.configuration.getString("project.name").getOrElse(""))
+            </div>
+            <div class="col-md-3 col-sm-12">
+                <a target="_blank" href="@context.configuration.getString("project.url").get">
+                    <img class="img-responsive pull-right" src="@CustomDirAssets.versioned(context.configuration.getString("project.logo").get)" />
+                </a>
+            </div>
+            </div>
+        </div>
+    </div>
+    @if(context.configuration.getBoolean("homepage.carousel.enabled").getOrElse(true)) {
+        @carousel()
+        <hr/>
+    }
+    <div class="row-fluid jumbotron homepage-jumbotron">
+        @customHtml.map(Html(_)).getOrElse {
+            <h3>Welcome to this awesome project!</h3>
+        }
+    </div>
+    <div class="row-fluid">
+        <hr/>
+        <h4>
+            If you want to try Ada <a class="btn btn-sm btn-primary" href="@routes.AppController.dataSets()">Login</a> or <a class="btn btn-sm btn-primary" href="@routes.AppController.contact()">Request an account</a>.<br/>
+            Note that at the moment we provide accounts only for the collaborating partners, not for the general public.
+        </h4>
+    </div>
+}

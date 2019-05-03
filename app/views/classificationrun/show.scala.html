@@ -1,0 +1,30 @@
+@import views.html.layout.jsonShow
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.server.models.ml.classification.ClassificationResult.classificationResultFormat
+@import play.api.libs.json.Json
+@import play.api.libs.json.JsObject
+@import org.incal.spark_ml.models.result.ClassificationResult
+@import org.ada.web.controllers.dataset.MLRunRouter
+@import org.ada.server.models.DataSpaceMetaInfo
+
+@(
+    router: MLRunRouter)(
+    title: String,
+    item: ClassificationResult,
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@jsonShow(
+    title,
+    Json.toJson(item).as[JsObject],
+    router.plainList,
+    Some(router.delete(item._id.get)),
+    false,
+    Map(),
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs())
+)

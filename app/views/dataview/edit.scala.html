@@ -1,0 +1,41 @@
+@import views.html.layout
+@import views.html.dataset.{datasetMenu, datasetSubNav, datasetSubNavJs}
+@import org.ada.web.controllers.dataset.{DataSetWebContext, DataViewRouter}
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.server.models.{DataView, Field}
+@import reactivemongo.bson.BSONObjectID
+@import views.html.dataview.elements
+@import views.html.dataview.activateTypeahead
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    displayName: String,
+    id : BSONObjectID,
+    form: Form[DataView],
+    nameFieldMap: Map[String,  Field],
+    idFilterNameMap: Map[BSONObjectID, String],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo],
+    showFieldStyle: Option[FilterShowFieldStyle.Value],
+    updateCall: BSONObjectID => Call
+)(
+    implicit context: DataSetWebContext
+)
+
+@bottomResources = {
+    @activateTypeahead(showFieldStyle)
+    @datasetSubNavJs()
+}
+
+@layout.edit(
+    displayName,
+    "dataView",
+	form.errors,
+    elements(form, nameFieldMap, idFilterNameMap, dataSetRouter.allFields, showFieldStyle),
+    updateCall(id),
+    dataViewRouter.plainList,
+    Some(dataViewRouter.delete(id)),
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNav()),
+    Some(bottomResources)
+)

@@ -1,0 +1,162 @@
+@import org.ada.server.models.Field
+@import org.ada.server.models.Filter
+@import org.ada.server.models.CorrelationType
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.server.models.FieldTypeId
+@import views.html.dataset.{widgetsScreen, dynamicFieldTable}
+@import views.html.table.dynamicTableJsImport
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.incal.play.routes.CustomDirAssets
+
+@(
+    dataSetName: String,
+    filterSpec: Filter,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@extraActions = {
+    <div class="pull-right">
+        <button class="btn btn-success btn-sm" href="#" onclick="calcCorrelations();" data-toggle="tooltip" title="Calculate Correlations">
+            <span class="glyphicon glyphicon-play" aria-hidden="true"></span> Launch
+        </button>
+
+        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#dataViewSelectionModal" title="Add Correlation(s) To View">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>To View
+        </button>
+    </div>
+}
+
+@bottomResources = {
+
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-62349a9.min.js")"></script>
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-wrapper.min.js")"></script>
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.calcMatthewsCorrelations,
+        dataSetJsRouter.getWidgets
+    )
+
+    @helper.javascriptRouter("dataViewJsRoutes")(
+        dataViewJsRouter.addCorrelation
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            $("#widgetsDiv").html("<div id='spinnerDiv' class='row'></div><div id='heatmapDiv' class='chart-holder'></div>")
+
+            populateBooleanTypeahead("field")
+
+            $("#dataViewSelectionModal #submitButton").on("click", addCorrelationToView);
+
+            $('#fieldNameDiv #addRowButton').focus();
+
+            activateAllFilters(function(filterOrId) {calcCorrelations()});
+
+            $("#heatmapDiv").ada_charts({chartType: 'heatmap'})
+        });
+
+        function calcCorrelations() {
+            var inputFieldNames = getFieldNames()
+
+            var filterOrId = $(".filter-div").multiFilter('getIdOrModel')
+            var filterOrIdJson = JSON.stringify(filterOrId);
+
+            if (inputFieldNames.length == 0) {
+                showError("Matthews correlation calculation cannot be launched. No fields specified.");
+            } else {
+                var ajaxHandler = handleHeatmapResponse("Correlation: ", "Matthews correlation calculation finished.")
+                ajaxHandler["data"] = {
+                    "fieldNames": inputFieldNames
+                };
+
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.calcMatthewsCorrelations(filterOrIdJson).ajax(ajaxHandler);
+
+                hideErrors();
+                showMessage("Matthews correlation calculation for " + inputFieldNames.length + " fields launched.")
+            }
+        }
+
+        function addCorrelationToView() {
+            var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+            var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+
+            var fieldNames = getFieldNames()
+            var correlationType = '@CorrelationType.Matthews'
+
+            if (fieldNames.length == 0) {
+                showError("No fields defined.");
+            } else {
+                dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addCorrelation(dataViewId, correlationType).ajax({
+                    data: {
+                        "fieldNames": fieldNames
+                    },
+                    success: function() {
+                        showMessage("Correlation for the field(s) '" + fieldNames.join(", ") + "' has been successfully added to the view '" + dataViewName + "'.");
+                    },
+                    error: showErrorResponse
+                });
+            }
+        }
+
+        function getFieldNames() {
+            $('#fieldNameDiv').dynamicTable('updateModelFromTable');
+            return $('#fieldNameDiv').dynamicTable('getModel');
+        }
+
+        function addAllFields() {
+            $.ajax({
+                url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Boolean)).url)',
+                success: function (data) {
+                    $.each(data, function(index, field) {
+                        var values = {};
+                        values["fieldName"] = field[0];
+                        values["fieldTypeahead"] = field[1] ? field[1] : field[0];
+
+                        $('#fieldNameDiv').dynamicTable('addTableRow', values)
+                    });
+                }
+            });
+        }
+    </script>
+}
+
+@fieldButtons = {
+    <a id="addAllFieldsButton" class="btn btn-info btn-sm" href="#" onclick="addAllFields();" data-toggle="tooltip" title="Add All">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> All
+    </a>
+}
+
+@inputElements = {
+
+    @dynamicTableJsImport()
+
+    <div style="margin-left: 20px;">
+
+        @dynamicFieldTable(
+            "fieldName",
+            Nil,
+            true,
+            12,
+            Some(fieldButtons),
+            Some(Right(dataSetRouter.getCategoriesWithFieldsAsTreeNodes(filterSpec.conditionsOrId))),
+            "categoryTree2"
+        )
+    </div>
+}
+
+@widgetsScreen(
+    Messages("matthewsCorrelation.title", dataSetName),
+    Seq(filterSpec),
+    filterShowFieldStyle,
+    dataSpaceMetaInfos,
+    inputElements,
+    Some(extraActions),
+    bottomResources,
+    true,
+    widgetsDivOnRight = true
+)

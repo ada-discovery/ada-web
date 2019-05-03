@@ -1,0 +1,73 @@
+@import org.incal.play.util.WebUtil.matchesPath
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(
+    menus: Traversable[(String, Traversable[(Call, String, Option[Int])])]
+)(implicit context: WebContext)
+
+@topItem(text: String, id: Int) = {
+    <li style="padding-top: 15px">
+        <ul class="list-inline">
+            <li>
+                <button type="button" class="btn btn-sm btn-default btn-expand" data-toggle="collapse" data-target="#submenu-@{id}">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                </button>
+            </li>
+            <li style="color: darkgray;">
+                <h4>@text</h4>
+            </li>
+        </ul>
+    </li>
+}
+
+@listItem(call: Call, text: String, matchPrefixDepth : Option[Int] = None) = {
+    <li @if(matchesPath(call.url, context.request.path, matchPrefixDepth, toConfiguration.getString("play.http.context"))) {class="inner-node active"} else {class="inner-node"}>
+        <a href="@call">
+            <ul class="list-inline">
+                <li>
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </li>
+                <li>
+                    <h5>@text</h5>
+                </li>
+            </ul>
+        </a>
+    </li>
+}
+
+<div class="row">
+    <button id="menu-button" class="hidden visible-xs-block pull-right" data-toggle="collapse" data-target="#sidebar-navigation">
+        <span class="sr-only">Side bar menu</span>
+        <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+    </button>
+</div>
+
+<div id="sidebar-navigation" class="collapse in">
+    <ul class="sidebar-nav nav nav-pills nav-stacked">
+        @menus.toSeq.zipWithIndex.map { case (menuInfo, index) =>
+            @topItem(menuInfo._1, index)
+            <div id="submenu-@index" class="collapse clear-left submenu-div sidebar-nav nav nav-pills nav-stacked">
+                @menuInfo._2.map { item =>
+                    @listItem(item._1, item._2, item._3)
+                }
+            </div>
+        }
+    </ul>
+</div>
+
+<script type="text/javascript">
+    $('.btn-expand').on('click', function () {
+        updatePlusMinusIcon($(this));
+    });
+
+    $(".submenu-div").each(function () {
+        if ($(this).find("li.inner-node.active").size() > 0) {
+            $(this).addClass("in")
+            updatePlusMinusIcon($(this).prev());
+        }
+    });
+    if ($('#menu-button').is(':visible')) {
+        $('#sidebar-navigation').removeClass("in");
+    }
+</script>

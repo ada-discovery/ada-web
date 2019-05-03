@@ -1,0 +1,36 @@
+@(
+    title: String,
+    elements: Traversable[String],
+    editCall: Option[Call] = None,
+    deleteCall:Option[Call] = None,
+    createCall:Option[Call] = None
+)
+
+@**
+ * Generate collapsable list of items.
+ * If options for create/edit/delete calls are provided, associated buttons will be created.
+ **@
+
+<div class="panel-group">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" href="#@{"collapse-"+title.replace(" ","-")}">@title&#160;&#160;<span class="badge">@elements.size</span></a>
+            </h4>
+        </div>
+        <div id="@{"collapse-"+title.replace(" ","-")}" class="panel-collapse collapse">
+            <div class="list-group">
+            @elements.map{ e =>
+                <a class="list-group-item">
+                    @e
+                    @if(deleteCall.isDefined){<button type="submit" class="btn btn-info btn-sm pull-right" onclick="deleteCall.get()(e);">delete</button>}
+                    @if(editCall.isDefined){<button type="submit" class="btn btn-info btn-sm pull-right" onclick="editCall.get()(e);">edit</button>}
+                </a>
+            }
+            @if(createCall.isDefined){
+                <a href="@createCall.get" class="list-group-item">create</a>
+            }
+            </div>
+        </div>
+    </div>
+</div>

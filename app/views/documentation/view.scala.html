@@ -1,0 +1,63 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.documentation.core
+@import views.html.documentation.section
+@import org.incal.play.routes.CustomDirAssets
+
+@()(implicit context: WebContext)
+
+@core("Views") {
+
+    @section(rightPanelOffset = 0, withLine = false) {
+        <p>
+            View is a central presentation concept is Ada. It is a customizable container of different filters, widgets, and tables.
+            To create a new view go to <i>Setting&rarr;Views</i> and click on <img src="@CustomDirAssets.versioned("images/documentation/new_button.png")"/> located on the right side.
+            Once a view is created, widgets from the analytical sections can be added to a selected view by clicking <code>+To</code> in their screens.
+            Size and position of each widget is customizable through the options, such as width (in columns: max 12), height (in pixels), and offset.
+        </p>
+
+        <p>
+            Before you create a new filter or view, always verify if the same (or similar) view does not exist.
+            Always give a filter or a view an appropriate name reflecting its meaning and use, such as "Cases vs Controls (Motor Tests)" and avoid dummy names, e.g., "View 21” and "Peter’s Stuff".
+            Do not include too many widgets and table columns in a single view; split if necessary.
+            Note that views can be copied (<img src="@CustomDirAssets.versioned("images/documentation/copy_button.png")"/>) so if there is a view you like do not start from scratch and copy and modify the view instead.
+        </p>
+        <p>
+
+        </p>
+
+        <hr/>
+
+        <p>
+            In order to optimally execute the routines required for the widgets of a selected view, Ada provides 7 calculation strategies:
+            <ul>
+                <li>Full Data</li>
+                <li>Streamed All</li>
+                <li>Streamed Individually</li>
+                <li>Repo and Full Data</li>
+                <li>Repo and Streamed All</li>
+                <li>Repo and Streamed Individually</li>
+                <li>Auto - currently only redirects to "Repo and Full Data"... will be adjusted to take into account the underlying database, the number of rows, columns, specific data types, etc.</li>
+            </ul>
+        </p>
+    } {
+        <div class="row documentation">
+            <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/new_view.png")"/>
+        </div>
+
+        <div class="row documentation">
+            <hr/>
+            <img class="img-responsive" src="@CustomDirAssets.versioned("images/carousel/stats-small.png")"/>
+        </div>
+
+        <div class="row">
+            <div class="panel panel-warning">
+                <div class="panel-heading"><strong>Important</strong></div>
+                <div class="panel-body">
+                    Access rules for views (and filters) are quite straightforward: all non-private filters and views can be accessed or copied by all the users who have access to the underlying data set.
+                    Filter or view can be edited or deleted only by the original creator (or admin).
+                </div>
+            </div>
+        </div>
+    }
+}

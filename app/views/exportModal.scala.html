@@ -1,0 +1,13 @@
+@(
+    modalName: String,
+    title: String,
+    exportCall: Call,
+    modalBody: Html
+)
+
+@buttons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="submit" id="exportButton" class="btn btn-primary">Export</button>
+}
+
+@modal(modalName, title, modalBody, Some(exportCall), Some(buttons))

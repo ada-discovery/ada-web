@@ -1,0 +1,23 @@
+@import views.html.elements.{inputText, select}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.classification.GradientBoostTree
+@import org.incal.spark_ml.models.classification.GBTClassificationLossType
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[GradientBoostTree])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[GradientBoostTree].getName}">
+
+@inputText("gradientBoostTree", "name", form)
+
+<hr/>
+
+@inputText("gradientBoostTree", "core.maxDepth", form)
+@inputText("gradientBoostTree", "core.maxBins", form)
+@inputText("gradientBoostTree", "core.minInstancesPerNode", form)
+@inputText("gradientBoostTree", "core.minInfoGain", form)
+@inputText("gradientBoostTree", "core.seed", form)
+@inputText("gradientBoostTree", "maxIteration", form)
+@inputText("gradientBoostTree", "stepSize", form)
+@inputText("gradientBoostTree", "subsamplingRate", form)
+@select("gradientBoostTree", "lossType", form, enumToValueString(GBTClassificationLossType), true)

@@ -1,0 +1,24 @@
+@import views.html.dataset.datasetMenu
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(customHtml: Option[String])(implicit context: WebContext)
+
+@main(
+    title = "Contact",
+    showMessageBox = false
+) {
+
+    <div class="page-header">
+        <h1>Contact</h1>
+    </div>
+
+    <div class="row-fluid">
+        <address>
+            @customHtml.map(Html(_)).getOrElse {
+                <p>No contact has been provided yet.</p>
+            }
+        </address>
+    </div>
+}

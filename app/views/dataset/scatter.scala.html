@@ -1,0 +1,157 @@
+@import org.ada.server.models.Field
+@import org.ada.server.models.Filter
+@import org.ada.server.models.FilterShowFieldStyle
+@import views.html.dataset.widgetsScreen
+@import views.html.elements.fieldTypeaheadDiv
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.incal.play.routes.CustomDirAssets
+
+@(
+    dataSetName: String,
+    filterSpec: Filter,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    xField: Option[Field],
+    yField: Option[Field],
+    groupOrValueField: Option[Field],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@extraActions = {
+    <div class="pull-right">
+        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#dataViewSelectionModal" title="Add Scatter To View">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>To View
+        </button>
+    </div>
+}
+
+@bottomResources = {
+
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-62349a9.min.js")"></script>
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-wrapper.min.js")"></script>
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.calcScatter,
+        dataSetJsRouter.getWidgets
+    )
+
+    @helper.javascriptRouter("dataViewJsRoutes")(
+        dataViewJsRouter.addScatter
+    )
+
+    <script type="text/javascript">
+        $(function () {
+//            $("#widgetsDiv").html("<div id='spinnerDiv' class='row'></div><div id='scatterDiv' class='chart-holder'></div>")
+
+            populateMultiNumericalTypeahead(["xField", "yField"], true);
+            populateFullTypeahead("groupOrValueField");
+
+            $('#inputDiv #xFieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    calcScatter();
+                    return false;
+                }
+            });
+
+            $('#inputDiv #yFieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    calcScatter();
+                    return false;
+                }
+            });
+
+            $('#inputDiv #groupOrValueFieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    var groupOrValueFieldTypeahedVal = $('#inputDiv #groupOrValueFieldTypeahead').val();
+                    if (!groupOrValueFieldTypeahedVal)
+                        $('#inputDiv #groupOrValueFieldName').val("")
+
+                    calcScatter();
+                    return false;
+                }
+            });
+
+            $("#dataViewSelectionModal #submitButton").on("click", addScatterToView)
+
+            activateAllFilters(function(filterOrId) {calcScatter()});
+
+//            $("#scatterDiv").ada_charts({chartType: 'scatterplot'})
+        });
+
+        function calcScatter() {
+            var xFieldName = $("#inputDiv #xFieldName").val();
+            var xFieldLabel = $("#inputDiv #xFieldTypeahead").val();
+
+            var yFieldName = $("#inputDiv #yFieldName").val();
+            var yFieldLabel = $("#inputDiv #yFieldTypeahead").val();
+
+            var groupOrValueFieldName = $("#inputDiv #groupOrValueFieldName").val();
+            var groupOrValueFieldLabel = $("#inputDiv #groupOrValueFieldTypeahead").val();
+            if (!groupOrValueFieldName)
+                groupOrValueFieldName = null
+
+            var filterOrId = $(".filter-div").multiFilter('getIdOrModel')
+            var filterOrIdJson = JSON.stringify(filterOrId);
+
+            if (!xFieldName || !yFieldName) {
+                showError("Scatter generation cannot be launched. No x or y field specified.");
+            } else {
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.calcScatter(xFieldName, yFieldName, groupOrValueFieldName, filterOrIdJson).ajax(
+                    handleResponse("Scatter generation finished.")
+            // handleScatterResponse("Scatter generation finished.")
+                );
+
+                hideErrors();
+                showMessage("Scatter generation for the fields '" + xFieldLabel + "' and '" + yFieldLabel + "' launched.")
+            }
+        }
+
+        function addScatterToView() {
+            var xFieldName = $("#inputDiv #xFieldName").val();
+            var xFieldLabel = $("#inputDiv #xFieldTypeahead").val();
+
+            var yFieldName = $("#inputDiv #yFieldName").val();
+            var yFieldLabel = $("#inputDiv #yFieldTypeahead").val();
+
+            var groupOrValueFieldName = $("#inputDiv #groupOrValueFieldName").val();
+            var groupOrValueFieldLabel = $("#inputDiv #groupOrValueFieldTypeahead").val();
+            if (!groupOrValueFieldName)
+                groupOrValueFieldName = null
+
+            var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+            var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+
+            if (!xFieldName || !yFieldName) {
+                showError("No x or y field specified.");
+            } else {
+                dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addScatter(dataViewId, xFieldName, yFieldName, groupOrValueFieldName).ajax({
+                    success: function () {
+                        showMessage("Scatter for the fields '" + xFieldLabel + "' and '" + yFieldLabel + "' has been successfully added to the view '" + dataViewName + "'.");
+                    },
+                    error: function (data) {
+                        showErrorResponse(data);
+                    }
+                });
+            }
+        }
+    </script>
+}
+
+@inputElements = {
+    @fieldTypeaheadDiv(xField, Some("col-lg-4 col-md-12 top-padded"), "xField", "X Field")
+    @fieldTypeaheadDiv(yField, Some("col-lg-4 col-md-12 top-padded"), "yField", "Y Field")
+    @fieldTypeaheadDiv(groupOrValueField, Some("col-lg-4 col-md-12 top-padded"), "groupOrValueField", "Group or Value Field")
+}
+
+@widgetsScreen(
+    Messages("scatterAnalysis.title", dataSetName),
+    Seq(filterSpec),
+    filterShowFieldStyle,
+    dataSpaceMetaInfos,
+    inputElements,
+    Some(extraActions),
+    bottomResources
+)

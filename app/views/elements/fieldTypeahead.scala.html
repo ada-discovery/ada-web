@@ -1,0 +1,11 @@
+@import org.ada.server.models.Field
+@import views.html.elements.typeahead
+
+@(
+    field: Option[Field],
+    fieldPrefix: String = "field",
+    placeholder: String = "Field Name",
+    isLarge: Boolean = false
+)
+
+@typeahead(fieldPrefix + "Typeahead", fieldPrefix + "Name", placeholder, isLarge, field.map(_.labelOrElseName), field.map(_.name))

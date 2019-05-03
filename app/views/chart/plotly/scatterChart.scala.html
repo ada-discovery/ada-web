@@ -1,0 +1,37 @@
+@(title : String, chartElementName : String, xAxisCaption : String, yAxisCaption : String, series : Seq[(String, String, Seq[Seq[Any]])], expHeight : Option[Int] = None)
+
+<h3>@title</h3>
+<div id="@chartElementName"></div>
+<script type="text/javascript">
+
+        ID = document.getElementById('@chartElementName');
+
+        var data = [];
+        @series.map{ case (name, color, data) =>
+            var tmp = {
+                // assuming data is a series of 2D points
+                x: [
+                    @data.map{ case (value) => @value.head, }
+                ],
+                y: [
+                    @data.map{ case (value) => @value.last, }
+                ],
+                mode: 'markers',
+                type: 'scatter',
+                name: "@name",
+                hoverinfo: "x+y+text",
+                //marker: {color: @color}
+            };
+            data.push(tmp);
+        }
+
+        var layout = {
+            //height: 380,
+            //width: 480
+            title: '@chartElementName',
+            xaxis: {title: '@xAxisCaption'},
+            yaxis: {title: '@yAxisCaption'}
+        };
+
+        Plotly.newPlot(ID, data, layout);
+</script>

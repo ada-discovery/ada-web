@@ -1,0 +1,206 @@
+@import views.html.layout.main
+@import reactivemongo.play.json.BSONFormats._
+@import views.html.dataset.{widgetsScreen, datasetMenu, bootstrapSelectImport, datasetSubNavWithJs}
+@import views.html.table.dynamicTableJsImport
+@import views.html.dataset.dynamicFieldTable
+@import views.html.elements.fieldTypeahead
+@import play.api.i18n.Messages
+@import org.ada.server.models.{DataSpaceMetaInfo, Filter, FilterShowFieldStyle, FieldTypeId}
+@import views.html.elements._
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    dataSetName: String,
+    filterSpec: Filter,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@extraActions = {
+    <div class="pull-right">
+        <button class="btn btn-success btn-sm" href="#" onclick="testIndependence();" data-toggle="tooltip" title="Test Independence">
+            <span class="glyphicon glyphicon-play" aria-hidden="true"></span> Launch
+        </button>
+
+        <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#dataViewSelectionModal" title="Add Independence Test To View">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>To View
+        </button>
+    </div>
+}
+
+@bottomResources = {
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.testIndependence
+    )
+
+    @helper.javascriptRouter("dataViewJsRoutes")(
+        dataViewJsRouter.addIndependenceTest
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            populateCategoricalTypeahead("targetField")
+            populateFullTypeahead("field")
+
+            $('#inputDiv #targetFieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    testIndependence();
+                    return false;
+                }
+            });
+
+            $("#dataViewSelectionModal #submitButton").on("click", addIndependenceTestToView)
+
+            activateAllFilters(function(filterOrId) {testIndependence()});
+        });
+
+        function testIndependence() {
+            var targetFieldName = $("#targetFieldName").val();
+            var targetFieldLabel = $("#targetFieldTypeahead").val();
+
+            $('#inputFieldNameDiv').dynamicTable('updateModelFromTable');
+            var inputFieldNames = $("#inputFieldNameDiv").dynamicTable('getModel')
+
+            var filterOrId = $(".filter-div").multiFilter('getIdOrModel');
+            var filterOrIdJson = JSON.stringify(filterOrId)
+
+            if (!targetFieldName) {
+                showError("No target field specified.")
+            } else if (inputFieldNames.length == 0) {
+                showError("No input fields specified.")
+            } else {
+                $("#widgetsDiv").html("");
+                addSpinner($("#widgetsDiv"), "margin-bottom: 20px;")
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.testIndependence(filterOrIdJson).ajax({
+                    data: {
+                        "inputFieldNames": inputFieldNames,
+                        "targetFieldName": targetFieldName
+                    },
+                    success: function (data) {
+                        // filter
+                        var filterElement = $(".filter-div");
+                        filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+
+                        // table with results
+                        var table = createIndependenceTestTable(data.results, true)
+                        $("#widgetsDiv").html(table);
+                        $('#widgetsDiv').fadeIn('2000');
+
+                        showMessage("Independence test for the field '" + targetFieldLabel + "' finished.")
+                    },
+                    error: function (data) {
+                        $("#widgetsDiv").html("")
+                        showErrorResponse(data);
+                    }
+                });
+
+                hideErrors()
+                showMessage("Independence test for the field '" + targetFieldLabel + "' launched.")
+            }
+        }
+
+        function addIndependenceTestToView() {
+            var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+            var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+
+            var targetFieldName = $("#targetFieldName").val();
+            var targetFieldLabel = $("#targetFieldTypeahead").val();
+
+            $('#inputFieldNameDiv').dynamicTable('updateModelFromTable');
+            var inputFieldNames = $("#inputFieldNameDiv").dynamicTable('getModel')
+
+            if (!targetFieldName) {
+                showError("No target field specified.")
+            } else if (inputFieldNames.length == 0) {
+                showError("No input fields specified.")
+            } else {
+                dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addIndependenceTest(dataViewId, targetFieldName).ajax({
+                    data: {
+                        "inputFieldNames": inputFieldNames
+                    },
+                    success: function() {
+                        showMessage("Independence test for the field '" + targetFieldLabel + "' has been successfully added to the view '" + dataViewName + "'.");
+                    },
+                    error: showErrorResponse
+                });
+            }
+        }
+
+        function addAllNumericalFields() {
+            $.ajax({
+                url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Integer, FieldTypeId.Double, FieldTypeId.Date)).url)',
+                success: function (data) {
+                    var values = $.map(data, function(field, index) {
+                        var entry = {};
+                        entry["fieldName"] = field[0];
+                        entry["fieldTypeahead"] = field[1] ? field[1] : field[0];
+
+                        return entry;
+                    });
+                    $('#inputFieldNameDiv').dynamicTable('addTableRows', values)
+                }
+            });
+        }
+
+        function addAllFields() {
+            $.ajax({
+                url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
+                success: function (data) {
+                    var values = $.map(data, function(field, index) {
+                        var entry = {};
+                        entry["fieldName"] = field[0];
+                        entry["fieldTypeahead"] = field[1] ? field[1] : field[0];
+
+                        return entry;
+                    });
+                    $('#inputFieldNameDiv').dynamicTable('addTableRows', values)
+                }
+            });
+        }
+    </script>
+}
+
+@fieldButtons = {
+    <a id="addAllFieldsButton" class="btn btn-info btn-sm" href="#" onclick="addAllFields();" data-toggle="tooltip" title="Add All">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> All
+    </a>
+
+    <a id="addAllNumericalFieldsButton" class="btn btn-info btn-sm" href="#" onclick="addAllNumericalFields();" data-toggle="tooltip" title="Add All Numerical">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> All Numerical
+    </a>
+}
+
+@inputElements = {
+
+    @dynamicTableJsImport()
+
+    @fieldTypeaheadDiv(None, Some("col-md-12 col-sm-12"), "targetField", "Target")
+
+    <div class="col-md-12 top-padded">
+        @dynamicFieldTable(
+            "inputFieldName",
+            Nil,
+            true,
+            12,
+            Some(fieldButtons),
+            Some(Right(dataSetRouter.getCategoriesWithFieldsAsTreeNodes(filterSpec.conditionsOrId))),
+            "categoryTree2"
+        )
+    </div>
+}
+
+@widgetsScreen(
+    Messages("independenceTest.title", dataSetName),
+    Seq(filterSpec),
+    filterShowFieldStyle,
+    dataSpaceMetaInfos,
+    inputElements,
+    Some(extraActions),
+    bottomResources,
+    true,
+    widgetsDivOnRight = true
+)

@@ -1,0 +1,24 @@
+@import views.html.elements.{inputText, checkbox, select}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.classification.LogisticRegression
+@import org.incal.spark_ml.models.classification.LogisticModelFamily
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[LogisticRegression])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[LogisticRegression].getName}">
+
+@inputText("logisticRegression", "name", form)
+
+<hr/>
+
+@inputText("logisticRegression", "maxIteration", form)
+@inputText("logisticRegression", "regularization", form)
+@inputText("logisticRegression", "elasticMixingRatio", form)
+@inputText("logisticRegression", "tolerance", form)
+@checkbox("logisticRegression", "fitIntercept", form)
+@select("logisticRegression", "family", form, enumToValueString(LogisticModelFamily), true)
+@checkbox("logisticRegression", "standardization", form)
+@inputText("logisticRegression", "aggregationDepth", form)
+@inputText("logisticRegression", "threshold", form)
+@inputText("logisticRegression", "thresholds", form)

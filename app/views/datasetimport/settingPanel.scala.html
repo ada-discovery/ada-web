@@ -1,0 +1,70 @@
+@import org.ada.web.util.toHumanReadableCamel
+@import views.html.elements._
+@import org.ada.server.models.{StorageType, FilterShowFieldStyle}
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[_])(implicit msg: Messages)
+
+<div class="panel panel-default">
+    <div class="panel-heading">Setting</div>
+    <div class="panel-body">
+        @yesNoRadio("dataSetImport", "includeSetting", form, Some("Do you want to specify a setting now?"))
+        <div id="settingDiv" style="display:none">
+            <input type="hidden" id="setting_dataSetId" name="setting.dataSetId" value="">
+            <hr/>
+            @select("dataSetImport", "setting.storageType", form, enumToValueString(StorageType), true)
+            <a class="pull-right" href="#advancedSetting" data-toggle="collapse">Show Advanced</a>
+
+            <div id="advancedSetting" class="collapse">
+                @checkbox("dataSetImport", "setting.mongoAutoCreateIndexForProjection", form)
+                @inputText("dataSetImport", "setting.keyFieldName", form)
+                @inputText("dataSetImport", "setting.exportOrderByFieldName", form)
+                @inputText("dataSetImport", "setting.defaultDistributionFieldName", form)
+                @inputText("dataSetImport", "setting.defaultScatterXFieldName", form)
+                @inputText("dataSetImport", "setting.defaultScatterYFieldName", form)
+                @inputText("dataSetImport", "setting.defaultCumulativeCountFieldName", form)
+                @select("dataSetImport", "setting.filterShowFieldStyle", form, enumToValueString(FilterShowFieldStyle), true)
+                @checkbox("dataSetImport", "setting.filterShowNonNullCount", form)
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        var hasSetting = @(form.data.keys.exists(_.startsWith("setting.")))
+
+        if (hasSetting) {
+            $('input[name="includeSetting"][value="true"]').prop('checked', true);
+            $('input[name="includeSetting"][value="false"]').prop('checked', false);
+            $('#settingDiv').show()
+        } else {
+            $('input[name="includeSetting"][value="false"]').prop('checked', true);
+            $('input[name="includeSetting"][value="true"]').prop('checked', false);
+        }
+    });
+
+    $('input[name="includeSetting"]').change(function() {
+        var includeSetting = $('input[name="includeSetting"]:checked').val() == "true"
+        if (includeSetting)
+            $('#settingDiv').show()
+        else
+            $('#settingDiv').hide()
+    })
+
+    function handleSettingSubmission() {
+        var includeSetting = $('input[name="includeSetting"]:checked').val() == "true"
+        if (includeSetting)
+            $('#setting_dataSetId').val($('#dataSetId').val())
+        else {
+            // if setting should not be included remove all setting fields from the form by erasing their names before submit
+            $.each($("input[name^='setting\\.']"), function () {
+                $(this).attr("name", '');
+            });
+
+            $.each($("select[name^='setting\\.']"), function () {
+                $(this).attr("name", '');
+            });
+        }
+    }
+</script>

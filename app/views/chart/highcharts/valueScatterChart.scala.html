@@ -1,0 +1,23 @@
+@import org.ada.web.util.{shorten, toChartData}
+@import org.ada.web.models.ValueScatterWidget
+
+@(
+    elementId: String,
+    widget: ValueScatterWidget[_, _, _]
+)
+
+<script type="text/javascript">
+    $(function () {
+        var isXDate = @{widget.data.headOption.map(_._1.isInstanceOf[java.util.Date]).getOrElse(false)};
+        var isYDate = @{widget.data.headOption.map(_._2.isInstanceOf[java.util.Date]).getOrElse(false)};
+
+        var xDataType = (isXDate) ? 'datetime' : null;
+        var yDataType = (isYDate) ? 'datetime' : null;
+
+        var datas = [{ data: [@toChartData(widget).map { case (x, y, z) => {x: @x, y: @y, z: @z}, }]}];
+
+        scatterChart('@widget.title', '@{elementId}', '@{widget.xAxisCaption}', '@{widget.yAxisCaption}',
+            datas, false, null, @{widget.displayOptions.height.getOrElse(400)}, xDataType, yDataType, false, false
+        )
+    });
+</script>

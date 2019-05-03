@@ -1,0 +1,33 @@
+@import org.ada.server.models.dataimport.SynapseDataSetImport
+@import views.html.elements.{inputText, checkbox}
+@import play.api.i18n.Messages
+@import views.html.datasetimport.{settingPanel, dataSetInfoPanel, schedulePanel, dataViewPanel}
+
+@(form: Form[SynapseDataSetImport])(implicit msg: Messages)
+
+@dataSetInfoPanel("synapseDataSetImport", form)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[SynapseDataSetImport].getName}">
+
+<div class="panel panel-default">
+    <div class="panel-heading">Synapse Import Specifics</div>
+    <div class="panel-body">
+        @inputText("synapseDataSetImport", "tableId", form)
+        @inputText("synapseDataSetImport", "batchSize", form)
+        @checkbox("synapseDataSetImport", "downloadColumnFiles", form)
+        @inputText("synapseDataSetImport", "bulkDownloadGroupNumber", form)
+    </div>
+</div>
+
+@settingPanel(form)
+@dataViewPanel(form)
+@schedulePanel(form)
+
+<script type="text/javascript">
+    $('form').submit(function(ev) {
+        ev.preventDefault();
+        handleSettingSubmission();
+        handleDataViewSubmission();
+        this.submit();
+    });
+</script>

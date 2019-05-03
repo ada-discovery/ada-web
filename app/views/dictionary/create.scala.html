@@ -1,0 +1,35 @@
+@import org.ada.web.controllers.dataset.{DataSetWebContext, DictionaryRouter}
+@import views.html.layout
+@import views.html.elements._
+@import org.ada.server.models.{Category, Field}
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    displayName : String,
+	form: Form[Field],
+	categories: Traversable[Category]
+)(
+    implicit context: DataSetWebContext
+)
+
+@elements = {
+    @inputText("field", "name", form)
+    @inputText("field", "label", form)
+    @inputText("field", "fieldType", form)
+    @inputText("field", "isArray", form)
+    @inputText("field", "numValues", form)
+    @inputText("field", "displayDecimalPlaces", form)
+    @inputText("field", "displayTrueValue", form)
+    @inputText("field", "displayFalseValue", form)
+    @inputText("field", "aliases", form)
+    @select("field", "categoryId", form, categories.map(cat => (cat._id.get.stringify, cat.name)).toSeq, true)
+}
+
+@layout.create(
+    displayName,
+    "field",
+	form,
+    elements,
+    dictionaryRouter.save,
+    dictionaryRouter.plainList
+)

@@ -1,0 +1,24 @@
+@import views.html.layout
+@import views.html.datasetsetting.{elements, fieldTypeaheadsActivationJs}
+@import org.ada.web.controllers.dataset.routes.{DataSetSettingController => dataSetSettingRoutes}
+@import org.ada.server.models.DataSetSetting
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    id: reactivemongo.bson.BSONObjectID,
+    form: Form[DataSetSetting]
+)(
+    implicit context: DataSetWebContext
+)
+
+@layout.edit(
+    "Data Set Setting",
+    "dataSetSetting",
+    errors = form.errors,
+    elements = elements(form),
+    updateCall = dataSetSettingRoutes.update(id),
+    cancelCall = dataSetSettingRoutes.listAll(),
+    deleteCall = None,
+    bottomResources = Some(fieldTypeaheadsActivationJs(form))
+)

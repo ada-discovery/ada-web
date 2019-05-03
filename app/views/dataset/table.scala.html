@@ -1,0 +1,204 @@
+@import org.ada.server.models.Field
+@import org.ada.server.models.Filter
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.server.models.DataSpaceMetaInfo
+@import views.html.dataset.{widgetsScreen, dynamicFieldTable, dataSetExportDropdown}
+@import views.html.table.dynamicTableJsImport
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    dataSetName: String,
+    filterSpec: Filter,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@extraActions = {
+    <div class="pull-right">
+        <ul class="list-inline">
+            <li>
+                <button class="btn btn-info btn-sm" type="button" data-toggle="modal" data-target="#dataViewSelectionModal" title="Add Table To View">
+                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>To View
+                </button>
+            </li>
+            <li>
+                @dataSetExportDropdown(
+                    dataSetName,
+                    dataSetRouter.exportTableAsCsv(Nil, _, true, None, _, _, true, true),
+                    dataSetRouter.exportTableAsJson(Nil, _, _, true),
+                    filterShowFieldStyle
+                )
+            </li>
+    </div>
+}
+
+@bottomResources = {
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.generateTableWithFilter
+    )
+
+    @helper.javascriptRouter("dataViewJsRoutes")(
+        dataViewJsRouter.addTableFields
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            populateFullTypeahead("field")
+
+            $("#dataViewSelectionModal #submitButton").on("click", addTableToView);
+
+            $('#fieldNameDiv #addRowButton').focus();
+
+            activateAllFilters(function(filterOrId) {generateTable()});
+
+            $("#fieldNameDiv").on("rowAdded", generateTable)
+            $("#fieldNameDiv").on("rowsAdded", generateTable)
+            $("#fieldNameDiv").on("rowsRemoved", generateTable)
+
+            // add filter
+            var filterElement = $(".filter-div")
+            addFilterModelBeforeModalSubmit("exportFilteredCsvModal", filterElement, "filter");
+            addFilterModelBeforeModalSubmit("exportFilteredTableCsvModal", filterElement, "filter");
+            addFilterModelBeforeModalSubmit("exportFilteredJsonModal", filterElement, "filter");
+            addFilterModelBeforeModalSubmit("exportFilteredTableJsonModal", filterElement, "filter");
+
+            // add table columns
+            addTableColumnsBeforeModalSubmit("exportFilteredTableCsvModal")
+            addTableColumnsBeforeModalSubmit("exportFilteredTableJsonModal")
+        });
+
+        function addTableColumnsBeforeModalSubmit(modalId) {
+            $('#' + modalId + ' form').submit(function(event) {
+                event.preventDefault();
+
+                $(this).find("input[name='tableColumnNames']").remove()
+
+                var params = {}
+
+                params["tableColumnNames"] = getFieldNames()
+                addParams($(this), params)
+
+                // submit
+                this.submit();
+            });
+        }
+
+        function generateTable() {
+            var fieldNames = getFieldNames()
+
+            var filterOrId = $(".filter-div").multiFilter('getIdOrModel')
+            var filterOrIdJson = JSON.stringify(filterOrId);
+
+            if (fieldNames.length == 0) {
+                showError("Table generation cannot be launched. No fields specified.");
+            } else if (fieldNames.length > 50) {
+                showError("Table generation cannot be launched. The maximum number of fields allowed is 50 but " + inputFieldNames.length + " were given.");
+            } else {
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.generateTableWithFilter(0, "", fieldNames, filterOrIdJson).ajax({
+                    success: function (data) {
+                        // filter
+                        var filterElement = $(".filter-div");
+                        filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+
+                        // table
+                        var tableDiv = $("#widgetsDiv .table-div")
+                        if (tableDiv.length == 0) {
+                            $("#widgetsDiv").html("<div class='table-div'></div>")
+                            tableDiv = $("#widgetsDiv .table-div")
+                        }
+                        tableDiv.html(data.table)
+                        showMessage("Table generation finished.")
+                    },
+                    error: function (data) {
+                        $("#widgetsDiv").html("")
+                        showErrorResponse(data);
+                    }
+                })
+
+                hideErrors();
+                showMessage("Table generation for " + fieldNames.length + " fields launched.")
+            }
+        }
+
+        function addTableToView() {
+            var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+            var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+
+            var fieldNames = getFieldNames()
+
+            if (fieldNames.length == 0) {
+                showError("No fields defined.");
+            } else if (fieldNames.length > 50) {
+                showError("The maximum number of fields allowed is 50 but " + fieldNames.length + " were given.");
+            } else {
+                dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addTableFields(dataViewId, fieldNames).ajax({
+                    success: function() {
+                        showMessage("Table for the field(s) '" + fieldNames.join(", ") + "' has been successfully added to the view '" + dataViewName + "'.");
+                    },
+                    error: showErrorResponse
+                });
+            }
+        }
+
+        function getFieldNames() {
+            $('#fieldNameDiv').dynamicTable('updateModelFromTable');
+            return $('#fieldNameDiv').dynamicTable('getModel');
+        }
+
+        function addAllFields() {
+            $.ajax({
+                url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
+                success: function (data) {
+                    var values = $.map(data, function(field, index) {
+                        var entry = {};
+                        entry["fieldName"] = field[0];
+                        entry["fieldTypeahead"] = field[1] ? field[1] : field[0];
+
+                        return entry;
+                    });
+                    $('#fieldNameDiv').dynamicTable('addTableRows', values)
+                }
+            });
+        }
+    </script>
+}
+
+@fieldButtons = {
+    <a id="addAllFieldsButton" class="btn btn-info btn-sm" href="#" onclick="addAllFields();" data-toggle="tooltip" title="Add All">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> All
+    </a>
+}
+
+@inputElements = {
+
+    @dynamicTableJsImport()
+
+    <div style="margin-left: 20px;">
+
+        @dynamicFieldTable(
+            "fieldName",
+            Nil,
+            true,
+            12,
+            Some(fieldButtons),
+            Some(Right(dataSetRouter.getCategoriesWithFieldsAsTreeNodes(filterSpec.conditionsOrId))),
+            "categoryTree2"
+        )
+    </div>
+}
+
+@widgetsScreen(
+    Messages("table.title", dataSetName),
+    Seq(filterSpec),
+    filterShowFieldStyle,
+    dataSpaceMetaInfos,
+    inputElements,
+    Some(extraActions),
+    bottomResources,
+    true,
+    widgetsDivOnRight = true
+)

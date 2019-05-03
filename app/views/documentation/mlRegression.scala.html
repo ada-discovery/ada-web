@@ -1,0 +1,63 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.documentation.core
+@import views.html.documentation.imageSection
+@import views.html.documentation.sectionNavigation
+
+@()(implicit context: WebContext)
+
+@core("Regression") {
+
+    @sectionNavigation()(
+        ("section_models", "Models"),
+        ("section_evaluation_metrics", "Evaluation Metrics"),
+        ("section_feature_normalization_and_scaling", "Feature Normalization and Scaling"),
+        ("section_other_functionality", "Other Functionality")
+    )
+
+    @imageSection(id = Some("section_models"), caption = Some("Models")) {
+        <p>
+            <ul>
+                <li>Linear regression</li>
+                <li>Generalized linear regression</li>
+                <li>Regression tree</li>
+                <li>Random regression forest</li>
+                <li>Gradient boost regression tree</li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_evaluation_metrics"), caption = Some("Evaluation Metrics")) {
+        <p>
+            <ul>
+                <li>MSE</li>
+                <li>RMSE</li>
+                <li>MAE</li>
+                <li>R2</li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_feature_normalization_and_scaling"), caption = Some("Feature Normalization and Scaling")) {
+        <p>
+            <ul>
+                <li>Standard scaling (z-score)</li>
+                <li>Min-max 0-1 scaling</li>
+                <li>Min-max -1-1 scaling</li>
+                <li>Max absolute scaling</li>
+                <li>L1 normalization</li>
+                <li>L2 normalization</li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_other_functionality"), caption = Some("Other Functionality"), withLine = false) {
+        <p>
+            <ul>
+                <li>Cross-validation (param grid)</li>
+                <li>Dimensionality reduction by PCA</li>
+                <li>Results storable to DB</li>
+            </ul>
+        </p>
+    }
+}

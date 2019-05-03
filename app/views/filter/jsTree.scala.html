@@ -1,0 +1,76 @@
+@import play.api.libs.json.JsValue
+
+@import play.api.libs.json.Json
+@import play.api.libs.json.JsObject
+
+@(
+    dataOrUrl: Either[JsValue, String],
+    treeElementId: String = "jstree1",
+    typesSetting: JsObject,
+    nodeSelectedFun: Option[Html] = None
+)
+
+<div class="row jsTree-filter">
+    <div class="col-md-9">
+        <input id="@{treeElementId}-Search-Input" class="jsTree-search-input" placeholder="Field Name or Label"></input>
+    </div>
+    <div class="col-md-3">
+        <a class="btn btn-info btn-sm" id="collapseAll" href="#" data-toggle="tooltip" title="Collapse All" onclick="$('#categoryTree').jstree('close_all');return false;">
+            <span class="glyphicon glyphicon-resize-small" aria-hidden="true"></span>
+        </a>
+        <a class="btn btn-info btn-sm" id="expandAll" href="#" data-toggle="tooltip" title="Expand All" onclick="$('#categoryTree').jstree('open_all');return false;">
+            <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
+        </a>
+    </div>
+</div>
+<div class="row jsTree-tree">
+    <div id="@treeElementId" class="col-md-12">
+    </div>
+    <hr/>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        var jsonData =
+            @if(dataOrUrl.isLeft) {
+                JSON.parse('@Html(Json.stringify(dataOrUrl.left.get))')
+            } else {
+                null
+            }
+
+        var dataUrl =
+            @if(dataOrUrl.isRight) {
+                '@Html(dataOrUrl.right.get)'
+            } else {
+                null
+            }
+
+        var data =
+            (jsonData) ?
+                jsonData
+            :
+                {'url' : dataUrl, 'data' : function (node) {return { 'id' : node.id };}}
+
+        var nodeSelectedFun =
+            @if(nodeSelectedFun.isDefined) {
+                @nodeSelectedFun.get
+            } else {
+                null
+            }
+
+        $("#@{treeElementId}-Search-Input").keypress(function (e) {
+            if (e.which == 13) {
+                var searchString = $(this).val();
+                $('#@treeElementId').jstree('search', searchString);
+                e.stopPropagation();
+                e.preventDefault();
+            }
+        });
+
+        $("#@treeElementId").jsTreeWidget({
+            data: data,
+            typesSetting: @Html(Json.stringify(typesSetting)),
+            nodeSelectedFun: nodeSelectedFun
+        });
+    });
+</script>

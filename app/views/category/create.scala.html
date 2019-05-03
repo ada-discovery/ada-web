@@ -1,0 +1,31 @@
+@import org.ada.server.models.Category
+@import views.html.layout
+@import views.html.elements._
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    displayName: String,
+	form: Form[Category],
+    categories: Traversable[Category]
+)(
+    implicit context: DataSetWebContext
+)
+
+@elements = {
+    @inputText("category", "name", form)
+    @inputText("category", "label", form)
+    @select("category", "parentId", form, categories.map(cat => (cat._id.get.stringify, cat.name)).toSeq, true)
+    <script>
+        $("input:text:visible:first").focus();
+    </script>
+}
+
+@layout.create(
+    displayName,
+    "category",
+	form,
+    elements,
+    categoryRouter.save,
+    categoryRouter.plainList
+)

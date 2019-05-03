@@ -1,0 +1,12 @@
+@import views.html.elements.{selectEnum, labelValue}
+
+@(
+    fieldName: String,
+    label: String,
+    placeholder: Option[String] = None,
+    value: Option[String] = None
+)
+
+@labelValue(fieldName, label, false, None, 4) {
+    <input id="@fieldName" type="text" class="input-lg-full" placeholder="@placeholder.getOrElse("")" value="@value.getOrElse("")">
+}

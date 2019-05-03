@@ -1,0 +1,31 @@
+@(
+    title : String,
+    chartElementName : String,
+    xAxisCaption: Option[String],
+    yAxisCaption: Option[String],
+    elements : Seq[(String, Any)]
+)
+
+<script type="text/javascript">
+    (function() {
+        var series = [{
+            name: '@title',
+            colorByPoint: true,
+            data: [@elements.map { case (x, y) => @y, }]
+        }]
+
+        var pointFormat = '<span style="color:{point.color}">{point.x} (Count)</span>: <b>{point.y:.2f}</b><br/>'
+        columnChart(
+            '@title',
+            '@{chartElementName}',
+            [ @elements.map { case (x, y) => '@x',}],
+            series,
+            true,
+            '@{xAxisCaption.getOrElse("")}',
+            '@{yAxisCaption.getOrElse("")}',
+            true,
+            false,
+            pointFormat
+        )
+    })()
+</script>

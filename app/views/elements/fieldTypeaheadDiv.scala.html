@@ -1,0 +1,14 @@
+@import org.ada.server.models.Field
+@import views.html.elements.fieldTypeahead
+
+@(
+    field: Option[Field],
+    divClass: Option[String] = None,
+    fieldPrefix: String = "field",
+    placeholder: String = "Field Name",
+    isLarge: Boolean = true
+)
+
+<div class='@divClass.getOrElse("")'>
+    @fieldTypeahead(field, fieldPrefix, placeholder, isLarge)
+</div>

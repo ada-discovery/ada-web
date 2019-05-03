@@ -1,0 +1,107 @@
+@import views.html.documentation.core
+@import views.html.documentation.imageSection
+@import views.html.documentation.section
+@import views.html.documentation.sectionNavigation
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.routes
+
+@()(implicit context: WebContext)
+
+@sectionLink(sectionId: String, text: String) = {
+    <li><a href="#@sectionId" class="anchor-link" anchor-offset="-60">@text</a></li>
+}
+
+@core("Introduction") {
+    @imageSection(None, None, Some("images/documentation/ada_lovelance.png")) {
+        <div class="jumbotron">
+            <b>Ada</b>
+            is a performant and highly configurable system for secured integration, visualization, and collaborative analysis of heterogeneous data sets, primarily targeting clinical and experimental sources.
+        </div>
+
+        The name Ada refers to <a href="https://en.wikipedia.org/wiki/Ada_Lovelace">Ada Lovelace</a>, a British mathematician, and a coinventor of the Analytical Engine, the first model of a computer (together with Charles Babbage).
+    }
+
+    @sectionNavigation()(
+        ("section_statistics", "Statistics"),
+        ("section_data", "Data"),
+        ("section_metadata", "Metadata"),
+        ("section_import", "Import/Export"),
+        ("section_ml", "Machine Learning")
+    )
+
+    @imageSection(Some("section_statistics"), Some("Statistics"), Some("images/carousel/stats-small.png")) {
+        <p>
+            Ada allows users to conveniently explore and filter data, and calculate various statistics with embedded interactive visualizations,
+            for instance, categorical and numerical distributions, scatters, correlations, and box plots.
+        </p>
+
+        <p>
+            Moreover, one of Ada's main functionalities is to produce dynamic and personalized <it>views</it>
+            containing filters, statistical widgets, and tables, which can be saved and shared among the users.
+            This makes Ada an ideal tool for a collaborative reporting.
+        </p>
+    }
+
+    @section(Some("section_data"), Some("Data")) {
+        <p>
+            Ada has been originally developed for <a href="http://parkinson.lu">NCER-PD project</a>, for which it manages anonymized clinical data,
+            biosample meta information provided by <a href="http://www.ibbl.lu">IBBL</a>, and
+            kinetic data from <a href="http://parkinsonmpower.org">mPower mobile application</a>
+            and <a href="http://www.egait.de">eGAIT shoe sensors</a>.
+        </p>
+
+
+        <p>
+            Besides NCER-PD, the main instance of Ada currently harbours around 1300 data sets from diverse studies including <a href="http://www.denopa.de">DeNoPa</a>, <a href="http://www.ppmi-info.org">PPMI</a>, TREND, GBA, ADNI, and mPower.
+            Furthermore, Ada facilitates robust access control through LDAP authentication, and in-house user management with fine-grained permissions.
+            With a convenient user management UI, admins can simply specify which data sets are a user allowed to access and which actions on the data set he/she is allowed to perform.
+        </p>
+    } {
+        <div class="panel panel-warning">
+            <div class="panel-heading"><strong>Note</strong></div>
+            <div class="panel-body">Although, Ada has been primarily designed for Biomedicine, there is nothing preventing it to be used for other domains. For instance, we successfully imported and analyzed data sets for wine types, car acceptability, mushroom traits, and poker card combinations.</div>
+        </div>
+
+        <div class="panel panel-success">
+            <div class="panel-heading"><strong>Did you know?</strong></div>
+            <div class="panel-body">The first version of Ada 0.0.1 was released Oct 2015. What a journey!</div>
+        </div>
+    }
+
+    @imageSection(Some("section_metadata"), Some("Metadata"), Some("images/carousel/dictionary.png")) {
+        <p>
+            To define data set’s metadata Ada provides an editable dictionary, and a categorical tree with drag-and-drop manipulation.
+            Ada supports many data field types including number, date, boolean, enumeration, and json. These (collectively called <it>dictionary</it>) could be automatically inferred during an import.
+            Further, each field type can be either scalar or array, which makes Ada's type system flexible enough to cover a wide range of data origins and flavors.
+        </p>
+    }
+
+    @imageSection(Some("section_import"), Some("Import/Export"), Some("images/carousel/in-out2.gif")) {
+        <p>
+            The data set import adapters currently support three file formats:
+            CSV, JSON, and tranSMART data and mapping files, and three secured RESTful APIs:
+            <a href="https://www.project-redcap.org">REDCap</a>,
+            <a href="https://www.synapse.org">Synapse</a>, and eGait.
+        </p>
+
+        <p>
+            Any data sets provided from these sources can be added to (or removed from) Ada on-the-fly as well as scheduled for periodic execution.
+            As such, Ada has potential to serve many translational medicine or any data exploration endeavors.
+            For post-processing, filtered data can be exported into CSV, JSON, or tranSMART format.
+        </p>
+    }
+
+    @imageSection(Some("section_ml"), Some("Machine Learning"), Some("images/carousel/ml2.jpg")) {
+        <p>
+            For more advanced analysis, well-grounded machine learning and statistical approaches were integrated using Spark ML library.
+            This covers a wide variety of classification, regression, clusterization, feature selection, normalization, and time-series processing routines.
+        </p>
+    }
+
+    <div class="row documentation">
+        <p>
+            Ada is available for registered users only. If you wish to use Ada <a href="@routes.AppController.contact()">request an account</a>.
+        </p>
+    </div>
+}

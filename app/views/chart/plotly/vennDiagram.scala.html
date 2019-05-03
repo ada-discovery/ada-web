@@ -1,0 +1,65 @@
+@import org.ada.server.models.DataSetFormattersAndIds
+@import org.ada.web.util.VennLayouter
+@import org.ada.server.models.Dictionary
+
+@(chartElementName : String, elements : Seq[Dictionary])
+
+<div id="@chartElementName"></div>
+<script type="text/javascript">
+        ID = document.getElementById('@chartElementName');
+
+        @defining(VennLayouter.calculateCoordinates(elements, 600, 400)){ coordinates =>
+            var trace1 = {
+                x: [@coordinates.map{ case(_, radius, x, _) => @{x},}],
+                y: [@coordinates.map{ case(_, radius, _, y) => @{y},}],
+                type: 'scatter',
+                mode: 'text',
+                text: [@elements.map{dic: Dictionary => "@dic.dataSetId",}],
+                textfont: {
+                    color: 'black',
+                    size: 18,
+                    family: 'Arial'
+                }
+            };
+
+            var layout = {
+                title: 'Venn Diagram',
+                xaxis: {
+                    showticklabels: false,
+                    autotick: false,
+                    showgrid: false,
+                    zeroline: false
+                },
+                yaxis: {
+                    showticklabels: false,
+                    autotick: false,
+                    showgrid: false,
+                    zeroline: false
+                },
+                shapes: [
+                    @coordinates.map{ case(name, radius, x, y) =>
+                        {
+                            opacity: 0.3,
+                            xref: 'x',
+                            yref: 'y',
+                            fillcolor: 'blue',
+                            x0: @{x-radius},
+                            y0: @{y-radius},
+                            x1: @{x+radius},
+                            y1: @{y+radius},
+                            type: 'circle'
+                        },
+                    }],
+                margin: {
+                    l: 20,
+                    r: 20,
+                    b: 100
+                },
+                height: 400,
+                width: 480
+            };
+        }
+
+        var data = [trace1];
+        Plotly.newPlot(ID, data, layout);
+</script>

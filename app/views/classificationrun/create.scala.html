@@ -1,0 +1,312 @@
+@import views.html.layout.main
+@import views.html.chart.highcharts.highchartsJsImport
+@import views.html.elements._
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import views.html.mlRun._
+@import views.html.mlRun.{create => mlRunCreate}
+@import views.html.classificationrun.samplingTable
+@import views.html.mlRun.inputFieldTable
+@import org.incal.spark_ml.models.VectorScalerType
+@import views.html.elements.{fieldTypeahead, typeahead}
+@import play.api.i18n.Messages
+@import org.ada.server.models.{DataSpaceMetaInfo, FieldTypeId, FilterShowFieldStyle}
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.incal.spark_ml.models.classification.ClassificationEvalMetric
+@import org.ada.web.controllers.ml.routes
+
+@(
+    dataSetName: String,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@bottomResources = {
+
+    @helper.javascriptRouter("classificationRunJsRoutes")(
+        standardClassificationRunJsRouter.launch,
+        standardClassificationRunJsRouter.selectFeaturesAsAnovaChiSquare
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            populateCategoricalTypeahead('outputField');
+
+            populateIdLabelTypeaheadFromUrl(
+                'mlModel',
+                '@Html(routes.ClassifierController.idAndNames.url)'
+            );
+
+            $('#launchButton').on('click', launch);
+        });
+
+        function launch() {
+
+            // IO
+            $('#inputFieldNameDiv').dynamicTable('updateModelFromTable');
+            var inputFieldNames = $("#inputFieldNameDiv").dynamicTable('getModel')
+
+            var outputFieldName = $("#outputFieldName").val();
+            var outputFieldLabel = $("#outputFieldTypeahead").val();
+
+            var filterId = ($('#filterNameTypeahead').val()) ? $("#filterId").val() : null
+            var filterIdJson = (filterId) ? {'$oid': filterId} : null
+
+            var replicationFilterId = ($('#replicationFilterNameTypeahead').val()) ? $("#replicationFilterId").val() : null
+            var replicationFilterIdJson = (replicationFilterId) ? {'$oid': replicationFilterId} : null
+
+            const ioSpec = {
+                "inputFieldNames": inputFieldNames,
+                "outputFieldName": outputFieldName,
+                "filterId": filterIdJson,
+                "replicationFilterId": replicationFilterIdJson
+            }
+
+            // Classifier (ML Model)
+
+            var mlModelId = $("#mlModelId").val();
+            var mlModelIdJson = (mlModelId) ? {'$oid': mlModelId} : null
+            var mlModelName = $("#mlModelTypeahead").val();
+
+            // Learning Setting
+
+            var featuresNormalizationType = $("#featuresNormalizationType").val()
+            if (!featuresNormalizationType)
+                featuresNormalizationType = null
+            var featuresSelectionNum = $("#featuresSelectionNum").val()
+            var pcaDims = $("#pcaDims").val()
+            var trainingTestSplitRatio = $("#trainingTestSplitRatio").val()
+            $('#samplingRatioDiv').dynamicTable('updateModelFromTable');
+            var samplingJsons = $("#samplingRatioDiv").dynamicTable('getModel')
+            var samplingTuples = samplingJsons.map(function (item) {
+                var json = JSON.parse(item)
+                return [json.outputValue, parseFloat(json.samplingRatio)]
+            })
+            var repetitions = $("#repetitions").val()
+            var crossValidationFolds = $("#crossValidationFolds").val()
+            var crossValidationEvalMetric = $("#crossValidationEvalMetric").val()
+            if (!crossValidationEvalMetric)
+                crossValidationEvalMetric = null
+            var binCurvesNumBins = $("#binCurvesNumBins").val()
+
+            const learningSetting = {
+                "featuresNormalizationType": featuresNormalizationType,
+                "featuresSelectionNum": intValue(featuresSelectionNum),
+                "pcaDims": intValue(pcaDims),
+                "trainingTestSplitRatio": floatValue(trainingTestSplitRatio),
+                "samplingRatios": samplingTuples,
+                "repetitions": intValue(repetitions),
+                "crossValidationFolds": intValue(crossValidationFolds),
+                "crossValidationEvalMetric": crossValidationEvalMetric,
+                "binCurvesNumBins": intValue(binCurvesNumBins)
+            }
+
+            // Save Options
+
+            var saveResults = $("#saveResults").is(":checked")
+            var saveBinCurves = $("#saveBinCurves").is(":checked")
+
+            const runSpec = {
+                "ioSpec": ioSpec,
+                "mlModelId": mlModelIdJson,
+                "learningSetting": learningSetting
+            };
+
+            const runSpecJSON = JSON.stringify(runSpec);
+
+            $('#outputDiv').html("");
+            $("#binCurvesPanelDiv").html("");
+
+            if (!mlModelId) {
+                showError("Classification cannot be launched. No model selected.");
+                return
+            }
+
+            if (!outputFieldName) {
+                showError("Classification cannot be launched. No output field selected.");
+                return
+            }
+
+            if (inputFieldNames.length == 0) {
+                showError("Classification cannot be launched. No input fields selected.");
+                return
+            }
+
+            classificationRunJsRoutes.org.ada.web.controllers.dataset.StandardClassificationRunDispatcher.launch(runSpecJSON, saveResults, saveBinCurves).ajax({
+                success: function (data) {
+                    showMessage("'" + mlModelName + "' classification finished.")
+                    showMLOutput(data.results)
+
+                    if (data.trainingCurves.length > 0) {
+                        var columnWidth = (data.replicationCurves.length > 0) ? 4 : 6
+
+                        addBinCurves("Training", data.trainingCurves, columnWidth)
+                        addBinCurves("Test", data.testCurves, columnWidth)
+
+                        if (data.replicationCurves.length > 0)
+                            addBinCurves("Replication", data.replicationCurves, columnWidth)
+                    }
+                },
+                error: function (data) {
+                    $("#outputDiv").html("")
+                    hideMessages();
+                    showErrorResponse(data);
+                }
+            });
+
+            showMessage("Classification for the field '" + outputFieldLabel + "' using the ML model '" + mlModelName + "' launched.")
+            addSpinner($("#outputDiv"))
+
+        }
+
+        function addBinCurves(name, binCurves, columnWidth) {
+            var header ="<h4 align='center'><b>" + name + "</b></h4><hr/>"
+
+            var div = $("<div class='col-md-" + columnWidth + "'>")
+            var row = $("<div class='row'>")
+            $.each(binCurves, function (i, widget) {
+                row.append(widgetDiv(widget))
+            })
+            div.append(header)
+            div.append(row)
+            $("#binCurvesPanelDiv").append(div)
+
+            $.each(binCurves, function (i, widget) {
+                genericWidget(widget)
+            })
+        }
+
+        function selectFeaturesAsAnovaChiSquare() {
+            var outputFieldName = $("#outputFieldName").val();
+            var outputFieldLabel = $("#outputFieldTypeahead").val();
+
+            $('#inputFieldNameDiv').dynamicTable('updateModelFromTable');
+            var inputFieldNames = $("#inputFieldNameDiv").dynamicTable('getModel')
+
+            var filterId = ($('#filterNameTypeahead').val()) ? $("#filterId").val() : null
+
+            var featuresToSelectNum = $("#featuresToSelectNum").val();
+
+            if (!outputFieldName) {
+                showError("Feature selection cannot be performed. No output field selected.");
+                return
+            }
+
+            if (inputFieldNames.length == 0) {
+                showError("Feature selection cannot be performed. No input fields selected.");
+                return
+            }
+
+            classificationRunJsRoutes.org.ada.web.controllers.dataset.ClassificationRunDispatcher.selectFeaturesAsAnovaChiSquare(inputFieldNames, outputFieldName, filterId, featuresToSelectNum).ajax( {
+                success: function(selectedFieldNames) {
+                    showMessage("ANOVA/Chi-Square feature selection finished.")
+                    var tableBody = $("#inputFieldNameDiv").find("table tbody")
+                    tableBody.find('tr').each(function() {
+                        var fieldName = $(this).find("#fieldName").val();
+                        if (selectedFieldNames.indexOf(fieldName) == -1) {
+                            $(this).remove()
+                        }
+                    });
+                },
+                error: function(data){
+                    $("#outputDiv").html("")
+                    hideMessages();
+                    showErrorResponse(data);
+                }
+            });
+
+            showMessage("ANOVA/Chi-Square feature selection for the field '" + outputFieldLabel + "' launched.")
+        }
+    </script>
+}
+
+@anovaChiSquareModalBody(defaultFeaturesToSelectNum: Int) = {
+    <fieldset>
+        @labelValue("featuresToSelectNum", "Features Num", false, None, 4) {
+            <input id="featuresToSelectNum" name="featuresToSelectNum" value="@defaultFeaturesToSelectNum">
+        }
+    </fieldset>
+}
+
+@anovaChiSquareButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" id="submitButton" class="btn btn-primary" data-dismiss="modal" onclick="selectFeaturesAsAnovaChiSquare(); return false;">OK</button>
+}
+
+@extraFieldButtons =  {
+    <a id="anovaChiSquareFieldSelectionButton" class="btn btn-info btn-sm" data-toggle="modal" data-target="#anovaChiSquareFeatureSelectionModal" title="ANOVA/Chi-Square Feature Selection">
+        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>ANOVA/Chi-&#9724;
+    </a>
+    @modal("anovaChiSquareFeatureSelectionModal", "ANOVA/Chi-Square Feature Selection", anovaChiSquareModalBody(4), None, Some(anovaChiSquareButtons))
+}
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = @{
+    labelValue(key, label, false, None, 4)(valueElement)
+}
+
+@firstColumn = {
+    @labelValueAux("mlModel", "ML Model") {
+        @typeahead("mlModelTypeahead", "mlModelId", "", true)
+    }
+
+    @labelValueAux("outputField", "Output Field") {
+        @fieldTypeahead(None, "outputField", "Field Name", true)
+    }
+
+    @inputFieldTable(Some(extraFieldButtons))
+
+    @labelValueAux("filterId", "Input Data") {
+        @typeahead("filterNameTypeahead", "filterId", "Filter", true)
+    }
+
+    <hr/>
+
+    @enumField("featuresNormalizationType", "Feature Normalization", VectorScalerType)
+
+    @textField("featuresSelectionNum", "Feature Selection  Num", Some("1 to number of features"))
+
+    @textField("pcaDims", "PCA Dims", Some("1 to number of features"))
+}
+
+@secondColumn = {
+    @trainingSettingFields()
+
+    @enumField("crossValidationEvalMetric", "Cross Validation Eval Metric", ClassificationEvalMetric)
+
+    @labelValueAux("replicationFilterId", "Replication Data") {
+        @typeahead("replicationFilterNameTypeahead", "replicationFilterId", "Filter", true)
+    }
+
+    @labelValueAux("samplings", "Samplings"){
+        @samplingTable(Nil)
+    }
+
+    <hr/>
+
+    @textField("binCurvesNumBins", "Binary Classif. Curves Bins")
+
+    @labelValueAux("saveResults", "Save Results?") {
+        <input id="saveResults" type="checkbox"/>
+    }
+
+    @labelValueAux("saveBinCurves", "Save (Bin) Curves?") {
+        <input id="saveBinCurves" type="checkbox"/>
+    }
+}
+
+@extraOutput = {
+    <div id="binCurvesPanelDiv" class="row vertical-divider">
+    </div>
+}
+
+@mlRunCreate(
+    Messages("classification.title", dataSetName),
+    filterShowFieldStyle,
+    dataSpaceMetaInfos,
+    firstColumn,
+    secondColumn,
+    bottomResources,
+    Some(extraOutput)
+)

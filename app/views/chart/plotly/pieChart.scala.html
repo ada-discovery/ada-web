@@ -1,0 +1,32 @@
+@import org.ada.web.util.shorten
+
+@(title : String, chartElementName : String, elements : Seq[(String, Any)])
+
+<h3>@title</h3>
+<div id="@chartElementName"></div>
+    <script type="text/javascript">
+
+            ID = document.getElementById('@chartElementName');
+
+            var data = [{
+                labels: [
+                    @elements.map { case (label, _) =>
+                        '@shorten(label)',
+                    }
+                ],
+                values: [
+                    @elements.map { case (_, value) =>
+                        @value,
+                    }
+                ],
+                hoverinfo: 'label+percent+name',
+                type: 'pie'
+            }];
+
+            var layout = {
+                //height: 380,
+                //width: 480
+            };
+
+            Plotly.newPlot(ID, data, layout);
+    </script>

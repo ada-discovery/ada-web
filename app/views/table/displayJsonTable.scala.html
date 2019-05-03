@@ -1,0 +1,63 @@
+@import play.api.libs.json.{JsObject, JsNull, JsValue}
+@import org.ada.web.util.fieldLabel
+@import org.ada.server.dataaccess.JsonUtil
+@import reactivemongo.bson.BSONObjectID
+@import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
+@import org.ada.web.util.FieldTypeFullRenderer.FieldTypeFullRenderer
+
+@(
+    items : Traversable[JsObject],
+    headerFun : (Option[String], String) => Html,
+    fieldLabelMap : Option[Map[String, String]] = None,
+    fieldsToShow : Option[Seq[String]] = None,
+    rowClickCall : Option[JsObject => Call] = None,
+    fieldNameRenderMap: Option[Map[String, FieldTypeFullRenderer]] = None,
+    tableId: Option[String] = None
+)
+
+<div class="horizontal-scroll">
+<table @if(tableId.isDefined) {id="@tableId.get"} class="table table-striped">
+	<thead>
+		<tr>
+            @if(fieldsToShow.isDefined) {
+                @fieldsToShow.get.map { field =>
+                    @headerFun(Some(field), fieldLabel(field, fieldLabelMap))
+                }
+            } else {
+                @items.headOption.map { item =>
+                    @item.fields.map { field =>
+                        @headerFun(Some(field._1), fieldLabel(field._1, fieldLabelMap))
+                    }
+                }
+            }
+		</tr>
+	</thead>
+	<tbody>
+    	@items.map { item =>
+	    	<tr class='@if(rowClickCall.isDefined) {clickable-row}' data-href='@if(rowClickCall.isDefined){@rowClickCall.get(item)}'>
+                @if(fieldsToShow.isDefined) {
+                    @fieldsToShow.get.map { fieldName =>
+                        <td>
+                            @if(fieldNameRenderMap.isDefined && fieldNameRenderMap.get.contains(fieldName)) {
+                                @fieldNameRenderMap.get.get(fieldName).get.apply(
+                                    (item \ "_id").as[BSONObjectID],
+                                    fieldName,
+                                    (item \ fieldName).toOption
+                                )
+                            } else {
+                                @JsonUtil.toString((item \ fieldName))
+                            }
+                        </td>
+                    }
+                } else {
+                    @item.fields.map { field =>
+                        <td>
+                            @if(field._2 != JsNull) {@field._2.asOpt[String].getOrElse(field._2)}
+                        </td>
+                    }
+                }
+		    </tr>
+	    }
+	</tbody>
+</table>
+</div>

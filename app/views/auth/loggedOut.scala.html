@@ -1,0 +1,16 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.routes
+
+@()(implicit context: WebContext)
+
+@layout.main(context.configuration.getString("project.name").getOrElse("") + " Home") {
+
+    <div class="page-header">
+        <h1>Logout Succeeded</h1>
+    </div>
+
+    <h4>You can now:</h4>
+    <h4><a href="@routes.AppController.index">Return to main page</a></h4>
+    <h4><a href="@routes.AuthController.login">Log in as a different user</a></h4>
+}

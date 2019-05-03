@@ -1,0 +1,43 @@
+@import org.ada.server.models.{DataSetSetting, FilterShowFieldStyle, FieldTypeId}
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    form: Form[DataSetSetting]
+)(
+    implicit context: DataSetWebContext
+)
+
+@typeaheadJsImport()
+
+<script type="text/javascript">
+    $(function () {
+        var showOption = @form.value.flatMap(_.filterShowFieldStyle).getOrElse(FilterShowFieldStyle.NamesAndLabels).id
+
+        $.ajax({
+            url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
+            success: function (fieldNameAndLabels) {
+                var fieldNamesAndLabelsWithId = fieldNameAndLabels.concat([["_id", "_id"]])
+                var fieldNamesAndLabelsWithNone = fieldNameAndLabels.concat([["", "[None]"]])
+                var fieldNamesAndLabelsWithIdAndNone = fieldNamesAndLabelsWithId.concat([["", "[None]"]])
+
+                populateFieldTypeahed($('#keyFieldTypeahead'), $('#keyFieldName'), fieldNamesAndLabelsWithId, showOption, true);
+                populateFieldTypeahed($('#exportOrderByFieldTypeahead'), $('#exportOrderByFieldName'), fieldNamesAndLabelsWithIdAndNone, showOption, true);
+                populateFieldTypeahed($('#defaultDistributionFieldTypeahead'), $('#defaultDistributionFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahed($('#defaultCumulativeCountFieldTypeahead'), $('#defaultCumulativeCountFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+            },
+            error: showErrorResponse
+        });
+
+        $.ajax({
+            url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Double, FieldTypeId.Integer, FieldTypeId.Date)).url)',
+            success: function (fieldNameAndLabels) {
+                var fieldNamesAndLabelsWithNone = fieldNameAndLabels.concat([["", "[None]"]])
+
+                populateFieldTypeahed($('#defaultScatterXFieldTypeahead'), $('#defaultScatterXFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahed($('#defaultScatterYFieldTypeahead'), $('#defaultScatterYFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+            },
+            error: showErrorResponse
+        });
+    })
+</script>

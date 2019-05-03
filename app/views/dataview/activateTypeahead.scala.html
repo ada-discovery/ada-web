@@ -1,0 +1,97 @@
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.server.models.FieldTypeId
+
+@(
+    showFieldStyle: Option[FilterShowFieldStyle.Value]
+)(
+    implicit context: DataSetWebContext
+)
+
+@typeaheadJsImport()
+
+<script type="text/javascript">
+    $(function () {
+        var showOption = @{showFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id}
+
+        $.ajax({
+            url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
+            success: function (data) {
+                populateFieldTypeaheds(
+                    [
+                        $('#add_tableColumnNameModal #fieldTypeahead'),
+                        $('#add_widgetSpecModal #fieldNameTypeahead'),
+                        $('#edit_widgetSpecModal #fieldNameTypeahead')
+                    ],
+                    [
+                        $('#add_tableColumnNameModal #fieldName'),
+                        $('#add_widgetSpecModal #fieldName'),
+                        $('#edit_widgetSpecModal #fieldName')
+                    ],
+                    data,
+                    showOption
+                );
+            }
+        });
+
+        $.ajax({
+            url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Enum, FieldTypeId.String, FieldTypeId.Boolean, FieldTypeId.Json)).url)',
+            success: function (data) {
+                populateFieldTypeaheds(
+                    [
+                        $('#add_widgetSpecModal #groupFieldNameTypeahead'),
+                        $('#edit_widgetSpecModal #groupFieldNameTypeahead')
+                    ],
+                    [
+                        $('#add_widgetSpecModal #groupFieldName'),
+                        $('#edit_widgetSpecModal #groupFieldName')
+                    ],
+                    data,
+                    showOption
+                );
+            }
+        });
+
+        $.ajax({
+            url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Double, FieldTypeId.Integer, FieldTypeId.Date)).url)',
+            success: function (data) {
+                populateFieldTypeaheds(
+                    [
+                        $('#add_widgetSpecModal #xFieldNameTypeahead'),
+                        $('#add_widgetSpecModal #yFieldNameTypeahead'),
+                        $('#add_widgetSpecModal #valueFieldNameTypeahead'),
+                        $('#edit_widgetSpecModal #xFieldNameTypeahead'),
+                        $('#edit_widgetSpecModal #yFieldNameTypeahead'),
+                        $('#edit_widgetSpecModal #valueFieldNameTypeahead')
+                    ],
+                    [
+                        $('#add_widgetSpecModal #xFieldName'),
+                        $('#add_widgetSpecModal #yFieldName'),
+                        $('#add_widgetSpecModal #valueFieldName'),
+                        $('#edit_widgetSpecModal #xFieldName'),
+                        $('#edit_widgetSpecModal #yFieldName'),
+                        $('#edit_widgetSpecModal #valueFieldName')
+                    ],
+                    data,
+                    showOption
+                );
+            }
+        });
+
+        $.ajax({
+            url: '@Html(filterRouter.idAndNamesAccessible.url)',
+            success: function (data) {
+                var typeaheadData = data.map(function (item, index) {
+                    return {name: item._id.$oid, label: item.name};
+                });
+                populateFieldTypeahed(
+                    $('#subFilterTypeahead'),
+                    $('#subFilterId'),
+                    typeaheadData,
+                    @FilterShowFieldStyle.LabelsOnly.id
+                );
+            }
+        });
+    });
+</script>

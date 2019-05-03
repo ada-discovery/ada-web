@@ -1,0 +1,17 @@
+@import views.html.elements.{inputText, select}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.classification.NaiveBayes
+@import org.incal.spark_ml.models.classification.BayesModelType
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[NaiveBayes])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[NaiveBayes].getName}">
+
+@inputText("naiveBayes", "name", form)
+
+<hr/>
+
+@inputText("naiveBayes", "smoothing", form)
+@select("naiveBayes", "modelType", form, enumToValueString(BayesModelType), true)
+

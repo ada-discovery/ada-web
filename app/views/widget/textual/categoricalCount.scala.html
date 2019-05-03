@@ -1,0 +1,54 @@
+@import org.ada.web.util.shorten
+@import org.ada.web.models.Count
+@import org.ada.server.models.ChartType
+@import org.ada.web.models.CategoricalCountWidget
+@import org.ada.web.models.CategoricalCountWidget.groupDataByValue
+@import views.html.table.displayTable
+@import org.ada.web.util.{typeColumns, typeColumn}
+
+@(
+    elementId: String,
+    widget: CategoricalCountWidget
+)
+
+@countTableAux(groupNames: Seq[String], data: Traversable[(String, Seq[Int])]) = {
+    @displayTable(
+        data,
+        Seq(
+            typeColumn[(String, Seq[Int])](None, shorten(widget.fieldLabel, 15), _._1)
+        ) ++ groupNames.zipWithIndex.map { case (groupName, index) =>
+            typeColumn[(String, Seq[Int])](None, shorten(groupName, 15), _._2(index))
+        } ++ (
+            if (groupNames.size > 1)
+                Seq(typeColumn[(String, Seq[Int])](None, "Total", _._2.sum))
+            else
+                Nil
+        )
+    )
+}
+
+@countTable = @{
+    countTableAux(
+        widget.data.map(_._1),
+        groupDataByValue(widget) ++
+        (
+            if (widget.data.size > 1)
+                Seq(("<b><i>Total</i></b>", widget.data.map(_._2.map(_.count).sum)))
+            else
+                Nil
+        )
+    )
+}
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var header ="<h4 align='center'> @widget.title </h4>"
+        var table = "@Html(countTable.toString().replaceAll("\n","").replaceAll("\"","\'"))";
+
+        var div = $("<div style='position: relative; overflow: hidden; height: @{widget.displayOptions.height.getOrElse(400)}px; text-align: left; line-height: normal; z-index: 0;'>")
+        div.append(header)
+        div.append(table)
+
+        $('#' + '@elementId').html(div);
+    });
+</script>

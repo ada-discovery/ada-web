@@ -1,0 +1,36 @@
+@import views.html.layout
+@import views.html.elements.editableTextElements
+@import reactivemongo.bson.BSONObjectID
+@import views.html.elements._
+@import org.ada.server.models.HtmlSnippetId
+@import org.ada.server.models.HtmlSnippet
+@import org.incal.play.controllers.{WebContext, IdForm}
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.routes
+
+@(
+    data: IdForm[BSONObjectID, HtmlSnippet]
+)(
+    implicit context: WebContext
+)
+
+@elements = {
+    @inputTextReadonly("htmlSnippet", "snippetId", data.form)
+    @labelValue("content", "Content") {
+        <textarea id="content" name="content" rows="15" cols="85">@data.form("content").value.getOrElse("")</textarea>
+    }
+    @checkbox("htmlSnippet", "active", data.form)
+    @inputTextReadonly("htmlSnippet", "timeCreated", data.form)
+}
+
+@layout.edit(
+    "HTML Snippet",
+    "htmlSnippet",
+	errors = data.form.errors,
+    elements = elements,
+	updateCall = routes.HtmlSnippetController.update(data.id),
+	cancelCall = routes.HtmlSnippetController.listAll(),
+    deleteCall = Some(routes.HtmlSnippetController.delete(data.id)),
+    None,
+    None
+)

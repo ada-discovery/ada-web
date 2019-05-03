@@ -1,0 +1,19 @@
+@import views.html.elements.{inputText, select, checkbox}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.classification.LinearSupportVectorMachine
+
+@(form: Form[LinearSupportVectorMachine])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[LinearSupportVectorMachine].getName}">
+
+@inputText("linearSupportVectorMachine", "name", form)
+
+<hr/>
+
+@inputText("linearSupportVectorMachine", "aggregationDepth", form)
+@checkbox("linearSupportVectorMachine", "fitIntercept", form)
+@inputText("linearSupportVectorMachine", "maxIteration", form)
+@inputText("linearSupportVectorMachine", "regularization", form)
+@checkbox("linearSupportVectorMachine", "standardization", form)
+@inputText("linearSupportVectorMachine", "threshold", form)
+@inputText("linearSupportVectorMachine", "tolerance", form)

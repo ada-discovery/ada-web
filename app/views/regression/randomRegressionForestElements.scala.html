@@ -1,0 +1,24 @@
+@import views.html.elements.{inputText, select}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.regression.RandomRegressionForest
+@import org.incal.spark_ml.models.regression.RegressionTreeImpurity
+@import org.incal.spark_ml.models.regression.RandomRegressionForestFeatureSubsetStrategy
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[RandomRegressionForest])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[RandomRegressionForest].getName}">
+
+@inputText("randomRegressionForest", "name", form)
+
+<hr/>
+
+@inputText("randomRegressionForest", "core.maxDepth", form)
+@inputText("randomRegressionForest", "core.maxBins", form)
+@inputText("randomRegressionForest", "core.minInstancesPerNode", form)
+@inputText("randomRegressionForest", "core.minInfoGain", form)
+@inputText("randomRegressionForest", "core.seed", form)
+@inputText("randomRegressionForest", "numTrees", form)
+@inputText("randomRegressionForest", "subsamplingRate", form)
+@select("randomRegressionForest", "impurity", form, enumToValueString(RegressionTreeImpurity), true)
+@select("randomRegressionForest", "featureSubsetStrategy", form, enumToValueString(RandomRegressionForestFeatureSubsetStrategy), true)

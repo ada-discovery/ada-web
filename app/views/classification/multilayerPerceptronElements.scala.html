@@ -1,0 +1,21 @@
+@import views.html.elements.{inputText, select}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.classification.MultiLayerPerceptron
+@import org.incal.spark_ml.models.classification.MLPSolver
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[MultiLayerPerceptron])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[MultiLayerPerceptron].getName}">
+
+@inputText("multiLayerPerceptron", "name", form)
+
+<hr/>
+
+@inputText("multiLayerPerceptron", "hiddenLayers", form)
+@inputText("multiLayerPerceptron", "maxIteration", form)
+@inputText("multiLayerPerceptron", "tolerance", form)
+@inputText("multiLayerPerceptron", "blockSize", form)
+@select("multiLayerPerceptron", "solver", form, enumToValueString(MLPSolver), true)
+@inputText("multiLayerPerceptron", "seed", form)
+@inputText("multiLayerPerceptron", "stepSize", form)

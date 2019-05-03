@@ -1,0 +1,70 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.documentation.core
+@import views.html.documentation.section
+@import views.html.documentation.imageSection
+@import views.html.documentation.sectionNavigation
+
+@()(implicit context: WebContext)
+
+@core("Classification") {
+
+    @sectionNavigation()(
+        ("section_models", "Models"),
+        ("section_evaluation_metrics", "Evaluation Metrics"),
+        ("section_feature_normalization_and_scaling", "Feature Normalization and Scaling"),
+        ("section_other_functionality", "Other Functionality")
+    )
+
+    @imageSection(id = Some("section_models"), caption = Some("Models"), picPath = Some("images/carousel/ml2.jpg")) {
+        <p>
+            <ul>
+                <li>Logistic regression</li>
+                <li>Multi-layer perceptron</li>
+                <li>Decision tree</li>
+                <li>Random forest</li>
+                <li>Gradient boost tree</li>
+                <li>SVM</li>
+                <li>Naive Bayes</li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_evaluation_metrics"), caption = Some("Evaluation Metrics"), picPath = Some("images/documentation/classification_results.png")) {
+        <p>
+            <ul>
+                <li>Accuracy</li>
+                <li>Precision</li>
+                <li>Recall</li>
+                <li>F1</li>
+                <li>AUROC</li>
+                <li>AUPR</li>
+            </ul>
+        </p>
+    }
+
+    @imageSection(id = Some("section_feature_normalization_and_scaling"), caption = Some("Feature Normalization and Scaling")) {
+        <ul>
+            <li>Standard scaling (z-score)</li>
+            <li>Min-max 0-1 scaling</li>
+            <li>Min-max -1-1 scaling</li>
+            <li>Max absolute scaling</li>
+            <li>L1 normalization</li>
+            <li>L2 normalization</li>
+        </ul>
+    }
+
+    @imageSection(id = Some("section_other_functionality"), caption = Some("Other Functionality"), picPath = Some("images/documentation/roc.png"), withLine = false) {
+        <p>
+            <ul>
+                <li>ROC and other curves for binary classification</li>
+                <li>Subsampling</li>
+                <li>Cross-validation (param grid)</li>
+                <li>Feature selection by p-value (ANOVA, Chi-square)</li>
+                <li>Dimensionality reduction by PCA</li>
+                <li>Results storable to DB</li>
+                <li>Queryable and exportable to a (new) data set</li>
+            </ul>
+        </p>
+    }
+}

@@ -1,0 +1,22 @@
+@import views.html.elements.{inputText, checkbox, select}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.regression.LinearRegression
+@import org.incal.spark_ml.models.regression.RegressionSolver
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[LinearRegression])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[LinearRegression].getName}">
+
+@inputText("linearRegression", "name", form)
+
+<hr/>
+
+@inputText("linearRegression", "maxIteration", form)
+@inputText("linearRegression", "regularization", form)
+@inputText("linearRegression", "elasticMixingRatio", form)
+@inputText("linearRegression", "tolerance", form)
+@checkbox("linearRegression", "fitIntercept", form)
+@checkbox("linearRegression", "standardization", form)
+@inputText("linearRegression", "aggregationDepth", form)
+@select("linearRegression", "solver", form, enumToValueString(RegressionSolver), true)

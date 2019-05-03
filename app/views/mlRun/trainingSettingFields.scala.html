@@ -1,0 +1,17 @@
+@import views.html.elements.labelValue
+
+@()
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = @{
+    labelValue(key, label, false, None, 4)(valueElement)
+}
+
+@labelValueAux("trainingTestSplitRatio", "Training-Test Split Ratio") {
+    <input id="trainingTestSplitRatio" type="text" class="input-lg-full" placeholder="0 to 1 (default 0.8)" value="">
+}
+@labelValueAux("repetitions", "Repetitions") {
+    <input id="repetitions" type="text" class="input-lg-full" placeholder="" value="">
+}
+@labelValueAux("crossValidationFolds", "Cross Validation Folds") {
+    <input id="crossValidationFolds" type="text" class="input-lg-full" placeholder="" value="">
+}

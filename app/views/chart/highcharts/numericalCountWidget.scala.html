@@ -1,0 +1,37 @@
+@import org.ada.web.util.toChartData
+@import org.ada.server.models.ChartType
+@import org.ada.web.models.NumericalCountWidget
+
+@(
+    elementId : String,
+    widget: NumericalCountWidget[_]
+)
+
+@numericValue(x: Any) = @{
+    x match {
+        case x: java.util.Date => x.getTime.toString
+        case _ => x.toString
+    }
+}
+
+<script type="text/javascript">
+    $(function () {
+        var isDate = @{widget.data.headOption.map(_._2.headOption.map(_.value.isInstanceOf[java.util.Date])).flatten.getOrElse(false)};
+        var isDouble = @{widget.data.headOption.map(_._2.headOption.map(_.value.isInstanceOf[Double])).flatten.getOrElse(false)};
+        var dataType = (isDate) ? 'datetime' : null;
+        var datas = [@toChartData(widget).map { singleSeries => {name: '@singleSeries._1', data: [@singleSeries._2.map { case (x, y) => [@x, @y], }]}, }];
+        var totalCounts = [@widget.data.map { series => @{if(widget.isCumulative) series._2.map(_.count).max else series._2.map(_.count).sum}, }];
+        var seriesSize = datas.length
+        var height = @widget.displayOptions.height.getOrElse(400)
+        var pointFormat = function () {
+            return (@widget.useRelativeValues) ? numericalPercentPointFormat(isDate, isDouble, this) : numericalCountPointFormat(isDate, isDouble, totalCounts, this);
+        }
+        var yAxisCaption = (@widget.useRelativeValues) ? '%' : 'Count'
+
+        $('#@elementId').on('chartTypeChanged', function(event, chartType) {
+            plotNumericalChart(chartType, datas, seriesSize, '@widget.title', '@widget.fieldLabel', yAxisCaption, '@{elementId}', height, pointFormat, dataType)
+        });
+
+        plotNumericalChart('@widget.displayOptions.chartType', datas, seriesSize, '@widget.title', '@widget.fieldLabel', yAxisCaption, '@{elementId}', height, pointFormat, dataType)
+    });
+</script>

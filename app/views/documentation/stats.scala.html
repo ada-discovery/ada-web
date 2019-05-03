@@ -1,0 +1,30 @@
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.documentation.core
+@import views.html.documentation.imageSection
+
+@()(implicit context: WebContext)
+
+@core("Stats") {
+
+    @imageSection(picPath = Some("images/documentation/correlations.png"), picOffset = 0, withLine = false) {
+        <p>
+            Ada offers several analytical/statistical methods, which can be easily applied to any data set.
+            Each method has its own screen producing various visualizations/widgets for the selected fields.
+        </p>
+        <p>
+            Ada currently provides the following stats:
+            <ul>
+                <li>Categorical and numerical distributions*</li>
+                <li>Box plots*</li>
+                <li>Cumulative counts*</li>
+                <li>Scatters*</li>
+                <li>Correlations: Pearson and Matthews</li>
+                <li>Heatmaps: 2D aggregations (e.g., count, mean, and max)</li>
+                <li>Descriptive/basic stats (e.g., mean, variance, std, and count)*</li>
+                <li>Independence tests (Chi-square and ANOVA)</li>
+            </ul>
+            * - supports "group by"
+        </p>
+    }
+}

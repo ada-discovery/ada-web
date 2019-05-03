@@ -1,0 +1,31 @@
+@import org.ada.web.models.BasicStatsWidget
+
+@(
+    elementId: String,
+    widget: BasicStatsWidget
+)
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var header ="<h4 align='center'> @widget.title </h4>"
+
+        var table = createTable(["Stats", "Value"],
+            [
+                ["Min", @{"%.3f".format(widget.data.min)}],
+                ["Max", @{"%.3f".format(widget.data.max)}],
+                ["Sum", @{"%.3f".format(widget.data.sum)}],
+                ["Mean", @{"%.3f".format(widget.data.mean)}],
+                ["Variance", @{"%.3f".format(widget.data.variance)}],
+                ["STD", @{"%.3f".format(widget.data.standardDeviation)}],
+                ["# Defined", @{widget.data.definedCount}],
+                ["# Undefined", @{widget.data.undefinedCount}]
+            ]
+        );
+
+        var div = $("<div style='position: relative; overflow: hidden; height: @{widget.displayOptions.height.getOrElse(400)}px; text-align: left; line-height: normal; z-index: 0;'>")
+        div.append(header)
+        div.append(table)
+
+        $('#' + '@elementId').html(div);
+    });
+</script>

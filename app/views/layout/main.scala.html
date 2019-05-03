@@ -1,0 +1,99 @@
+@import be.objectify.deadbolt.scala.views.html.subjectPresent
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.routes.CustomDirAssets
+
+@(
+    title: String,
+    sideBar: Option[Html] = None,
+    topContentBar: Option[Html] = None,
+    topResources: Option[Html] = None,
+    bottomResources: Option[Html] = None,
+    extraMessages: Option[Html] = None,
+    showMessageBox: Boolean = true)(
+    content: Html
+)(
+    implicit context: WebContext
+)
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@title</title>
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" media="screen" href="@routes.WebJarAssets.at(context.webJarAssets.locate("bootswatch-united", "bootstrap.min.css"))">
+        <link rel="stylesheet" type="text/css" media="screen" href="@CustomDirAssets.versioned("stylesheets/main.min.css")">
+
+        @* Optional theme *@
+		@* <link rel="stylesheet" media="screen" href="@routes.WebJarAssets.at(WebJarAssets.locate("bootstrap", "bootstrap-theme.min.css"))"> *@
+        
+        <link rel="shortcut icon" type="image/png" href="@CustomDirAssets.versioned("images/favicon.png")">
+        <script src="@routes.WebJarAssets.at(context.webJarAssets.locate("jquery.min.js"))"></script>
+        <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/main.min.js")"></script>
+
+        @if(topResources.isDefined) { @topResources.get }
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	    <!--[if lt IE 9]>
+	      <script src="@routes.WebJarAssets.at(context.webJarAssets.locate("html5shiv.js"))"></script>
+	      <script src="@routes.WebJarAssets.at(context.webJarAssets.locate("respond.min.js"))"></script>
+	    <![endif]-->
+    </head>
+    <body>
+        @navbar()
+
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="menu col-md-1-75 col-sm-12">
+                    @sideBar.getOrElse("")
+                </div>
+                <div class="col-md-8-5 col-sm-12">
+                    @if(topContentBar.isDefined) {
+                        <div class="row-fluid">
+                            @topContentBar.get
+                        </div>
+                    }
+                    <div class="content">
+                        <div id="messageContainer">
+                            @flashMessages()
+                            @if(extraMessages.isDefined) {
+                                @extraMessages.get
+                            }
+                        </div>
+                        <div class="inner-content">
+                            @content
+                        </div>
+                    </div>
+                    @footer()
+                </div>
+                <div class="col-md-1-75 hidden-sm hidden-xs">
+                    @subjectPresent() {
+                        @if(showMessageBox) {
+                            @trollbox()
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap core JavaScript
+	    ================================================== -->
+	    <!-- Placed at the end of the document so the pages load faster -->
+	    <!-- Latest compiled and minified JavaScript -->
+		<script src="@routes.WebJarAssets.at(context.webJarAssets.locate("bootswatch-united", "bootstrap.min.js"))"></script>
+
+        @if(bottomResources.isDefined) {
+            @bottomResources.get
+        }
+
+        <script type="text/javascript">
+            activateRowClickable();
+            addMessageDividerIfNeeded();
+            registerMessageDividerRemoval();
+        </script>
+        @subjectPresent() {
+            @trollboxJs()
+        }
+    </body>
+</html>

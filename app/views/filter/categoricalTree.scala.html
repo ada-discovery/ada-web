@@ -1,0 +1,40 @@
+@import play.api.libs.json.Json
+@import org.ada.web.models.JsTreeNode.format
+@import views.html.filter.jsTree
+@import org.ada.server.models.Category
+@import org.ada.server.models.FieldTypeId
+@import org.ada.web.models.JsTreeNode
+
+@(
+    elementName: String,
+    categoriesOrCall: Either[Traversable[Category], Call],
+    nodeSelectedFun: Option[Html] = None
+)(
+    implicit request: Request[_], webJarAssets: WebJarAssets
+)
+
+@categoryTreeDataOrUrl = @{
+    categoriesOrCall match {
+        case Left(categories) => Left(Json.toJson(categories.map(JsTreeNode.fromCategory)))
+        case Right(call) => Right(call.url)
+    }
+}
+
+@jsTree(
+    categoryTreeDataOrUrl,
+    elementName,
+    Json.obj(
+        "default" -> Json.obj("icon" -> "glyphicon glyphicon-folder-close category-node"),
+        "category" -> Json.obj("icon" -> "glyphicon glyphicon-folder-close category-node"),
+        "category-open" -> Json.obj("icon" -> "glyphicon glyphicon-folder-open category-node"),
+        "field-" + FieldTypeId.Null -> Json.obj("icon" -> "glyphicon glyphicon-ban-circle"),
+        "field-" + FieldTypeId.Double -> Json.obj("icon" -> "glyphicon glyphicon-stats"),
+        "field-" + FieldTypeId.Integer -> Json.obj("icon" -> "glyphicon glyphicon-signal"),
+        "field-" + FieldTypeId.Boolean -> Json.obj("icon" -> "glyphicon glyphicon-check"),
+        "field-" + FieldTypeId.Enum -> Json.obj("icon" -> "glyphicon glyphicon-font"),
+        "field-" + FieldTypeId.String -> Json.obj("icon" -> "glyphicon glyphicon-bold"),
+        "field-" + FieldTypeId.Date -> Json.obj("icon" -> "glyphicon glyphicon-calendar"),
+        "field-" + FieldTypeId.Json -> Json.obj("icon" -> "glyphicon glyphicon-book")
+    ),
+    nodeSelectedFun
+)

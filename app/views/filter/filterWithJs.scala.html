@@ -1,0 +1,47 @@
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.server.models.{Field, Filter, Category}
+@import org.ada.web.controllers.dataset.FilterJsRouter
+@import views.html.filter.{filter => filterUI, filterJs, filterJsImport, jsTreeImport}
+
+@(
+    filter: Option[Filter],
+    submitCall: Call,
+    fieldsOrCall: Either[Traversable[Field], Call],
+    categoriesOrCall: Option[Either[Traversable[Category], Call]] = None,
+    showFieldStyle: Option[FilterShowFieldStyle.Value] = None,
+    filterSubmitParamName: String = "filter",
+    filterElementId: String = "filterDiv",
+    createSubmissionJson: Option[Html] = None,
+    listFiltersCall: Option[Call] = None,
+    saveFilterAjaxFun: Option[Html] = None
+)(
+    implicit request: Request[_], webJarAssets: WebJarAssets
+)
+
+@if(categoriesOrCall.isDefined) {
+    @jsTreeImport()
+}
+
+@filterUI(
+    filter,
+    showFieldStyle,
+    listFiltersCall.isDefined,
+    saveFilterAjaxFun.isDefined,
+    filterElementId,
+    categoriesOrCall
+)
+
+@filterJsImport()
+
+@filterJs(
+    filter,
+    submitCall,
+    fieldsOrCall,
+    filterSubmitParamName,
+    filterElementId,
+    createSubmissionJson,
+    None,
+    listFiltersCall,
+    saveFilterAjaxFun,
+    categoriesOrCall.map(_ => "categoryTree")
+)

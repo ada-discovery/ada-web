@@ -1,0 +1,17 @@
+@(title: Option[String] = Some("Content"))(sectionIdTexts: (String, String)*)
+
+@sectionLink(sectionId: String, text: String) = {
+    <li><a href="#@sectionId" class="anchor-link" anchor-offset="-60">@text</a></li>
+}
+
+<div class="row documentation" style="margin-left: 8px">
+    @if(title.isDefined) {
+        <h4 class="documentation-section-navigation-caption">@title.get</h4>
+    }
+    <ul>
+        @sectionIdTexts.map { case (id, text) =>
+            @sectionLink(id, text)
+        }
+    </ul>
+    <hr/>
+</div>

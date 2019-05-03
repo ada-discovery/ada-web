@@ -1,0 +1,12 @@
+@(key: String, label: Any, value: String, hasError: Boolean = false, helpText: Option[String] = None, labelGridWidth: Int = 2)
+
+@**************************************************
+* Generate input according twitter bootsrap rules *
+**************************************************@
+<div class="form-group @if(hasError) {has-error}">
+  <label for="@key" class="col-sm-@labelGridWidth control-label">@label</label>
+  <div class="col-sm-@{12 - labelGridWidth}">
+    <input class="form-control" type="text" value="@value" readonly="true"/>
+    <span class="help-block">@helpText.getOrElse("")</span>
+  </div>
+</div>

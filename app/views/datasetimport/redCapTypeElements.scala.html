@@ -1,0 +1,35 @@
+@import org.ada.server.models.dataimport.RedCapDataSetImport
+@import views.html.elements.{inputText, checkbox}
+@import play.api.i18n.Messages
+@import views.html.datasetimport.{settingPanel, dataSetInfoPanel, schedulePanel, dataViewPanel}
+
+@(form: Form[RedCapDataSetImport])(implicit msg: Messages)
+
+@dataSetInfoPanel("redCapDataSetImport", form)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[RedCapDataSetImport].getName}">
+
+<div class="panel panel-default">
+    <div class="panel-heading">REDCap Import Specifics</div>
+    <div class="panel-body">
+        @inputText("redCapDataSetImport", "url", form)
+        @inputText("redCapDataSetImport", "token", form)
+        @checkbox("redCapDataSetImport", "importDictionaryFlag", form)
+        @inputText("redCapDataSetImport", "eventNames", form)
+        @inputText("redCapDataSetImport", "categoriesToInheritFromFirstVisit", form)
+        @inputText("redCapDataSetImport", "saveBatchSize", form)
+    </div>
+</div>
+
+@settingPanel(form)
+@dataViewPanel(form)
+@schedulePanel(form)
+
+<script type="text/javascript">
+    $('form').submit(function(ev) {
+        ev.preventDefault();
+        handleSettingSubmission();
+        handleDataViewSubmission();
+        this.submit();
+    });
+</script>

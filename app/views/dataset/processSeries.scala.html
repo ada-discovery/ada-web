@@ -1,0 +1,124 @@
+@import views.html.layout.main
+@import play.api.i18n.Messages
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.FilterShowFieldStyle.NamesAndLabels
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.server.models.StorageType
+@import views.html.elements._
+@import views.html.layout
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs, seriesProcessingFieldTable}
+@import views.html.table.dynamicTableJsImport
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.server.models.DataSetSeriesProcessingSpec
+@import views.html.dataset.dynamicFieldTable
+@import views.html.layout.formErrors
+@import org.ada.web.util.enumToValueString
+
+@(
+    dataSetName: String,
+    form: Form[DataSetSeriesProcessingSpec],
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@inputTextAux(fieldName: String, defaultValue: Option[Any] = None) = @{
+    defining(form(fieldName)) { field =>
+        inputFieldText(
+            "dataSetSeriesProcessingSpec",
+            if (field.value.isEmpty && defaultValue.isDefined)
+                field.copy(value = Some(defaultValue.get.toString))
+            else
+                field,
+            Nil,
+            3
+        )
+    }
+}
+
+@selectAux(fieldName: String, values: Seq[(String, String)]) = {
+    @select("dataSetSeriesProcessingSpec", fieldName, form, values, true, Nil, 3)
+}
+
+@extraFieldButtons = {
+    <a id="addAllFieldsButton" class="btn btn-info btn-sm" href="#" onclick="addAllFields();" data-toggle="tooltip" title="Add All Fields">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> All
+    </a>
+}
+
+@bottomResources = {
+
+    @typeaheadJsImport()
+
+    <script type="text/javascript">
+        $(function () {
+            populateFieldTypeahedFromUrl(
+                $('#preserveFieldNameDiv #fieldTypeahead'),
+                $('#preserveFieldNameDiv #fieldName'),
+                '@Html(dataSetRouter.allFields.url)',
+                @filterShowFieldStyle.getOrElse(NamesAndLabels).id
+            )
+        })
+
+        function addAllFields() {
+            $.ajax({
+                url: '@Html(context.dataSetRouter.allFields.url)',
+                success: function (data) {
+                    $.each(data, function (index, field) {
+                        var values = {};
+                        values["fiel\dName"] = field.name;
+                        values["fieldTypeahead"] = field.label ? field.label : field.name;
+
+                        $('#preserveFieldNameDiv').dynamicTable('addTableRow', values)
+                    });
+                }
+            });
+        }
+    </script>
+}
+
+@main(Messages("seriesProcessing.title", dataSetName), Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs()), None, Some(bottomResources), Some(formErrors("processSeries", form.errors))) {
+
+    <div class="page-header">
+        <h3>
+            @Messages("seriesProcessing.title", dataSetName)
+        </h3>
+    </div>
+
+    @dynamicTableJsImport()
+
+    <div class="row">
+        <div class="col-md-12">
+            @helper.form(action = dataSetRouter.runSeriesProcessing) {
+                <fieldset>
+                    @inputTextAux("core.resultDataSetId", Some(context.dataSetId + "_derived"))
+                    @inputTextAux("core.resultDataSetName", Some(dataSetName + " (Derived)"))
+                    @selectAux("core.resultStorageType", enumToValueString(StorageType))
+                    @labelValue("seriesProcessingSpecs", "Series Processing Specs", false, None, 3){
+                        @seriesProcessingFieldTable(
+                            form.value.map(_.seriesProcessingSpecs).getOrElse(Nil)
+                        )
+                    }
+                    @labelValue("preserveFieldNames", "Preserve Field Names", false, None, 3) {
+                        @dynamicFieldTable(
+                            "preserveFieldName",
+                            Nil,
+                            false,
+                            5,
+                            Some(extraFieldButtons),
+                            Some(Right(dataSetRouter.getCategoriesWithFieldsAsTreeNodes(Left(Nil))))
+                        )
+                    }
+                    @inputTextAux("core.processingBatchSize", Some(20))
+                    @inputTextAux("core.saveBatchSize", Some(5))
+                </fieldset>
+
+                <div class="actions pull-right">
+                    <input type="submit" value="Submit" class="btn btn-primary">
+                </div>
+            }
+        </div>
+    </div>
+}

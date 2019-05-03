@@ -1,0 +1,18 @@
+@import org.ada.web.util.enumToValueString
+
+@(
+    elementId: String,
+    enum: Enumeration,
+    emptySelection: Boolean = true,
+    elementClass : Option[String] = None,
+    selected: Option[String] = None
+)
+
+<select id="@elementId" name="@elementId" @if(elementClass.isDefined) {class="@elementClass.get"} >
+    @if(emptySelection) {
+        <option value=""></option>
+    }
+    @enumToValueString(enum).map { case (id, value) =>
+        <option value="@id" @if(selected.isDefined && selected.get == id) { selected="selected" } >@value</option>
+    }
+</select>

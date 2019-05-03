@@ -1,0 +1,56 @@
+@import views.html.layout
+@import views.html.table.paginatedTable
+@import views.html.filter.{filter, filterWithJs}
+@import org.ada.web.controllers.dataset.routes.{DataSetSettingController => dataSetSettingRoutes}
+@import org.ada.web.util.typeColumns
+@import org.ada.server.models.{DataSetSetting, Field, Filter}
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+
+@(
+    page: Page[DataSetSetting],
+    conditions: Seq[FilterCondition]
+)(
+    implicit context: WebContext
+)
+
+@actions = {
+    <div class="row">
+        <div class="col-md-8">
+            @filterWithJs(
+                Filter(conditions),
+                dataSetSettingRoutes.find(),
+                Left(Seq(
+                    Field("dataSetId", Some("Data Set Id"))
+                )),
+                None,
+                Some(FilterShowFieldStyle.LabelsOnly)
+            )
+        </div>
+    </div>
+}
+
+@table = @{
+    paginatedTable(
+        page,
+        dataSetSettingRoutes.find(_, _, conditions),
+        typeColumns[DataSetSetting](
+            (Some("dataSetId"), "Data Set Id", _.dataSetId),
+            (Some("keyField"), "Key Field", _.keyFieldName),
+            (Some("storageType"), "Storage Type", _.storageType)
+        ),
+        Some({ item : Any => dataSetSettingRoutes.get(item.asInstanceOf[DataSetSetting]._id.get)})
+    )
+}
+
+@layout.list(
+    "Data Set Setting",
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    None
+)

@@ -1,0 +1,76 @@
+@import views.html.elements.{labelValue, selectEnum}
+@import views.html.elements.{fieldTypeahead, typeahead}
+@import views.html.table.dynamicTableJsImport
+@import views.html.dataset.dynamicFieldTable
+@import views.html.mlRun.inputFieldTable
+@import org.incal.spark_ml.models.VectorScalerType
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    includeOutputField: Boolean = true,
+    includeFeatureSelectionNum: Boolean = true,
+    extraFieldButtons: Option[Html] = None,
+    extraFields: Option[Html] = None
+)(
+    implicit context: DataSetWebContext
+)
+
+@dynamicTableJsImport()
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = @{
+    labelValue(key, label, false, None, 4)(valueElement)
+}
+
+ <form>
+    <fieldset>
+        <div class="row">
+            <div class="col-lg-6 col-md-12">
+                <div class="row">
+                    @labelValueAux("mlModel", "ML Model") {
+                        @typeahead("mlModelTypeahead", "mlModelId", "", true)
+                    }
+                    @if(includeOutputField) {
+                        @labelValueAux("outputField", "Output Field") {
+                            @fieldTypeahead(None, "outputField", "Field Name", true)
+                        }
+                    }
+                    @inputFieldTable(extraFieldButtons)
+                    @labelValueAux("filterId", "Input Data") {
+                        @typeahead("filterNameTypeahead", "filterId", "Filter", true)
+                    }
+                    <hr/>
+                    @labelValueAux("featuresNormalizationType", "Feature Normalization") {
+                        @selectEnum("featuresNormalizationType", VectorScalerType, true, Some("input-lg-full"))
+                    }
+                    @if(includeFeatureSelectionNum) {
+                        @labelValueAux("featuresSelectionNum", "Feature Selection  Num") {
+                            <input id="featuresSelectionNum" type="text" class="input-lg-full" placeholder="1 to number of features" value="">
+                        }
+                    }
+                    @labelValueAux("pcaDims", "PCA Dims") {
+                        <input id="pcaDims" type="text" class="input-lg-full" placeholder="1 to number of features" value="">
+                    }
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-12">
+                <div class="row">
+                    @if(extraFields.isDefined) {
+                        @extraFields.get
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="actions pull-right">
+            <button id="launchButton" type="button" class="btn btn-primary">Submit</button>
+        </div>
+    </fieldset>
+ </form>
+
+
+<hr/>
+
+<div class="row">
+    <div id='outputDiv' class='col-md-6 col-md-offset-3'>
+    </div>
+</div>

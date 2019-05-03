@@ -1,0 +1,29 @@
+@import views.html.layout
+@import views.html.datasetsetting.{elements, fieldTypeaheadsActivationJs}
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.DataSetSetting
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    form: Form[DataSetSetting],
+    updateCall: Call,
+    cancelCall: Call,
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@layout.edit(
+    "Data Set Setting",
+    "dataSetSetting",
+    errors = form.errors,
+    elements = elements(form),
+	updateCall = updateCall,
+    cancelCall = cancelCall,
+    deleteCall = None,
+    sideBar = Some(datasetMenu(dataSpaceMetaInfos)),
+    topContentBar = Some(datasetSubNavWithJs()),
+    bottomResources = Some(fieldTypeaheadsActivationJs(form))
+)

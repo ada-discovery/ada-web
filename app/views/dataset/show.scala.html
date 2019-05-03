@@ -1,0 +1,21 @@
+@import views.html.layout.jsonShow
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import org.ada.web.controllers.dataset.{DataSetShowViewDataHolder, DataSetWebContext}
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    data: DataSetShowViewDataHolder
+)(
+    implicit context: DataSetWebContext
+)
+
+@jsonShow(
+    data.title,
+    data.item,
+    data.listCall,
+    None,
+    data.nonNullOnly,
+    data.fieldNameLabelAndRendererMap,
+    Some(datasetMenu(data.dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs())
+)

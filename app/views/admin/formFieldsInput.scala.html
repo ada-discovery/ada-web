@@ -1,0 +1,63 @@
+@import views.html.layout.main
+@import play.api.i18n.Messages
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.web.util
+@import views.html.elements._
+@import views.html.layout
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(
+    title: String,
+    form: Form[_],
+    call: Call
+)(
+    implicit context: WebContext
+)
+
+@inputTextAux(fieldName: String, defaultValue: Option[Any] = None) = @{
+    defining(form(fieldName)) { field =>
+        inputFieldText(
+            "xxx",
+            if (field.value.isEmpty && defaultValue.isDefined)
+                field.copy(value = Some(defaultValue.get.toString))
+            else
+                field,
+            Nil,
+            3
+        )
+    }
+}
+
+@selectAux(fieldName: String, enum: Enumeration) = {
+    @select("xxx", fieldName, form, util.enumToValueString(enum), true, Nil, 3)
+}
+
+@main(util.toHumanReadableCamel(title)) {
+
+    <div class="page-header">
+        <h3>
+            @util.toHumanReadableCamel(title)
+        </h3>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            @helper.form(action = call) {
+                <fieldset>
+                    @if(form.mapping.mappings.nonEmpty) {
+                        @form.mapping.mappings.filter(mapping => !mapping.key.isEmpty).map { mapping =>
+                            @inputTextAux(mapping.key)
+                        }
+                    } else {
+                        @inputTextAux("")
+                    }
+                </fieldset>
+
+                <div class="actions pull-right">
+                    <input type="submit" value="Submit" class="btn btn-primary">
+                </div>
+            }
+        </div>
+    </div>
+}

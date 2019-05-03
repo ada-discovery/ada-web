@@ -1,0 +1,36 @@
+@import play.api.libs.json.{JsNull, JsValue, JsArray, JsObject, Json}
+
+@(modalId: String, json: Option[JsValue])
+
+@****************************************************************
+* Unused... should be extended to allow tree-like json browsing *
+****************************************************************@
+@render(jsValue: JsValue) = @{
+    jsValue match {
+        case JsNull => Html("")
+        case x: JsArray => {
+            <ul>
+            x.value.map{subValue: JsValue =>
+                <li>
+                    render(subValue)
+                </li>
+            }
+            </ul>
+        }
+        case _ => Html(jsValue.toString())
+    }
+}
+
+@modalBody = {
+    <div id="jsonModalChartDiv">
+    </div>
+    <div id="jsonModalBody">
+        @json.map( value => Html(Json.prettyPrint(value).replaceAll("\n", "<br/>")))
+    </div>
+}
+
+@buttons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+}
+
+@modal(modalId, "Json Browser", modalBody, None, Some(buttons))

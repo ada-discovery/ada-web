@@ -1,0 +1,210 @@
+@import org.ada.web.models.Widget
+@import org.ada.server.models.{Filter,FilterShowFieldStyle,Field}
+@import reactivemongo.play.json.BSONFormats._
+@import views.html.dataset.widgetsScreen
+@import views.html.dataset.filter.{dataSetFilter, dataSetFilterJs}
+@import views.html.elements.fieldTypeaheadDiv
+@import play.api.libs.json.Json
+@import play.api.i18n.Messages
+@import org.ada.web.controllers.dataset.routes.{DataSetSettingController => dataSetSettingRoutes}
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.web.util.toJsonHtml
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    dataSetName: String,
+    filterSpec: Filter,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    field: Option[Field],
+    groupField: Option[Field],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@extraActions = {
+    <div class="pull-right dropdown">
+        <button class="btn btn-info btn-sm dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>To
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="#" onclick="addDistribution();return false" data-toggle="tooltip" title="Add Distribution To View">
+                    To Distributions
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="addBoxPlot();return false" data-toggle="tooltip" title="Add Box Plots To View">
+                    To Box Plots
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="addBasicStats();return false" data-toggle="tooltip" title="Add Basic Stats To View">
+                    To Basic Stats
+                </a>
+            </li>
+        </ul>
+    </div>
+}
+
+@bottomResources = {
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.calcDistribution,
+        dataSetJsRouter.getWidgets
+    )
+
+    @helper.javascriptRouter("dataViewJsRoutes")(
+        dataViewJsRouter.addDistribution,
+        dataViewJsRouter.addBoxPlot,
+        dataViewJsRouter.addBasicStats
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            populateFullTypeahead("field", true);
+            populateCategoricalTypeahead("groupField")
+
+            $('#inputDiv #fieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    calcDistribution();
+                    return false;
+                }
+            });
+
+            $('#inputDiv #groupFieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    var groupFieldTypeahedVal = $('#inputDiv #groupFieldTypeahead').val();
+                    if (!groupFieldTypeahedVal)
+                        $('#inputDiv #groupFieldName').val("")
+                    calcDistribution();
+                    return false;
+                }
+            });
+
+            activateAllFilters(function(filterOrId) {calcDistribution()})
+        });
+
+        function calcDistribution() {
+            var fieldName = $("#inputDiv #fieldName").val();
+            var fieldLabel = $("#inputDiv #fieldTypeahead").val();
+
+            var groupFieldName = $("#inputDiv #groupFieldName").val();
+            var groupFieldLabel = $("#inputDiv #groupFieldTypeahead").val();
+            if (!groupFieldName)
+                groupFieldName = null
+
+            var filterOrId = $(".filter-div").multiFilter('getIdOrModel')
+            var filterOrIdJson = JSON.stringify(filterOrId);
+
+            if (!fieldName) {
+                showError("Distribution calculation cannot be launched. No field specified.");
+            } else {
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.calcDistribution(fieldName, groupFieldName, filterOrIdJson).ajax(
+                    handleResponse("Distribution calculation finished.")
+                )
+
+                hideErrors()
+                showMessage("Distribution calculation for the field '" + fieldLabel + "' launched.")
+            }
+        }
+
+
+        function addDistribution() {
+            $("#dataViewSelectionModal #submitButton").one("click", addDistributionToView);
+            $("#dataViewSelectionModal").modal('show');
+        }
+
+        function addBoxPlot() {
+            $("#dataViewSelectionModal #submitButton").one("click", addBoxPlotToView);
+            $("#dataViewSelectionModal").modal('show');
+        }
+
+        function addBasicStats() {
+            $("#dataViewSelectionModal #submitButton").one("click", addBasicStatsToView);
+            $("#dataViewSelectionModal").modal('show');
+        }
+
+        function addDistributionToView(e) {
+            var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+            var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+
+            var fieldName = $('#inputDiv #fieldName').val()
+            var fieldLabel = $("#inputDiv #fieldTypeahead").val();
+
+            var groupFieldName = $('#inputDiv #groupFieldName').val()
+            if (groupFieldName == "")
+                groupFieldName = null
+
+            if (fieldName) {
+                dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addDistribution(dataViewId, fieldName, groupFieldName).ajax( {
+                    success: function() {
+                        showMessage("Distribution for the field '" + fieldLabel + "' have been successfully added to the view '" + dataViewName + "'.");
+                    },
+                    error: function(data){
+                        showErrorResponse(data);
+                    }
+                });
+            }
+        }
+
+        function addBoxPlotToView(e) {
+            var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+            var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+
+            var fieldName = $('#inputDiv #fieldName').val()
+            var fieldLabel = $("#inputDiv #fieldTypeahead").val();
+
+            var groupFieldName = $('#inputDiv #groupFieldName').val()
+            if (groupFieldName == "")
+                groupFieldName = null
+
+            if (fieldName) {
+                dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addBoxPlot(dataViewId, fieldName, groupFieldName).ajax( {
+                    success: function() {
+                        showMessage("Box plot for the field '" + fieldLabel + "' have been successfully added to the view '" + dataViewName + "'.");
+                    },
+                    error: function(data){
+                        showErrorResponse(data);
+                    }
+                });
+            }
+        }
+
+        function addBasicStatsToView(e) {
+            var dataViewId = $("#dataViewSelectionModal #dataViewId").val().trim()
+            var dataViewName = $("#dataViewSelectionModal #dataViewTypeahead").val().trim()
+
+            var fieldName = $("#inputDiv #fieldName").val()
+            var fieldLabel = $("#inputDiv #fieldTypeahead").val();
+
+            if (fieldName) {
+                dataViewJsRoutes.org.ada.web.controllers.dataset.DataViewDispatcher.addBasicStats(dataViewId, [fieldName]).ajax( {
+                    success: function() {
+                        showMessage("Basic stats for the field '" + fieldLabel + "' have been successfully added to the view '" + dataViewName + "'.");
+                    },
+                    error: function(data){
+                        showErrorResponse(data);
+                    }
+                });
+            }
+        }
+    </script>
+}
+
+@inputElements = {
+    @fieldTypeaheadDiv(field, Some("col-lg-3 col-md-6"), "field", "Field")
+    @fieldTypeaheadDiv(groupField, Some("col-lg-3 col-md-6"), "groupField", "Group Field")
+}
+
+@widgetsScreen(
+    Messages("distribution.title", dataSetName),
+    Seq(filterSpec),
+    filterShowFieldStyle,
+    dataSpaceMetaInfos,
+    inputElements,
+    Some(extraActions),
+    bottomResources
+)

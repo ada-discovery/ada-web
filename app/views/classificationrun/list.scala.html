@@ -1,0 +1,125 @@
+@import views.html.layout
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs, filterWidgetPanel}
+@import views.html.chart.highcharts.highchartsJsImport
+@import views.html.table.paginatedTable
+@import views.html.filter.{filter, filterWithJs}
+@import views.html.widget.widgetPanelJs
+@import views.html.elements.labelValue
+@import org.ada.web.util.typeColumns
+@import org.ada.server.models.{DataSpaceMetaInfo,Field,Filter,FilterShowFieldStyle}
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.server.models.ml.classification.ClassificationResult
+@import org.ada.web.models.Widget
+@import org.incal.spark_ml.models.result.ClassificationResult
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+@import org.incal.spark_ml.models.result.ClassificationResult
+@import org.ada.web.controllers.dataset.MLRunRouter
+@import reactivemongo.bson.BSONObjectID
+
+@(
+    router: MLRunRouter)(
+    domainName : String,
+    dataSetName: String,
+    page: Page[ClassificationResult],
+    conditions: Seq[FilterCondition],
+    widgets: Traversable[Widget],
+    fieldNameLabelMap: Map[String, String],
+    allClassificationRunFields: Traversable[Field],
+    mlModelIdNameMap: Map[BSONObjectID, String],
+    filterIdNameMap: Map[BSONObjectID, String],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@modalBody = {
+    <fieldset>
+        @labelValue("targetDataSetId", "Target Data Set Id", false, None, 4) {
+            <input id="targetDataSetId" name="targetDataSetId" type="text" value="@{context.dataSetId}_classification">
+        }
+        @labelValue("targetDataSetName", "Target Data Set Name", false, None, 4) {
+            <input id="targetDataSetName" name="targetDataSetName" type="text" value="@dataSetName Classification">
+        }
+    </fieldset>
+}
+
+@nodalButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="submit" id="submitButton" data-dismiss="modal" class="btn btn-primary">OK</button>
+}
+
+@actions = {
+    <div class="row">
+        <div class="col-md-10">
+            @filterWithJs(
+                Filter(conditions),
+                router.plainList,
+                Left(allClassificationRunFields),
+                None,
+                Some(FilterShowFieldStyle.LabelsOnly)
+            )
+        </div>
+        <div class="pull-right">
+            <ul class="list-inline">
+                <li>
+                    <a class="btn btn-success btn-sm" href="@router.create" data-toggle="tooltip" title="Launch New Classification">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </a>
+                </li>
+                <li>
+                    <a class="btn btn-default btn-sm" data-toggle="modal" data-target="#exportToDataSetModal" title="Export to Data Set">
+                        <span class="glyphicon glyphicon glyphicon-export"></span>
+                    </a>
+                </li>
+                <li>
+                    @exportDropdown(
+                        router.exportCsv(_, true, None, _, _),
+                        router.exportJson,
+                        conditions
+                    )()
+                </li>
+            </ul>
+        </div>
+        @modal("exportToDataSetModal", "Export to Data Set", modalBody, Some(router.exportToDataSet(None, None)), Some(nodalButtons))
+    </div>
+}
+
+@table = {
+    @paginatedTable(
+        page,
+        router.list(_, _, conditions),
+        typeColumns[ClassificationResult](
+            (Some("runSpec-mlModelId"), "ML Model", result => mlModelIdNameMap.get(result.mlModelId).get),
+            (Some("runSpec-ioSpec-filterId"), "Filter", _.filterId.map(filterId => filterIdNameMap.get(filterId).get).getOrElse("")),
+            (Some("runSpec-ioSpec-outputFieldName"), "Output Field", result => fieldNameLabelMap.get(result.outputFieldName).get),
+            (Some("testStats-accuracy-mean"), "Test Accuracy Mean", _.testStats.map(stats => "%.3f".format(stats.accuracy.mean)).getOrElse("")),
+            (Some("testStats-weightedPrecision-mean"), "Test Weighted Precision Mean", _.testStats.map(stats => "%.3f".format(stats.weightedPrecision.mean)).getOrElse("")),
+            (Some("testStats-weightedRecall-mean"), "Test Weighted Recall Mean", _.testStats.map(stats => "%.3f".format(stats.weightedRecall.mean)).getOrElse("")),
+            (Some("testStats-f1-mean"), "Test F1 Mean", _.testStats.map(stats => "%.3f".format(stats.f1.mean)).getOrElse("")),
+            (Some("testStats-areaUnderROC-mean"), "Test Area Under ROC Mean", _.testStats.flatMap(_.areaUnderROC.map(areaUnderROC => "%.3f".format(areaUnderROC.mean))).getOrElse("")),
+            (Some("testStats-areaUnderPR-mean"), "Test Area Under PR Mean", _.testStats.flatMap(_.areaUnderPR.map(areaUnderPR => "%.3f".format(areaUnderPR.mean))).getOrElse("")),
+            (Some("timeCreated"), "Time Created", _.timeCreated.toString)
+        ),
+        Some({ item : Any => router.get(item.asInstanceOf[ClassificationResult]._id.get)})
+    )
+}
+
+@bottomResources = {
+    @highchartsJsImport()
+    @widgetPanelJs(widgets)
+}
+
+@layout.list(
+    domainName,
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    Some(filterWidgetPanel("filterDiv", widgets, 6)),
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs()),
+    None,
+    Some(bottomResources)
+)

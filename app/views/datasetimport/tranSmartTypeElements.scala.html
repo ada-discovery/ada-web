@@ -1,0 +1,54 @@
+@import org.ada.server.models.dataimport.TranSmartDataSetImport
+@import views.html.elements._
+@import play.api.i18n.Messages
+@import views.html.datasetimport.{settingPanel, fileOrPathInput, dataSetInfoPanel, schedulePanel, dataViewPanel}
+
+@(form: Form[TranSmartDataSetImport])(implicit msg: Messages)
+
+@dataSetInfoPanel("tranSmartDataSetImport", form)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[TranSmartDataSetImport].getName}">
+
+<div class="panel panel-default">
+    <div class="panel-heading">tranSMART Import Specifics</div>
+    <div class="panel-body">
+        @fileOrPathInput("tranSmartDataSetImport", "dataSourceChoice", "Data Source", "dataFile", "dataPath", form)
+        @fileOrPathInput("tranSmartDataSetImport", "mappingSourceChoice", "Mapping Source", "mappingFile", "mappingPath", form)
+        @inputText("tranSmartDataSetImport", "charsetName", form)
+        @checkbox("tranSmartDataSetImport", "matchQuotes", form)
+        @checkbox("tranSmartDataSetImport", "inferFieldTypes", form)
+        @inputText("tranSmartDataSetImport", "inferenceMaxEnumValuesCount", form)
+        @inputText("tranSmartDataSetImport", "inferenceMinAvgValuesPerEnum", form)
+        @inputText("tranSmartDataSetImport", "saveBatchSize", form)
+    </div>
+</div>
+
+@settingPanel(form)
+@dataViewPanel(form)
+@schedulePanel(form)
+
+<script type="text/javascript">
+    $('form').submit(function(ev) {
+        ev.preventDefault();
+        handleSettingSubmission();
+        handleDataViewSubmission();
+
+        var localDataFile = $('input[name="dataSourceChoice"]:checked').val() == "1"
+        if (localDataFile)
+            // if local file provided remove the path field by erasing its name
+            $('#dataPath').attr("name", '');
+        else
+            // otherwise remove the import file field
+            $('#dataFile').attr("name", '');
+
+        var locaMappingFile = $('input[name="mappingSourceChoice"]:checked').val() == "1"
+        if (locaMappingFile)
+            // if local file provided remove the path field by erasing its name
+            $('#mappingPath').attr("name", '');
+        else
+            // otherwise remove the import file field
+            $('#mappingFile').attr("name", '');
+
+        this.submit();
+    });
+</script>

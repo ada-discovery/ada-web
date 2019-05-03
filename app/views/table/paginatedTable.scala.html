@@ -1,0 +1,35 @@
+@import views.html.table.{header, displayTable, pagination}
+
+@import org.incal.play.Page
+@(
+    page: Page[_],
+    refreshCall : (Int, String) => Call,
+    columns : Traversable[(Option[String], String, (Any => Html))],
+    rowClickCall : Option[Any => Call] = None,
+    hiddenRowId: Option[(String, Any => String)] = None,
+    tableId: Option[String] = None,
+    isAjaxRefresh: Boolean = false
+)
+
+@refreshCallAux(newPage : Int, newOrderBy : Option[String]) = @{
+    refreshCall(newPage, newOrderBy.map { nOrderBy =>
+        if (nOrderBy == page.orderBy) {
+            "-" + page.orderBy
+        } else if (("-" + nOrderBy) == page.orderBy) {
+            nOrderBy
+        } else nOrderBy
+    }.getOrElse(page.orderBy))
+}
+
+@if(page.items.nonEmpty) {
+    @displayTable(
+        page.items,
+        columns,
+        Some(header(page.orderBy, refreshCallAux, isAjaxRefresh)),
+        rowClickCall,
+        hiddenRowId,
+        tableId
+    )
+    <hr/>
+    @pagination(page, refreshCallAux, isAjaxRefresh)
+}

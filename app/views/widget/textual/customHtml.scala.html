@@ -1,0 +1,14 @@
+@import org.ada.web.models.HtmlWidget
+
+@(
+    elementId: String,
+    widget: HtmlWidget
+)
+
+@widget.content
+<script type="text/javascript">
+    $(document).ready(function() {
+        var htmlContent = `@Html(widget.content)`;
+        $('#' + '@elementId').html(htmlContent);
+    });
+</script>

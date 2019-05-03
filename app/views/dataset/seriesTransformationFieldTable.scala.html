@@ -1,0 +1,101 @@
+@import views.html.table.{displayTable, dynamicTable}
+@import views.html.elements.labelValue
+@import org.ada.web.util.typeColumns
+@import org.ada.server.models.SeriesTransformationSpec
+@import org.incal.spark_ml.models.VectorScalerType
+
+@(
+    items: Traversable[SeriesTransformationSpec]
+)
+
+@fieldPathElement(spec: SeriesTransformationSpec) = {
+    <input type="text" id="fieldPath" style="width:80px" value="@spec.fieldPath">
+}
+
+@scaleTypeElement(_scalerType: Option[VectorScalerType.Value]) = {
+    <select id="transformType" name="transformType">
+        @VectorScalerType.values.map { transformType =>
+            <option value="@{transformType}" @if(_scalerType.isDefined && _scalerType.get == transformType) {selected="selected"}>@{transformType}</option>
+        }
+    </select>
+}
+
+@table = {
+    @displayTable(
+        items,
+        typeColumns[SeriesTransformationSpec](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (None, "Field Path", fieldPathElement),
+            (None, "Transformation Type", {x => scaleTypeElement(Some(x.transformType))})
+        )
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        var model = specRowToModel(row);
+        return JSON.stringify(model);
+    }
+}
+
+@modalItemToRowJsFun = {
+    function(values) {
+        var fieldPath = values["fieldPath"].trim()
+        var transformType = values["transformType"].trim()
+
+        var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
+        var fieldPathColumn = "<td><input type='text' id='fieldPath' style='width:80px' value='" + fieldPath + "'/></td>";
+        var transformTypeColumn = `<td>@scaleTypeElement(None)</td>`
+
+        // create row
+        var row = $("<tr></tr>")
+        row.append(checkboxColumn)
+        row.append(fieldPathColumn)
+        row.append(transformTypeColumn)
+
+        row.find('#transformType').val(transformType)
+
+        return row;
+    }
+}
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = {
+    @labelValue(key, label, false, None, 4)(valueElement)
+}
+
+@modalInner(modalName: String) = {
+    <div class="row">
+        <input type="hidden" id="rowIndex">
+
+         @labelValueAux("fieldPath", "Field Path") {
+            <input type="text" id="fieldPath">
+         }
+
+         @labelValueAux("transformType", "Transformation Type") {
+             @scaleTypeElement(None)
+         }
+    </div>
+}
+
+@dynamicTable("seriesTransformationSpec", table, true, rowToModelJsFun, modalItemToRowJsFun, modalInner("add_seriesTransformationSpecModal"), None, 12)
+
+<script type="text/javascript">
+     function setIfNotNull(item, fieldName, value) {
+        if (value != null)
+            item[fieldName] = value
+     }
+
+    function specRowToModel(row) {
+        function getValue(x) { return getRowValue(row, x) }
+
+        var output = {};
+
+        // field path
+        setIfNotNull(output, "fieldPath", getValue("fieldPath"))
+
+        // processing type
+        setIfNotNull(output, "transformType", getValue("transformType"))
+
+        return output;
+    }
+</script>

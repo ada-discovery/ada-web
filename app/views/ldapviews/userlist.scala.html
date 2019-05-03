@@ -1,0 +1,32 @@
+@import views.html.layout
+@import views.html.table.{displayTable, paginatedTable}
+@import org.ada.web.util.typeColumns
+@import org.ada.server.models.LdapUser
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.ada.web.controllers.routes
+
+@(items: Traversable[LdapUser])(implicit context: WebContext)
+
+@table = @{
+    displayTable(
+        items,
+        typeColumns[LdapUser](
+            (None, "LDAP DN", _.uid),
+            (None, "Name", _.name),
+            (None, "Email", _.email),
+            (None, "OU", _.ou)
+        ),
+        None,
+        Some({ item : Any => routes.LdapUserController.get(item.asInstanceOf[LdapUser].uid)})
+    )
+}
+
+@layout.list(
+    "LDAP user",
+    None,
+    items.size,
+    None,
+    Some(table),
+    None
+)

@@ -1,0 +1,16 @@
+@(modalId: String)
+
+@modalBody = {
+    <div class="row">
+        <div class="col-md-12">
+            <div id="lineChartDiv" class="chart-holder">
+            </div>
+        </div>
+    </div>
+}
+
+@buttons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+}
+
+@modal(modalId, "Array Chart", modalBody, None, Some(buttons), Some("modal-lg"))

@@ -1,0 +1,45 @@
+@import org.ada.server.models.dataimport.JsonDataSetImport
+@import views.html.datasetimport.{settingPanel, fileOrPathInput, dataSetInfoPanel, schedulePanel, dataViewPanel}
+@import views.html.elements._
+@import play.api.i18n.Messages
+
+@(form: Form[JsonDataSetImport])(implicit msg: Messages)
+
+@dataSetInfoPanel("jsonDataSetImport", form)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[JsonDataSetImport].getName}">
+
+<div class="panel panel-default">
+    <div class="panel-heading">JSON Import Specifics</div>
+    <div class="panel-body">
+        @fileOrPathInput("jsonDataSetImport", "sourceChoice", "Source", "dataFile", "path", form)
+        @inputText("jsonDataSetImport", "charsetName", form)
+        @checkbox("jsonDataSetImport", "inferFieldTypes", form)
+        @inputText("jsonDataSetImport", "inferenceMaxEnumValuesCount", form)
+        @inputText("jsonDataSetImport", "inferenceMinAvgValuesPerEnum", form)
+        @checkbox("jsonDataSetImport", "booleanIncludeNumbers", form)
+        @inputText("jsonDataSetImport", "saveBatchSize", form)
+    </div>
+</div>
+
+@settingPanel(form)
+@dataViewPanel(form)
+@schedulePanel(form)
+
+<script type="text/javascript">
+    $('form').submit(function(ev) {
+        ev.preventDefault();
+        handleSettingSubmission();
+        handleDataViewSubmission();
+
+        var importLocalFile = $('input[name="sourceChoice"]:checked').val() == "1"
+        if (importLocalFile)
+            // if local file provided remove the path field by erasing its name
+            $('#path').attr("name", '');
+        else
+            // otherwise remove the import file field
+            $('#dataFile').attr("name", '');
+
+        this.submit();
+    });
+</script>

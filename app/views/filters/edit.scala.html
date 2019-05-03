@@ -1,0 +1,40 @@
+@import views.html.layout
+@import views.html.elements.{checkbox, inputText, labelValue, value}
+@import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
+@import views.html.filters.displayConditions
+@import org.ada.web.controllers.dataset.{DataSetWebContext, FilterRouter}
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.Filter
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+
+@(
+    displayName: String,
+    id: BSONObjectID,
+    form: Form[Filter],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@elements = {
+    @inputText("filter", "name", form)
+    @checkbox("filter", "isPrivate", form)
+    @value("filter", "Created By", form.value.map(_.createdBy.map(_.ldapDn)).flatten.getOrElse("") )
+    @value("filter", "Time Created",  form.value.map(_.timeCreated.map(_.format("yyyy-MM-dd HH:mm:ss"))).flatten.getOrElse(""))
+    @labelValue("condedititions", "Conditions") {
+        @form.value.map(filter => displayConditions(filter.conditions)).getOrElse(Html(""))
+    }
+}
+
+@layout.edit(
+    displayName,
+    "filter",
+	form.errors,
+    elements,
+    filterRouter.update(id),
+    filterRouter.plainList,
+    Some(filterRouter.delete(id)),
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(datasetSubNavWithJs())
+)

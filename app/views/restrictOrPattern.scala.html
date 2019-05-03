@@ -1,0 +1,18 @@
+@import be.objectify.deadbolt.scala.views.html.{subjectPresent, subjectPresentOr, restrict, restrictOr, pattern}
+@import be.objectify.deadbolt.scala.models.PatternType
+@import be.objectify.deadbolt.scala.AuthenticatedRequest
+
+@(
+    roles: Array[String],
+    regexPattern: String)(
+    block: Html)(
+    implicit request: AuthenticatedRequest[Any]
+)
+
+@restrictOr(roles = List(roles)) {
+    @block
+} {
+    @pattern(value = regexPattern, patternType = PatternType.REGEX) {
+        @block
+    }
+}

@@ -1,0 +1,7 @@
+@import reactivemongo.bson.BSONObjectID
+
+@(id: BSONObjectID, fieldName: String, fieldLabel: String)
+
+<a href="#" onclick="showArrayFieldChart('@id.stringify', '@fieldName', '@fieldLabel');">
+    <span class="glyphicon glyphicon-stats"></span>
+</a>

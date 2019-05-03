@@ -1,0 +1,29 @@
+@import views.html.documentation.core
+@import views.html.documentation.imageSection
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@()(implicit context: WebContext)
+
+@core("Filters") {
+
+    @imageSection(picPath = Some("images/documentation/filter.png"), withLine = false) {
+        <p>
+            Filter defines a data/cohort selection and is specified as a sequence of conditions connected by <code>AND</code> operator.
+            Supported condition types are:
+            <ul>
+                <li><code>=</code></li>
+                <li><code>!=</code></li>
+                <li><code><</code></li>
+                <li><code>></code></li>
+                <li><code><=</code></li>
+                <li><code>>=</code></li>
+                <li><code>like</code></li>
+                <li><code>in</code></li>
+                <li><code>nin</code></li>
+            </ul>
+            Note that an empty value si treated as null (or undefined). Filters can be saved and applied
+            across the platform for views, analytics (e.g., scatters), and machine learning (e.g., classification, and clusterization).
+        </p>
+    }
+}

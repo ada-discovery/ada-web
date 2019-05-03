@@ -1,0 +1,38 @@
+@import play.api.libs.json.{JsObject, JsNull, JsValue}
+@import views.html.table.{header, displayJsonTable, pagination}
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.web.util.FieldTypeFullRenderer.FieldTypeFullRenderer
+
+@import org.incal.play.Page
+@(
+    page: Page[JsObject],
+    refreshCall : (Int, String) => Call,
+    fieldLabelMap : Option[Map[String, String]] = None,
+    fieldsToShow : Option[Seq[String]] = None,
+    rowClickCall : Option[JsObject => Call] = None,
+    fieldNameRenderMap: Option[Map[String, FieldTypeFullRenderer]] = None,
+    isAjaxRefresh: Boolean = false
+)
+
+@refreshCallAux(newPage : Int, newOrderBy : Option[String]) = @{
+    refreshCall(newPage, newOrderBy.map { nOrderBy =>
+        if (nOrderBy == page.orderBy) {
+            "-" + page.orderBy
+        } else if (("-" + nOrderBy) == page.orderBy) {
+            nOrderBy
+        } else nOrderBy
+    }.getOrElse(page.orderBy))
+}
+
+@if(page.items.nonEmpty) {
+    @displayJsonTable(
+        page.items,
+        header(page.orderBy, refreshCallAux, isAjaxRefresh)(_, _),
+        fieldLabelMap,
+        fieldsToShow,
+        rowClickCall,
+        fieldNameRenderMap
+    )
+    <hr/>
+    @pagination(page, refreshCallAux, isAjaxRefresh)
+}

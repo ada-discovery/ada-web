@@ -1,0 +1,129 @@
+@import views.html.elements.inputText
+@import views.html.elements.{labelValue, value}
+@import views.html.table.displayTable
+@import org.ada.web.controllers.dataset.routes.{DataSpaceMetaInfoController => dataSpaceMetaInfoRoutes}
+@import org.ada.web.util.typeColumns
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.DataSetMetaInfo
+
+@(
+    form: Form[DataSpaceMetaInfo],
+    nestedDataSpaceCount: Int,
+    nestedDataSetCount: Int,
+    dataSetIdSizeMap: Map[String, Int],
+    id: Option[BSONObjectID]
+)(implicit msg: play.api.i18n.Messages)
+
+@editableInput(key: String, value: Any) = {
+    <input type="text" class="form-control" id="@key" name="@key" value="@value">
+}
+
+@editableHideCheckbox(dataSetInfo: DataSetMetaInfo) = {
+    <input type="checkbox" class="form-control hideCheckbox" @if(dataSetInfo.hide) { checked="checked" }>
+    <input type="hidden" id="dataSetMetaInfos.hide" name="dataSetMetaInfos.hide" value="@dataSetInfo.hide">
+}
+
+@buttons(dataSetId: String) = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" id="submitButton" class="btn btn-primary" onclick="deleteDataSetAction(this, '@dataSetId'); return false;">OK</button>
+}
+
+@modalDeleteChoice(value: String, text: String, checked: Boolean = false) = {
+    <li>
+        <label class="radio-inline"><input type="radio" name="actionChoice" value="@value" @if(checked) {checked="checked"}><h5>@text</h5></label>
+    </li>
+}
+
+@deleteModalInner = {
+    <ul class="list-unstyled">
+        @modalDeleteChoice("1", "Unregister data set (no delete)")
+        @modalDeleteChoice("2", "Delete data (but keep metadata)", true)
+        @modalDeleteChoice("3", "Delete data, dictionary, and category tree")
+        @modalDeleteChoice("4", "Delete data and all metadata (dictionary, category tree, and setting)")
+    </ul>
+}
+
+@deleteButton(dataSetInfo: DataSetMetaInfo) = {
+    <a class="btn btn-sm btn-default"  data-toggle="modal" data-target="#deleteModal@{dataSetInfo._id.get.stringify}">
+        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+    </a>
+    @if(id.isDefined) {
+        @modal("deleteModal" + dataSetInfo._id.get.stringify, "What do you want to do?", deleteModalInner, None, Some(buttons(dataSetInfo.id)))
+    }
+}
+
+@dataSetTable = {
+    @displayTable(
+        form.value.get.dataSetMetaInfos.sortBy(_.sortOrder),
+        typeColumns[DataSetMetaInfo](
+            (None, "Name", { item: DataSetMetaInfo => editableInput("dataSetMetaInfos.name", item.name) }),
+            (None, "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
+            (None, "Sort Order", { item: DataSetMetaInfo => editableInput("dataSetMetaInfos.sortOrder", item.sortOrder) }),
+            (None, "# Items", { item: DataSetMetaInfo => dataSetIdSizeMap.get(item.id).get.toString }),
+            (None, "Hidden?", editableHideCheckbox),
+            (None, "Delete?", deleteButton)
+        ),
+        None,
+        None,
+        Some("dataSetMetaInfos.id", { item: Any => item.asInstanceOf[DataSetMetaInfo]._id.get.stringify })
+    )
+}
+
+@dataSpaceTable = {
+    @displayTable(
+        form.value.get.children.sortBy(_.sortOrder),
+        typeColumns[DataSpaceMetaInfo](
+            (None, "Name", _.name),
+            (None, "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
+            (None, "# Data Sets", {info: DataSpaceMetaInfo => info.dataSetMetaInfos.size.toString}),
+            (None, "# Items", {info: DataSpaceMetaInfo =>
+                info.dataSetMetaInfos.map( setInfo => dataSetIdSizeMap.get(setInfo.id).get).sum.toString
+            })
+        ),
+        None,
+        Some({ item : Any => dataSpaceMetaInfoRoutes.get(item.asInstanceOf[DataSpaceMetaInfo]._id.get) })
+    )
+}
+
+@badge(text: Int) = {
+    <span class="badge badge-success"><b><h5>@text</h5></b></span>
+}
+
+@inputText("dataSpaceMetaInfo", "name", form)
+@labelValue("dataSetsCount", "Nested Data Sets #") {
+    @badge(nestedDataSetCount)
+}
+@if(nestedDataSpaceCount > 0) {
+    @labelValue("dataSpacesCount", "Nested Data Spaces #") {
+        @badge(nestedDataSpaceCount)
+    }
+}
+@inputText("dataSpaceMetaInfo", "sortOrder", form)
+@value("dataSetMetaInfos", "Time Created", form.value.map(_.timeCreated.format("yyyy-MM-dd HH:mm:ss")).getOrElse("N/A"))
+
+<div class="form-group col-sm-12">
+    <hr/>
+</div>
+
+@labelValue("dataSetMetaInfos", "Data Sets"){@dataSetTable}
+
+<script type="text/javascript">
+    $(function () {
+        $(".hideCheckbox").change( function(e) {
+            var checked = $(this).is(":checked")
+            $(this).parent().find('#dataSetMetaInfos\\.hide').val(checked)
+        })
+
+        $("#submitButton").click(function(e) {
+            e.preventDefault();
+        })
+    })
+    function deleteDataSetAction(button, dataSetId) {
+        var actionChoice = $(button).closest(".modal-content").find("input[name='actionChoice']:checked").val()
+        var params = {};
+        params['dataSetId'] = dataSetId;
+        params['actionChoice'] = actionChoice;
+        submit('post', '@{dataSpaceMetaInfoRoutes.deleteDataSet(id.get)}', params)
+    }
+</script>

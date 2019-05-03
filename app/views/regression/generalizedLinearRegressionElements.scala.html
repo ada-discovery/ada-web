@@ -1,0 +1,23 @@
+@import views.html.elements.{inputText, select, checkbox}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.regression.GeneralizedLinearRegression
+@import org.incal.spark_ml.models.regression.GeneralizedLinearRegressionLinkType
+@import org.incal.spark_ml.models.regression.GeneralizedLinearRegressionFamily
+@import org.incal.spark_ml.models.regression.GeneralizedLinearRegressionSolver
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[GeneralizedLinearRegression])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[GeneralizedLinearRegression].getName}">
+
+@inputText("generalizedLinearRegression", "name", form)
+
+<hr/>
+
+@inputText("generalizedLinearRegression", "maxIteration", form)
+@inputText("generalizedLinearRegression", "regularization", form)
+@select("generalizedLinearRegression", "link", form, enumToValueString(GeneralizedLinearRegressionLinkType), true)
+@inputText("generalizedLinearRegression", "tolerance", form)
+@checkbox("generalizedLinearRegression", "fitIntercept", form)
+@select("generalizedLinearRegression", "family", form, enumToValueString(GeneralizedLinearRegressionFamily), true)
+@select("generalizedLinearRegression", "solver", form, enumToValueString(GeneralizedLinearRegressionSolver), true)

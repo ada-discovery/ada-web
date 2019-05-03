@@ -1,0 +1,80 @@
+@(title : String, chartElementName : String, elements : Seq[(String, Int, Int, Int)])
+
+@{/*
+Venn diagram module
+Expects sequence of element names, radius, x position, y position
+*/}
+
+<div id="@chartElementName" class="chart-holder">></div>
+<script type="text/javascript">
+        $(function () {
+            $('#@{chartElementName}').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type:'scatter'
+                },
+                title: {
+                    text: "@title"
+                },
+                xAxis: {
+                    min:0,
+                    max:100,
+                    lineWidth:0,
+                    gridLineWidth:0,
+                    title:{text:""},
+                    labels:{enabled:false}
+                },
+                yAxis: {
+                    min:0,
+                    max:100,
+                    lineWidth:0,
+                    gridLineWidth:0,
+                    title:{text:""},
+                    labels:{enabled:false}
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'middle',
+                    borderWidth: 0
+                },
+                credits: {
+                    enabled: false
+                },
+                plotOptions: {
+                    series: {
+                        shadow:false,
+                        borderWidth:0,
+                        marker:{
+                            symbol:'circle'
+                        }
+                    }
+                },
+                series: [
+                    @elements.map{ case(name, radius, x, y) =>
+                        {
+                            name:'@name',
+                            color:'rgba(90,155,212,.5)',
+                            data: [{
+                                x:@x,
+                                y:@y,
+                                marker:{
+                                    radius:@radius,
+                                    fillColor:'rgba(90,155,212,.5)',
+                                    lineColor:'rgba(90,155,212,.75)',
+                                    lineWidth:1,
+                                    states:{
+                                        hover:{
+                                            radius:@radius
+                                        }
+                                    }
+                                }
+                            }]
+                        },
+                    }
+                ]
+            });
+        });
+</script>

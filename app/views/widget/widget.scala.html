@@ -1,0 +1,20 @@
+@import org.ada.web.models.Widget
+@import org.ada.web.util.widgetElementId
+@import org.ada.web.models.{Widget, HtmlWidget}
+
+@(widget: Widget)
+
+@basicWidget = {
+    <div id="@widgetElementId(widget)" class="chart-holder"></div>
+}
+
+@htmlWidget(widget: HtmlWidget) = {
+    <div id="@widgetElementId(widget)" class="chart-holder">
+        @Html(widget.content)
+    </div>
+}
+
+@{widget match {
+    case x: HtmlWidget => htmlWidget(x)
+    case _ => basicWidget
+}}

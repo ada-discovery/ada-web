@@ -1,0 +1,30 @@
+@import org.ada.server.models.dataimport.DataSetImport
+@import views.html.elements._
+
+@(domainName: String, form: Form[_ <: DataSetImport])(implicit msg: Messages)
+
+<div class="panel panel-default">
+    <div class="panel-heading">Data Set Info</div>
+    <div class="panel-body">
+        @inputText(domainName, "dataSpaceName", form)
+        @inputText(domainName, "dataSetName", form)
+        @inputText(domainName, "dataSetId", form)
+        @if(form("timeCreated").value.isDefined) {
+            @inputTextReadonly(domainName, "timeCreated", form)
+        }
+        @if(form("timeLastExecuted").value.isDefined) {
+            @inputTextReadonly(domainName, "timeLastExecuted", form)
+        }
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('#dataSpaceName').on('change keyup paste', updateDataSetId)
+    $('#dataSetName').on('change keyup paste', updateDataSetId)
+
+    function updateDataSetId() {
+        var dataSpaceNamePart = $('#dataSpaceName').val().trim().replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()
+        var dataSetNamePart = $('#dataSetName').val().trim().replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()
+        $('#dataSetId').val(dataSpaceNamePart + "." + dataSetNamePart)
+    }
+</script>

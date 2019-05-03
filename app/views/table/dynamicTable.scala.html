@@ -1,0 +1,45 @@
+@import org.ada.web.util.toHumanReadableCamel
+
+@(
+    domainName: String,
+    table: Html,
+    sortable: Boolean = false,
+    rowToModelJsFun: Html,
+    itemToRowJsFun: Html,
+    addModalInner:  Html,
+    extraActions: Option[Html] = None,
+    gridWidth: Int = 4,
+    hideModalOnEnter: Boolean = true,
+    hideModalOnButtonPressed: Boolean = true
+)
+
+@modalButtons(domainName: String) = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-primary" id="@{domainName}SubmitButton" @if(hideModalOnButtonPressed) { data-dismiss="modal"}>OK</button>
+}
+
+<div id="@{domainName}Div" class="row col-sm-@gridWidth">
+    <a id="addRowButton" class="btn btn-info btn-sm" href="#" onclick="$('#@{domainName}Div').dynamicTable('openAddModal');return false;" data-toggle="tooltip" title="Add New @{toHumanReadableCamel(domainName)}">
+        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+    </a>
+    <a id="remoteRowButton" class="btn btn-info btn-sm" href="#" onclick="$('#@{domainName}Div').dynamicTable('removeRows');return false;" data-toggle="tooltip" title="Delete @{toHumanReadableCamel(domainName)}">
+        <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+    </a>
+    @if(extraActions.isDefined) {
+        @extraActions.get
+    }
+    <div>
+        @table
+    </div>
+    @modal("add_" + domainName + "Modal", "Add " + toHumanReadableCamel(domainName) + "(s)", addModalInner, None, Some(modalButtons(domainName)))
+</div>
+
+<script>
+    $("#@{domainName}Div").dynamicTable({
+        domainName: '@{domainName}',
+        sortable: @sortable,
+        rowToModel: @rowToModelJsFun,
+        itemToRow: @itemToRowJsFun,
+        hideModalOnEnter: @hideModalOnEnter
+    });
+</script>

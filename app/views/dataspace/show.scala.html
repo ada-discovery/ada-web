@@ -1,0 +1,92 @@
+@import views.html.layout
+@import views.html.elements.{labelValue, value}
+@import views.html.dataset.datasetMenu
+@import views.html.table.displayTable
+@import org.ada.web.controllers.dataset.DataSetRouter
+@import org.ada.web.util.typeColumns
+@import org.ada.web.controllers.dataset.routes.{DataSpaceMetaInfoController => dataSpaceMetaInfoRoutes}
+@import be.objectify.deadbolt.scala.views.html.{subjectPresent, subjectPresentOr, restrictOr}
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.DataSetMetaInfo
+@import org.incal.play.security.SecurityRole
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+
+@(
+    dataSpaceMetaInfo: DataSpaceMetaInfo,
+    nestedDataSpaceCount: Int,
+    nestedDataSetCount: Int,
+    dataSetIdSizeMap: Map[String, Int],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: WebContext
+)
+
+@hideCheckbox(dataSetInfo: DataSetMetaInfo) = {
+    <input type="checkbox" class="no-rowClicked" @if(dataSetInfo.hide) { checked="checked" } disabled="disabled">
+}
+
+@dataSetTable = {
+    @displayTable(
+        dataSpaceMetaInfo.dataSetMetaInfos.sortBy(_.sortOrder),
+        typeColumns[DataSetMetaInfo](
+            (None, "Name", _.name),
+            (None, "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
+            (None, "# Items", {info: DataSetMetaInfo => dataSetIdSizeMap.get(info.id).map(_.toString).getOrElse("")}),
+            (None, "Hidden?", hideCheckbox)
+        ),
+        None,
+        Some({ item : Any => new DataSetRouter(item.asInstanceOf[DataSetMetaInfo].id).getDefaultView})
+    )
+}
+
+@badge(text: Int) = {
+    <span class="badge badge-success"><b><h5>@text</h5></b></span>
+}
+
+@dataSpaceTable = {
+    @displayTable(
+        dataSpaceMetaInfo.children.sortBy(_.sortOrder),
+        typeColumns[DataSpaceMetaInfo](
+            (None, "Name", _.name),
+            (None, "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
+            (None, "# Data Sets", {info: DataSpaceMetaInfo => info.dataSetMetaInfos.size.toString})
+        ),
+        None,
+        Some({ item : Any => dataSpaceMetaInfoRoutes.get(item.asInstanceOf[DataSpaceMetaInfo]._id.get) })
+    )
+}
+
+@elements = {
+    @labelValue("dataSetsCount", "Nested Data Sets #") {
+        @badge(nestedDataSetCount)
+    }
+    @if(nestedDataSpaceCount > 0) {
+        @labelValue("dataSpacesCount", "Nested Data Spaces #") {
+            @badge(nestedDataSpaceCount)
+        }
+    }
+    @labelValue("timeCreated", "Time Created") {
+        @dataSpaceMetaInfo.timeCreated.format("yyyy-MM-dd HH:mm:ss")
+    }
+
+    <div class="form-group col-sm-12">
+        <hr/>
+    </div>
+
+    @labelValue("dataSetMetaInfos", "Data Sets"){@dataSetTable}
+    @if(dataSpaceMetaInfo.children.nonEmpty) {
+        @labelValue("dataSpaceMetaInfos", "(Sub) Data Spaces") {@dataSpaceTable}
+    }
+}
+
+@layout.show(
+    dataSpaceMetaInfo.name + " Study",
+    elements,
+    None,
+    Some(dataSpaceMetaInfoRoutes.edit(dataSpaceMetaInfo._id.get)),
+    None,
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    None,
+    isFullDisplayName = true
+)

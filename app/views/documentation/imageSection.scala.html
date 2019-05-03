@@ -1,0 +1,18 @@
+@import views.html.documentation.section
+@import org.incal.play.routes.CustomDirAssets
+
+@(
+    id: Option[String] = None,
+    caption: Option[String] = None,
+    picPath: Option[String] = None,
+    picOffset: Int = 1,
+    picWidth: Int = 5,
+    withLine: Boolean = true)(
+    content: Html
+)
+
+@imageAux(picPath: String) = {
+    <img class="img-responsive" src="@CustomDirAssets.versioned(picPath)"/>
+}
+
+@section(id, caption, picOffset, picWidth, withLine)(content)(picPath.map(imageAux).getOrElse(Html("")))

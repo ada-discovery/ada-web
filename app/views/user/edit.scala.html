@@ -1,0 +1,29 @@
+@import views.html.layout
+@import views.html.user.elements
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.User
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.ada.web.controllers.DataSetControllerActionNames
+@import org.ada.web.controllers.routes
+
+@(
+    id: reactivemongo.bson.BSONObjectID,
+    form: Form[User],
+    metaInfos: Traversable[DataSpaceMetaInfo],
+    controllerActionNames: DataSetControllerActionNames
+)(
+    implicit context: WebContext
+)
+
+@layout.edit(
+    "User",
+    "user",
+	form.errors,
+    elements(form, metaInfos, controllerActionNames),
+	routes.UserController.update(id),
+	routes.UserController.listAll(),
+    Some(routes.UserController.delete(id)),
+    None,
+    None
+)

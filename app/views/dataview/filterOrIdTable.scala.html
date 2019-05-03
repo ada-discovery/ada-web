@@ -1,0 +1,59 @@
+@import views.html.table.{displayTable, dynamicTable}
+@import views.html.table.{dynamicTableJsImport, displayTable}
+@import org.ada.web.util.typeColumns
+@import reactivemongo.bson.BSONObjectID
+@import views.html.filters.displayConditions
+@import org.ada.server.models.Filter.filterConditionFormat
+@import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
+@import play.api.libs.json.Writes
+@import play.api.libs.json.Json
+@import org.incal.core.FilterCondition
+
+@(items: Traversable[Either[Seq[FilterCondition], BSONObjectID]])
+
+@filterOrIdHiddenElement[T: Writes](value: T) = {
+    <input type="hidden" id="filterOrId" value="@Json.stringify(Json.toJson(value))"/>
+}
+
+@table = {
+    @displayTable(
+        items,
+        typeColumns[Either[Seq[FilterCondition], BSONObjectID]](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (None, "", { filterOrId =>
+                filterOrId match {
+                    case Left(conditions) => filterOrIdHiddenElement(conditions)
+                    case Right(id) => filterOrIdHiddenElement(id)
+                }
+            }),
+            (None, "Content", { filterOrId =>
+                filterOrId match {
+                    case Left(conditions) => displayConditions(conditions)
+                    case Right(id) => "Filter id: " + id.stringify
+                }
+            })
+        )
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        return row.find('#filterOrId').val()
+    }
+}
+
+@itemToRowJsFun = {
+    function(values) {
+        var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
+        var filterOrIdHiddenColumn = "<td><input type='hidden' id='filterOrId' value='[]'/></td>";
+        var contentColumn = "<td></td>";
+
+        return "<tr>" + checkboxColumn + filterOrIdHiddenColumn + contentColumn + "</tr>";
+    }
+}
+
+@addModalInner = {
+    <p>Do you want to add a new filter (column) to the view?</p>
+}
+
+@dynamicTable("filterOrId", table, true, rowToModelJsFun, itemToRowJsFun, addModalInner, None, 5)

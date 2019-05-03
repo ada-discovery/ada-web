@@ -1,0 +1,23 @@
+@import play.api.libs.json.{JsObject, JsNull}
+@import views.html.table.{header, displayJsonTable}
+
+@(
+   items : Traversable[JsObject],
+   orderBy: String,
+   listCall : (Int, String) => Call,
+   fieldLabelMap : Option[Map[String, String]] = None,
+   fieldsToShow : Option[Seq[String]] = None,
+   rowClickCall : Option[JsObject => Call] = None
+)
+
+@listCallAux(newPage : Int, newOrderBy : Option[String]) = @{
+    listCall(newPage, newOrderBy.map { nOrderBy =>
+        if (nOrderBy == orderBy) {
+            "-" + orderBy
+        } else if (("-" + nOrderBy) == orderBy) {
+            nOrderBy
+        } else nOrderBy
+    }.getOrElse(orderBy))
+}
+
+@displayJsonTable(items, header(orderBy, listCallAux)(_, _), fieldLabelMap, fieldsToShow, rowClickCall)

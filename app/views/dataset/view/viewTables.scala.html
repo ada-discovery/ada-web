@@ -1,0 +1,30 @@
+@import views.html.dataset.{fixedTableRow, jsonModal, lineChartArrayModal}
+@import views.html.dataset.view.viewTable
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.web.controllers.dataset.TableViewData
+@import org.ada.web.controllers.dataset.DataSetRouter
+
+@(
+    dataViewId: BSONObjectID,
+    viewParts: Seq[TableViewData]
+)(
+    implicit request: Request[_], dataSetRouter: DataSetRouter
+)
+
+@fixedTableRow("tablesTr") {
+    @viewParts.map { viewPart =>
+        <td style="padding-left: 10px; padding-right: 10px; vertical-align:top">
+            <div class="table-div">
+                @viewTable(
+                    viewPart.page,
+                    viewPart.filter,
+                    viewPart.tableFields,
+                    false
+                )
+            </div>
+        </td>
+    }
+}
+
+@jsonModal("jsonModal", None)
+@lineChartArrayModal("lineChartArrayModal")

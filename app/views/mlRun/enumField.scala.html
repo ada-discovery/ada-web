@@ -1,0 +1,11 @@
+@import views.html.elements.{selectEnum, labelValue}
+
+@(
+    fieldName: String,
+    label: String,
+    enum: Enumeration
+)
+
+@labelValue(fieldName, label, false, None, 4)(
+    selectEnum(fieldName, enum, true, Some("input-lg-full"))
+)

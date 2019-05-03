@@ -1,0 +1,20 @@
+@import views.html.elements.{inputText, select}
+@import play.api.i18n.Messages
+@import org.incal.spark_ml.models.classification.DecisionTree
+@import org.incal.spark_ml.models.classification.DecisionTreeImpurity
+@import org.ada.web.util.enumToValueString
+
+@(form: Form[DecisionTree])(implicit msg: Messages)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[DecisionTree].getName}">
+
+@inputText("decisionTree", "name", form)
+
+<hr/>
+
+@inputText("decisionTree", "core.maxDepth", form)
+@inputText("decisionTree", "core.maxBins", form)
+@inputText("decisionTree", "core.minInstancesPerNode", form)
+@inputText("decisionTree", "core.minInfoGain", form)
+@inputText("decisionTree", "core.seed", form)
+@select("decisionTree", "impurity", form, enumToValueString(DecisionTreeImpurity), true)

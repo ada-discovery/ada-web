@@ -1,0 +1,33 @@
+@import views.html.layout
+@import views.html.elements.editableTextElements
+@import views.html.elements._
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.ada.server.models.HtmlSnippetId
+@import org.ada.server.models.HtmlSnippet
+@import org.ada.web.controllers.routes
+
+@(
+	form: Form[HtmlSnippet]
+)(
+    implicit context: WebContext
+)
+
+@elements = {
+	@labelValue("snippetId", "Snippet Id") {
+		@selectEnum("snippetId", HtmlSnippetId)
+	}
+    @labelValue("content", "Content") {
+        <textarea id="content" name="content" rows="15" cols="65"></textarea>
+    }
+	@checkbox("htmlSnippet", "active", form)
+}
+
+@layout.create(
+    "HTML Snippet",
+	"htmlSnippet",
+	form = form,
+	elements = elements,
+	saveCall = routes.HtmlSnippetController.save(),
+	listCall = routes.HtmlSnippetController.listAll()
+)

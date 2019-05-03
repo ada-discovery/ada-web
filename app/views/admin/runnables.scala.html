@@ -1,0 +1,48 @@
+@import views.html.layout.main
+@import play.api.mvc.Flash
+@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.routes
+
+@(runnableNames : Iterable[String])(implicit context: WebContext)
+
+@main("Runnables") {
+
+    <div class="page-header">
+        <h3>
+            @Messages("Runnables")
+        </h3>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <td>
+                            Name
+                        </td>
+                        <td>
+                            Run
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                @runnableNames.map { name =>
+                    <tr>
+                        <td>
+                            @name
+                        </td>
+                        <td>
+                            <a href="#" onclick="submit('post', '@routes.AdminController.runScript(name)'); return false;">
+                                Run
+                            </a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

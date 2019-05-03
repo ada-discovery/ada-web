@@ -1,0 +1,3 @@
+@(domainName: String, form: Form[_])(implicit msg: play.api.i18n.Messages)
+
+@form.mapping.mappings.map(_.key).filter(key => !key.isEmpty && !key.equals("id")).map{key => @inputText(domainName, key, form)}

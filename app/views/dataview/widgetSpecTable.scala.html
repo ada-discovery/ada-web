@@ -1,0 +1,853 @@
+@import views.html.table.{displayTable, dynamicTable}
+@import views.html.elements.{labelValue, selectEnum}
+@import org.ada.web.util.typeColumns
+@import org.ada.web.models._
+@import org.ada.server.models._
+@import org.ada.server.models.DataSetFormattersAndIds.{widgetSpecFormat, widgetSpecClasses}
+@import org.incal.core.util.ReflectionUtil.getCaseClassMemberAndTypeNames
+@import play.api.libs.json.Json
+@import play.api.libs.json.JsObject
+@import reactivemongo.play.json.BSONFormats._
+@import org.ada.server.dataaccess.JsonUtil
+@import play.api.libs.json.JsArray
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.web.util.toHumanReadableCamel
+@import org.ada.server.field.FieldUtil.nameOrLabel
+@import org.ada.web.util.shorten
+
+@(
+    items: Traversable[WidgetSpec],
+    nameFieldMap: Map[String,  Field],
+    idFilterNameMap: Map[BSONObjectID, String],
+    showFieldStyle: Option[FilterShowFieldStyle.Value]
+)
+
+@editableChartType(chartType: Option[ChartType.Value]) = {
+    <select id="chartType" name="chartType">
+        <option value="" @if(chartType.isEmpty) {selected="selected"}></option>
+        @ChartType.values.map { _chartType =>
+            <option value="@{_chartType}" @if(chartType.isDefined && chartType.get == _chartType) {selected="selected"}>@{_chartType}</option>
+        }
+    </select>
+}
+
+@hiddenElement(id: String, value: Any) = {
+    <input type="hidden" id="@id" value="@value">
+}
+
+
+@fieldLabel(fieldName: String) = @{
+    nameFieldMap.get(fieldName).map(nameOrLabel(showFieldStyle.getOrElse(FilterShowFieldStyle.LabelsOnly))).getOrElse(fieldName)
+}
+
+@fieldLabels(widgetSpec: WidgetSpec) = {
+    @widgetSpec.fieldNames.map( fieldName => fieldLabel(fieldName) ).mkString(", ")
+}
+
+
+@fieldLabelElements(fieldNames: Seq[(String, String)]) = {
+    @fieldNames.map{ fieldName =>
+        @hiddenElement(fieldName._1, fieldLabel(fieldName._2))
+    }
+}
+
+@fieldTypeaheadElements(widgetSpec: WidgetSpec) = {
+    @{
+        widgetSpec match {
+            case x: DistributionWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("fieldNameTypeahead", x.fieldName)) ++
+                    x.groupFieldName.map( ("groupFieldNameTypeahead", _)
+                ))
+            case x: CumulativeCountWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("fieldNameTypeahead", x.fieldName)) ++
+                    x.groupFieldName.map( ("groupFieldNameTypeahead", _)
+                ))
+            case x: BoxWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("fieldNameTypeahead", x.fieldName)) ++
+                    x.groupFieldName.map( ("groupFieldNameTypeahead", _)
+                ))
+            case x: ScatterWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("xFieldNameTypeahead", x.xFieldName),
+                    ("yFieldNameTypeahead", x.yFieldName)) ++
+                    x.groupFieldName.map( ("groupFieldNameTypeahead", _)
+                ))
+            case x: ValueScatterWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("xFieldNameTypeahead", x.xFieldName),
+                    ("yFieldNameTypeahead", x.yFieldName),
+                    ("valueFieldNameTypeahead", x.valueFieldName)
+                ))
+            case x: HeatmapAggWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("xFieldNameTypeahead", x.xFieldName),
+                    ("yFieldNameTypeahead", x.yFieldName),
+                    ("valueFieldNameTypeahead", x.valueFieldName)
+                ))
+            case x: GridDistributionCountWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("xFieldNameTypeahead", x.xFieldName),
+                    ("yFieldNameTypeahead", x.yFieldName)
+                ))
+            case x: BasicStatsWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("fieldNameTypeahead", x.fieldName)
+                ))
+            case x: IndependenceTestWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("fieldNameTypeahead", x.fieldName)
+                ))
+            case _ => ""
+        }
+    }
+}
+
+@dataHiddenElement(widgetSpec: WidgetSpec) = {
+    @{
+        Json.toJson(widgetSpec).as[JsObject].-("displayOptions").fields.map {
+            case (fieldName, jsValue) =>
+                if (fieldName == "subFilterId") {
+                    hiddenElement(fieldName, jsValue.asOpt[JsObject].map(json => JsonUtil.toString(json \ "$oid")))
+                } else
+                    jsValue match {
+                        case JsArray(seq) => hiddenElement(fieldName, seq.map(JsonUtil.toString).flatten.mkString(", "))
+                        case _ => hiddenElement(fieldName, JsonUtil.toString(jsValue))
+                    }
+        } ++ Seq(fieldTypeaheadElements(widgetSpec))
+    }
+}
+
+@concreteClassName(clazz: Class[_]) = @{
+    toHumanReadableCamel(clazz.getSimpleName.replaceAll("WidgetSpec", ""))
+}
+
+@gridWidthElement(widgetSpec: WidgetSpec) = {
+    <input type="text" id="gridWidth" style="width:40px" value="@widgetSpec.displayOptions.gridWidth.getOrElse("")">
+}
+
+@gridOffsetElement(widgetSpec: WidgetSpec) = {
+    <input type="text" id="gridOffset" style="width:40px" value="@widgetSpec.displayOptions.gridOffset.getOrElse("")">
+}
+
+@heightElement(widgetSpec: WidgetSpec) = {
+    <input type="text" id="height" style="width:60px" value="@widgetSpec.displayOptions.height.getOrElse("")">
+}
+
+@isTextualFormElement(widgetSpec: WidgetSpec) = {
+    <input type="checkbox" id="isTextualForm" name="isTextualForm" @if(widgetSpec.displayOptions.isTextualForm) { checked="checked"}/>
+}
+
+@titleElement(widgetSpec: WidgetSpec) = {
+    <input type="text" id="title" style="width:90px" value="@widgetSpec.displayOptions.title.getOrElse("")">
+}
+
+@spec(widgetSpec: WidgetSpec) = {
+    <div class="row">
+        Fields: @fieldLabels(widgetSpec)
+    </div>
+    <div class="row">
+        @{  {
+                {widgetSpec match {
+                    case x: DistributionWidgetSpec =>
+                        Seq(
+                            x.numericBinCount.map( count => "Numeric Bin Count: " + count),
+                            Some(s"Show Relative Values: ${x.relativeValues}"),
+                            Some(s"Date Month Bins: ${x.useDateMonthBins}")
+                        )
+                    case x: CumulativeCountWidgetSpec =>
+                        Seq(
+                            x.numericBinCount.map( count => "Numeric Bin Count: " + count),
+                            Some(s"Show Relative Values: ${x.relativeValues}"),
+                            Some(s"Date Month Bins: ${x.useDateMonthBins}")
+                        )
+                    case x: HeatmapAggWidgetSpec =>
+                        Seq(
+                            Some("X Bin Count: " + x.xBinCount),
+                            Some("Y Bin Count: " + x.yBinCount),
+                            Some("Agg Type: " + x.aggType)
+                        )
+
+                    case x: GridDistributionCountWidgetSpec =>
+                        Seq(
+                            Some("X Bin Count: " + x.xBinCount),
+                            Some("Y Bin Count: " + x.yBinCount)
+                        )
+
+                    case x: IndependenceTestWidgetSpec =>
+                        Seq(
+                            Some("Keep Undefined: " + x.keepUndefined),
+                            x.topCount.map( count => "Top Count: " + count)
+                        )
+
+                    case x: CorrelationWidgetSpec =>
+                        Seq(
+                            Some("Type: " + x.correlationType)
+                        )
+
+                    case x: CustomHtmlWidgetSpec =>
+                        Seq(
+                            Some("Content: " + Html(shorten(x.content, 50)))
+                        )
+                    case _ =>
+                        Nil
+                }} ++
+                    Seq(widgetSpec.subFilterId.map(id => s"Sub Filter: ${idFilterNameMap.get(id).get}"))
+            }.flatten.mkString(", ")
+        }
+    </div>
+}
+
+@table = {
+    @displayTable(
+        items,
+        typeColumns[WidgetSpec](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (None, "", dataHiddenElement),
+            (None, "Type", {x => concreteClassName(x.getClass)}),
+            (None, "Content", spec),
+            (None, "Grid Offset", gridOffsetElement),
+            (None, "Grid Width", gridWidthElement),
+            (None, "Height", heightElement),
+            (None, "Textual?", isTextualFormElement),
+            (None, "Title", titleElement),
+            (None, "Chart Type", {x =>
+                if(x.displayOptions.isInstanceOf[MultiChartDisplayOptions]) {
+                    editableChartType(x.displayOptions.asInstanceOf[MultiChartDisplayOptions].chartType)
+                } else ""
+            })
+        )
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        var model = widgetRowToModel(row);
+        return JSON.stringify(model);
+    }
+}
+
+@modalItemToRowJsFun = {
+    function(values) {
+        // fields
+        var concreteClass = values["concreteClass"].trim()
+        var fields = getWidgetFieldsWithoutDisplayOptions(concreteClass);
+
+        var isDefined = true
+        var isDistributionType = concreteClass == "@{classOf[DistributionWidgetSpec].getName}"
+        var isCumulativeCountType = concreteClass == "@{classOf[CumulativeCountWidgetSpec].getName}"
+        var isBoxType = concreteClass == "@{classOf[BoxWidgetSpec].getName}"
+        var isScatterType = concreteClass == "@{classOf[ScatterWidgetSpec].getName}"
+        var isValueScatterType = concreteClass == "@{classOf[ValueScatterWidgetSpec].getName}"
+        var isCorrelationType = concreteClass == "@{classOf[CorrelationWidgetSpec].getName}"
+        var isHeatmapAggType = concreteClass == "@{classOf[HeatmapAggWidgetSpec].getName}"
+        var isGridDistributionCountType = concreteClass == "@{classOf[GridDistributionCountWidgetSpec].getName}"
+        var isIndependenceTest = concreteClass == "@{classOf[IndependenceTestWidgetSpec].getName}"
+        var isTemplateHtmlType = concreteClass == "@{classOf[CustomHtmlWidgetSpec].getName}"
+
+        var xyFieldsDefined = values["xFieldName"] != null && values["xFieldName"].length > 0 && values["yFieldName"] != null && values["yFieldName"].length > 0
+
+        if (isDistributionType || isCumulativeCountType || isBoxType) {
+            isDefined = values["fieldName"] != null && values["fieldName"].length > 0
+        }
+
+        if (isScatterType) {
+            isDefined = xyFieldsDefined
+        }
+
+        if (isValueScatterType) {
+            isDefined = xyFieldsDefined && values["valueFieldName"] != null && values["valueFieldName"].length > 0
+        }
+
+        if (isGridDistributionCountType) {
+            isDefined = xyFieldsDefined && values["xBinCount"].length > 0 && values["yBinCount"].length > 0
+        }
+
+        if (isHeatmapAggType) {
+            isDefined = xyFieldsDefined && values["valueFieldName"] != null && values["valueFieldName"].length > 0 && values["xBinCount"].length > 0 && values["yBinCount"].length > 0 && values["aggType"].length > 0
+        }
+
+        if (isCorrelationType) {
+            isDefined = values["fieldNames"] != null && values["fieldNames"].length > 0 && values["correlationType"].length > 0
+        }
+
+        if (isIndependenceTest) {
+            isDefined = values["inputFieldNames"] != null && values["inputFieldNames"].length > 0 && values["fieldName"] != null && values["fieldName"].length > 0
+        }
+
+        var row = null
+
+        if (isDefined) {
+
+            var labelFields = getWidgetLabelFields(concreteClass);
+            fields.push("concreteClass")
+            fields = fields.concat(labelFields)
+
+            // data column
+            var dataColumn = $("<td></td>")
+            $.each(fields, function( index, fieldName ) {
+                var value = values[fieldName]
+                if (value != null)
+                    dataColumn.append("<input type='hidden' id='" + fieldName + "' value='" + value + "'/>");
+            });
+
+
+            // display content column
+            var fieldLabels = labelFields.map(function(labelField) {
+                return values[labelField];
+            }).join(", ");
+
+            var contentDisplayColumn = $("<td></td>")
+            if (fieldLabels.length > 0)
+                contentDisplayColumn.append("<div class='row'>Fields: " + fieldLabels + "</div>")
+
+
+            // DISPLAY ELEMENTS
+            var displayElements = []
+
+            // distribution and cumulative count
+            var isDistributionOrCumulativeCountType = isDistributionType || isCumulativeCountType
+
+            var numericBinCount = values["numericBinCount"]
+            if (isDistributionOrCumulativeCountType) {
+                if (numericBinCount)
+                    displayElements.push("Numeric Bin Count: " + numericBinCount)
+
+                displayElements.push("Show Relative Values: " + values["relativeValues"])
+                displayElements.push("Date Month Bins: " + values["useDateMonthBins"])
+             }
+
+            // template html
+            if (isTemplateHtmlType)
+                displayElements.push("Content: " + values["content"])
+
+            // correlation
+            if (isCorrelationType) {
+                displayElements.push("Correlation Type: " + values["correlationType"])
+                displayElements.push("Fields: " + values["fieldNames"])
+            }
+
+            if (isGridDistributionCountType || isHeatmapAggType) {
+                displayElements.push("X Bin Count: " + values["xBinCount"])
+                displayElements.push("Y Bin Count: " + values["yBinCount"])
+            }
+
+            if (isHeatmapAggType) {
+                displayElements.push("Agg Type: " + values["aggType"])
+            }
+
+            // independence test
+            if (isIndependenceTest) {
+                displayElements.push(values["inputFieldNames"])
+                displayElements.push("Keep Undefined: " + values["keepUndefined"])
+            }
+
+            var subFilterIdValue = values["subFilterId"]
+
+            if (subFilterIdValue)
+                displayElements.push("Sub Filter Id: " + subFilterIdValue)
+
+            contentDisplayColumn.append("<div class='row'>" + displayElements.join(", ") + "</div>")
+
+            // DISPLAY OPTIONS
+            var displayOptions = values["displayOptions"]
+
+            var gridOffsetValue = "";
+            var gridWidthValue = "";
+            var heightValue = "";
+            var isTextualFormValue = false;
+            var titleValue = "";
+            var chartTypeValue = "";
+
+            if (displayOptions) {
+                if (displayOptions["gridOffset"]) {
+                    gridOffsetValue = displayOptions["gridOffset"];
+                }
+                if (displayOptions["gridWidth"]) {
+                    gridWidthValue = displayOptions["gridWidth"];
+                }
+                if (displayOptions["height"]) {
+                    heightValue = displayOptions["height"];
+                }
+                if (displayOptions["isTextualForm"]) {
+                    isTextualFormValue = displayOptions["isTextualForm"];
+                }
+                if (displayOptions["chartType"]) {
+                    chartTypeValue = displayOptions["chartType"];
+                }
+                if (displayOptions["title"]) {
+                    titleValue = displayOptions["title"];
+                }
+            }
+            var textualFormChecked = (isTextualFormValue) ? "checked='checked'" : ""
+
+            var gridOffsetColumn = "<td><input type='text' id='gridOffset' style='width:40px' value='" + gridOffsetValue + "'/></td>";
+            var gridWidthColumn = "<td><input type='text' id='gridWidth' style='width:40px' value='" + gridWidthValue + "'/></td>";
+            var heightColumn = "<td><input type='text' id='height' style='width:60px' value='" + heightValue + "'/></td>";
+            var isTextualFormColumn = "<td><input type='checkbox' id='isTextualForm' name='isTextualForm'" + textualFormChecked + "'/></td>";
+            var titleColumn = "<td><input type='text' id='height' style='width:60px' value='" + titleValue + "'/></td>";
+            var chartTypeColumn = (isDistributionOrCumulativeCountType) ? `<td>@editableChartType(None)</td>` : "<td></td>";
+
+            // concrete class name and check box columns
+            var concreteClassName = concreteClass.replace('models.','').replace('WidgetSpec','')
+            var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
+            var concreteClassNameColumn = "<td>" + concreteClassName + "</td>";
+
+            // create row
+            row = $("<tr></tr>")
+            row.append(checkboxColumn)
+            row.append(dataColumn)
+            row.append(concreteClassNameColumn)
+            row.append(contentDisplayColumn)
+            row.append(gridOffsetColumn)
+            row.append(gridWidthColumn)
+            row.append(heightColumn)
+            row.append(isTextualFormColumn)
+            row.append(titleColumn)
+            row.append(chartTypeColumn)
+
+            if (chartTypeValue) {
+                row.find("#chartType").val(chartTypeValue);
+            }
+
+            // make the row clickable
+            setWidgetRowClickable(row)
+        }
+
+        return row;
+    }
+}
+
+@concreteClassOptions = {
+    @widgetSpecClasses.map { clazz =>
+        <option value="@{clazz.getName}">@concreteClassName(clazz)</option>
+    }
+}
+
+@editModalButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-primary" id="editWidgetSpecSubmitButton" data-dismiss="modal">OK</button>
+}
+
+@modal("edit_widgetSpecModal", "Edit Widget Spec", modalInner("edit_widgetSpecModal"), None, Some(editModalButtons))
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = {
+    @labelValue(key, label, false, None, 4)(valueElement)
+}
+
+@modalInner(modalName: String) = {
+    <div class="row">
+        <input type="hidden" id="rowIndex">
+
+        <div id="concreteClassDiv">
+            @labelValueAux("concreteClass", "Type") {
+                <select id="concreteClass" onchange="updateModalItems('@modalName');">
+                    @concreteClassOptions
+                </select>
+            }
+        </div>
+
+        <div id="fieldNameDiv" style="display: none">
+            @labelValueAux("fieldName", "Field") {
+                <input type="text" id="fieldNameTypeahead" class="typeahead">
+                <input type="hidden" id="fieldName">
+            }
+        </div>
+
+        <div id="xFieldNameDiv" style="display: none">
+            @labelValueAux("xFieldName", "X Field") {
+                <input type="text" id="xFieldNameTypeahead" class="typeahead">
+                <input type="hidden" id="xFieldName">
+            }
+        </div>
+
+        <div id="yFieldNameDiv" style="display: none">
+            @labelValueAux("yFieldName", "Y Field") {
+                <input type="text" id="yFieldNameTypeahead" class="typeahead">
+                <input type="hidden" id="yFieldName">
+            }
+        </div>
+
+        <div id="groupFieldNameDiv" style="display: none">
+            @labelValueAux("groupFieldName", "Group Field") {
+                <input type="text" id="groupFieldNameTypeahead" class="typeahead">
+                <input type="hidden" id="groupFieldName">
+            }
+        </div>
+
+        <div id="valueFieldNameDiv" style="display: none">
+            @labelValueAux("valueFieldName", "Value Field") {
+                <input type="text" id="valueFieldNameTypeahead" class="typeahead">
+                <input type="hidden" id="valueFieldName">
+            }
+        </div>
+
+        <div id="fieldNamesDiv" style="display: none">
+            @labelValueAux("fieldNames", "Fields") {
+                <input type="text" id="fieldNames">
+            }
+        </div>
+
+        <div id="inputFieldNamesDiv" style="display: none">
+            @labelValueAux("inputFieldNames", "Input Fields") {
+                <input type="text" id="inputFieldNames">
+            }
+        </div>
+
+        <div id="contentDiv" style="display: none">
+            @labelValueAux("content", "Content") {
+                <textarea id="content" rows="15" cols="35"></textarea>
+            }
+        </div>
+
+        <div id="aggTypeDiv" style="display: none">
+            @labelValueAux("aggType", "Aggregation Type") {
+                @selectEnum("aggType", AggType, false)
+            }
+        </div>
+
+        <div id="numericBinCountDiv" style="display: none">
+            @labelValueAux("numericBinCount", "Numeric Bin #") {
+                <input type="text" id="numericBinCount">
+            }
+        </div>
+
+        <div id="relativeValuesDiv" style="display: none">
+            @labelValueAux("relativeValues", "Relative Values?") {
+                <input type="checkbox" id="relativeValues"/>
+            }
+        </div>
+
+        <div id="useDateMonthBinsDiv" style="display: none">
+            @labelValueAux("useDateMonthBins", "Date Month Bins?") {
+                <input type="checkbox" id="useDateMonthBins"/>
+            }
+        </div>
+
+        <div id="xBinCountDiv" style="display: none">
+            @labelValueAux("xBinCount", "X Bins #") {
+                <input type="text" id="xBinCount">
+            }
+        </div>
+
+        <div id="yBinCountDiv" style="display: none">
+            @labelValueAux("yBinCount", "Y Bins #") {
+                <input type="text" id="yBinCount">
+            }
+        </div>
+
+        <div id="keepUndefinedDiv" style="display: none">
+            @labelValueAux("keepUndefined", "Keep Undefined?") {
+                <input type="checkbox" id="keepUndefined"/>
+            }
+        </div>
+
+        <div id="topCountDiv" style="display: none">
+            @labelValueAux("topCount", "Top Count") {
+                <input type="text" id="topCount">
+            }
+        </div>
+
+
+        <div id="correlationTypeDiv" style="display: none">
+            @labelValueAux("correlationType", "Type") {
+                @selectEnum("correlationType", CorrelationType, false)
+            }
+        </div>
+
+        @labelValueAux("subFilterId", "Sub Filter") {
+            <input type="text" id="subFilterTypeahead" class="typeahead">
+            <input type="hidden" id="subFilterId">
+        }
+    </div>
+}
+
+@dynamicTable("widgetSpec", table, true, rowToModelJsFun, modalItemToRowJsFun, modalInner("add_widgetSpecModal"), None, 12, false, false)
+
+<script type="text/javascript">
+
+     $("#add_widgetSpecModal #content").keypress(function (e) {
+        if (e.which == 13) {
+            e.stopPropagation();
+        }
+     });
+
+     $("#edit_widgetSpecModal #content").keypress(function (e) {
+        if (e.which == 13) {
+            e.stopPropagation();
+        }
+     });
+
+     handleModalButtonEnterPressed("edit_widgetSpecModal", "editWidgetSpecSubmitButton", function() {
+         var groupFieldTypeahedVal = $('#edit_widgetSpecModal #groupFieldNameTypeahead').val();
+         if (!groupFieldTypeahedVal)
+             $('#edit_widgetSpecModal #groupFieldName').val("")
+
+         var subFilterTypeaheadVal = $('#edit_widgetSpecModal #subFilterTypeahead').val();
+         if (!subFilterTypeaheadVal)
+             $('#edit_widgetSpecModal #subFilterId').val("")
+
+         var values = getModalValues("edit_widgetSpecModal");
+         var rowIndex = values["rowIndex"]
+
+         var row = $("#widgetSpecDiv table tbody tr").eq(rowIndex);
+         var rowModel = widgetRowToModel(row)
+
+         values["displayOptions"] = rowModel["displayOptions"]
+         $('#widgetSpecDiv').dynamicTable('replaceTableRow', rowIndex, values)
+     }, true)
+
+     setWidgetRowClickable($("#widgetSpecDiv table tbody tr"));
+
+     function setWidgetRowClickable(row) {
+         row.css('cursor', 'pointer');
+         row.dblclick(function (event) {
+            showEditModal($(this))
+         });
+     }
+
+     function setIfNotNull(item, fieldName, value) {
+        if (value != null)
+            item[fieldName] = value
+     }
+
+    function widgetRowToModel(row) {
+        function getValue(elementId) {
+            var element = row.find('#' + elementId);
+            var value = null;
+            if (element.length > 0) {
+                value = element.val().trim()
+                if (!value)
+                    value = null
+            }
+            return value;
+        }
+
+        function getIntValue(elementId, defaultNaNValue) {
+            var value = getValue(elementId)
+            var intValue = null;
+            if (value && value.length > 0) {
+                intValue = parseInt(value)
+                if (isNaN(intValue)) {
+                    intValue = defaultNaNValue
+                }
+            }
+            return intValue;
+        }
+
+        function getBoolValue(elementId) {
+            var value = getValue(elementId)
+            var boolValue = null;
+            if (value && value.length > 0) {
+                boolValue = (value == "true")
+            }
+            return boolValue;
+        }
+
+        function getArray(elementId) {
+            var value = getValue(elementId)
+            var arrayValue = null;
+            if (value && value.length > 0) {
+                arrayValue = value.split(",").map(function(str) {
+                    return str.trim();
+                }).filter(function(v) {return v != ''});
+            }
+            return arrayValue;
+        }
+
+        var output = {};
+        var concreteClass = getValue('concreteClass')
+        output["concreteClass"] = concreteClass
+
+        var fields = getWidgetFieldsWithoutDisplayOptions(concreteClass);
+        var labelFields = getWidgetLabelFields(concreteClass);
+        fields = fields.concat(labelFields)
+
+        $.each(fields, function(index, fieldName) {
+            setIfNotNull(output, fieldName, getValue(fieldName))
+        });
+
+        // numeric bin count is integer hence we need to do the setting again
+        setIfNotNull(output, "numericBinCount", getIntValue("numericBinCount", 20))
+
+        // relative values is boolean hence we need to do the setting again
+        setIfNotNull(output, "relativeValues", getBoolValue("relativeValues"))
+
+        // useDateMonthBins is boolean hence we need to do the setting again
+        setIfNotNull(output, "useDateMonthBins", getBoolValue("useDateMonthBins"))
+
+        // x bin count is integer hence we need to do the setting again
+        setIfNotNull(output, "xBinCount", getIntValue("xBinCount", 20))
+
+        // y bin count is integer hence we need to do the setting again
+        setIfNotNull(output, "yBinCount", getIntValue("yBinCount", 20))
+
+        // fieldNames (of correlation widget) is array  hence we need to do the setting again
+        setIfNotNull(output, "fieldNames", getArray("fieldNames"))
+
+        // inputFieldNames (of the chi-square and anova widgets) is array hence we need to do the setting again
+        setIfNotNull(output, "inputFieldNames", getArray("inputFieldNames"))
+
+        // keep undefined is boolean hence we need to do the setting again
+        setIfNotNull(output, "keepUndefined", getBoolValue("keepUndefined"))
+
+        // top count is integer hence we need to do the setting again
+        setIfNotNull(output, "topCount", getIntValue("topCount"))
+
+        var subFilterId = getValue("subFilterId")
+        if (subFilterId) {
+            setIfNotNull(output, "subFilterId", {"$oid": subFilterId})
+        }
+
+        // display options
+        var displayOptions = {};
+        setIfNotNull(displayOptions, "gridOffset", getIntValue('gridOffset', 0))
+        setIfNotNull(displayOptions, "gridWidth", getIntValue('gridWidth', 4))
+        setIfNotNull(displayOptions, "height", getIntValue('height', 400))
+        setIfNotNull(displayOptions, "chartType", getValue('chartType'))
+        setIfNotNull(displayOptions, "title", getValue('title'))
+        displayOptions["isTextualForm"] = row.find('#isTextualForm').is(':checked')
+        output["displayOptions"] = displayOptions;
+
+        return output;
+    }
+
+    function hideAll(modalName) {
+        $("#" + modalName + " #fieldNameDiv").hide();
+        $("#" + modalName + " #xFieldNameDiv").hide();
+        $("#" + modalName + " #yFieldNameDiv").hide();
+        $("#" + modalName + " #groupFieldNameDiv").hide();
+        $("#" + modalName + " #valueFieldNameDiv").hide();
+        $("#" + modalName + " #contentDiv").hide();
+        $("#" + modalName + " #numericBinCountDiv").hide();
+        $("#" + modalName + " #fieldNamesDiv").hide();
+        $("#" + modalName + " #aggTypeDiv").hide();
+        $("#" + modalName + " #relativeValuesDiv").hide();
+        $("#" + modalName + " #xBinCountDiv").hide();
+        $("#" + modalName + " #yBinCountDiv").hide();
+        $("#" + modalName + " #useDateMonthBinsDiv").hide();
+        $("#" + modalName + " #excludeUndefinedDiv").hide();
+        $("#" + modalName + " #topCountDiv").hide();
+        $("#" + modalName + " #correlationTypeDiv").hide();
+        $("#" + modalName + " #inputFieldNamesDiv").hide();
+    }
+
+    function showEditModal(source) {
+        var row = $(source.closest("tr"))
+        var model = widgetRowToModel(row);
+        var rowIndex = $("tr", row.closest("tbody")).index(row);
+
+        $('#edit_widgetSpecModal #concreteClass').val(model["concreteClass"]).change();
+
+        $('#edit_widgetSpecModal #rowIndex').val(rowIndex)
+
+        $('#edit_widgetSpecModal #fieldName').val(model["fieldName"]);
+        $('#edit_widgetSpecModal #xFieldName').val(model["xFieldName"]);
+        $('#edit_widgetSpecModal #yFieldName').val(model["yFieldName"]);
+        $('#edit_widgetSpecModal #groupFieldName').val(model["groupFieldName"]);
+        $('#edit_widgetSpecModal #valueFieldName').val(model["valueFieldName"]);
+        $('#edit_widgetSpecModal #fieldNames').val(model["fieldNames"]);
+        $('#edit_widgetSpecModal #inputFieldNames').val(model["inputFieldNames"]);
+
+        $('#edit_widgetSpecModal #fieldNameTypeahead').val(model["fieldNameTypeahead"]);
+        $('#edit_widgetSpecModal #xFieldNameTypeahead').val(model["xFieldNameTypeahead"]);
+        $('#edit_widgetSpecModal #yFieldNameTypeahead').val(model["yFieldNameTypeahead"]);
+        $('#edit_widgetSpecModal #groupFieldNameTypeahead').val(model["groupFieldNameTypeahead"]);
+        $('#edit_widgetSpecModal #valueFieldNameTypeahead').val(model["valueFieldNameTypeahead"]);
+
+        $('#edit_widgetSpecModal #numericBinCount').val(model["numericBinCount"]);
+        $('#edit_widgetSpecModal #xBinCount').val(model["xBinCount"]);
+        $('#edit_widgetSpecModal #yBinCount').val(model["yBinCount"]);
+
+        $('#edit_widgetSpecModal #aggType').val(model["aggType"]);
+        $('#edit_widgetSpecModal #relativeValues').prop('checked', model["relativeValues"]);
+        $('#edit_widgetSpecModal #useDateMonthBins').prop('checked', model["useDateMonthBins"]);
+        $('#edit_widgetSpecModal #keepUndefined').prop('checked', model["keepUndefined"]);
+        $('#edit_widgetSpecModal #topCount').val(model["topCount"]);
+
+        $('#edit_widgetSpecModal #correlationType').val(model["correlationType"]);
+
+        $('#edit_widgetSpecModal #content').val(model["content"]);
+
+        var subFilterId = model["subFilterId"]
+        if (subFilterId)
+            subFilterId = subFilterId["$oid"];
+        $('#edit_widgetSpecModal #subFilterId').val(subFilterId);
+
+        $("#edit_widgetSpecModal").modal("show");
+    }
+
+    function updateModalItems(modalName) {
+        var concreteClass = $('#' + modalName + ' #concreteClass').val();
+        hideAll(modalName);
+
+        var fields = getWidgetFieldsWithoutDisplayOptions(concreteClass);
+
+        $.each(fields, function( index, fieldName ) {
+            $("#" + modalName + " #" + fieldName + "Div").show();
+        });
+    }
+
+    function getWidgetFields(concreteClass) {
+        var fieldNames = []
+        switch (concreteClass) {
+            @widgetSpecClasses.map { clazz =>
+                case "@{clazz.getName}" :
+                    fieldNames = [@getCaseClassMemberAndTypeNames(clazz.getName).map{ case (name, _) => "@name", } ];
+                    break;
+
+            }
+        }
+        return fieldNames;
+    }
+
+    function getWidgetFieldsWithoutDisplayOptions(concreteClass) {
+        var fields = getWidgetFields(concreteClass);
+        var index = fields.indexOf("displayOptions");
+        if (index != 1) {
+            fields.splice(index, 1);
+        }
+        return fields;
+    }
+
+    function getWidgetLabelFields(concreteClass) {
+        var labelFields = [];
+
+        switch (concreteClass) {
+            case "@{classOf[DistributionWidgetSpec].getName}" :
+                labelFields = ["fieldNameTypeahead", "groupFieldNameTypeahead"];
+                break;
+            case "@{classOf[CumulativeCountWidgetSpec].getName}" :
+                labelFields = ["fieldNameTypeahead", "groupFieldNameTypeahead"];
+                break;
+            case "@{classOf[BoxWidgetSpec].getName}" :
+                labelFields = ["fieldNameTypeahead", "groupFieldNameTypeahead"];
+                break;
+            case "@{classOf[ScatterWidgetSpec].getName}" :
+                labelFields = ["xFieldNameTypeahead", "yFieldNameTypeahead", "groupFieldNameTypeahead"];
+                break;
+            case "@{classOf[ValueScatterWidgetSpec].getName}" :
+                labelFields = ["xFieldNameTypeahead", "yFieldNameTypeahead", "valueFieldNameTypeahead"];
+                break;
+            case "@{classOf[HeatmapAggWidgetSpec].getName}" :
+                labelFields = ["xFieldNameTypeahead", "yFieldNameTypeahead", "valueFieldNameTypeahead"];
+                break;
+            case "@{classOf[GridDistributionCountWidgetSpec].getName}" :
+                labelFields = ["xFieldNameTypeahead", "yFieldNameTypeahead"];
+                break;
+            case "@{classOf[CorrelationWidgetSpec].getName}" :
+                break;
+            case "@{classOf[BasicStatsWidgetSpec].getName}" :
+                labelFields = ["fieldNameTypeahead"];
+                break;
+            case "@{classOf[IndependenceTestWidgetSpec].getName}" :
+                labelFields = ["fieldNameTypeahead"];
+                break;
+            case "@{classOf[CustomHtmlWidgetSpec].getName}" :
+                break;
+        }
+        return labelFields;
+    }
+</script>

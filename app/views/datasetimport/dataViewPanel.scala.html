@@ -1,0 +1,63 @@
+@import org.ada.server.models.WidgetGenerationMethod
+@import org.ada.server.models.dataimport.DataSetImport
+@import views.html.elements._
+
+@(form: Form[_ <: DataSetImport])(implicit msg: Messages)
+
+<div class="panel panel-default">
+    <div class="panel-heading">Data View</div>
+    <div class="panel-body">
+        @yesNoRadio("dataSetImport", "includeDataView", form, Some("Do you want to specify a default data view now?"))
+        <div id="dataViewDiv" style="display:none">
+            <hr/>
+            @inputText("dataSetImport", "dataView.tableColumnNames", form)
+            @inputText("dataSetImport", "dataView.distributionCalcFieldNames", form)
+            @inputText("dataSetImport", "dataView.elementGridWidth", form)
+            @labelValue("generationMethod", "Generation Method") {
+                @selectEnum("dataView.generationMethod", WidgetGenerationMethod, false, None, form.value.flatMap(_.dataView.map(_.generationMethod.toString)))
+            }
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        var includeDataView = false;
+        $.each( $("input[name^='dataView.']"), function () {
+            if ($(this).val()) {
+                includeDataView = true;
+                return false;
+            }
+        });
+
+        if (includeDataView) {
+            $('input[name="includeDataView"][value="true"]').attr('checked', 'checked')
+            $('input[name="includeDataView"][value="false"]').removeAttr('checked')
+            $('#dataViewDiv').show()
+        } else {
+            $('input[name="includeDataView"][value="true"]').removeAttr('checked')
+            $('input[name="includeDataView"][value="false"]').attr('checked', 'checked')
+        }
+    });
+
+    $('input[name="includeDataView"]').change(function() {
+        var includeDataView = $('input[name="includeDataView"]:checked').val() == "true"
+        if (includeDataView)
+            $('#dataViewDiv').show()
+        else
+            $('#dataViewDiv').hide()
+    })
+
+    function handleDataViewSubmission() {
+        var includeDataView = $('input[name="includeDataView"]:checked').val() == "true"
+        if (!includeDataView) {
+            // if data view should not be included remove all data view fields from the form by erasing their names before submit
+            $.each( $("input[name^='dataView\\.']"), function () {
+                $(this).attr("name", '');
+            });
+            $.each( $("select[name^='dataView\\.']"), function () {
+                $(this).attr("name", '');
+            });
+        }
+    }
+</script>

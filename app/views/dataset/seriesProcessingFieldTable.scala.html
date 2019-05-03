@@ -1,0 +1,163 @@
+@import views.html.table.{displayTable, dynamicTable}
+@import views.html.elements.labelValue
+@import org.ada.web.util.typeColumns
+@import org.ada.server.models.SeriesProcessingSpec
+@import org.ada.server.models.SeriesProcessingType
+
+@(
+    items: Traversable[SeriesProcessingSpec]
+)
+
+@fieldPathElement(spec: SeriesProcessingSpec) = {
+    <input type="text" id="fieldPath" style="width:80px" value="@spec.fieldPath">
+}
+
+@processingTypeElement(_processingType: Option[SeriesProcessingType.Value]) = {
+    <select id="processingType" name="processingType">
+        @SeriesProcessingType.values.map { processingType =>
+            <option value="@{processingType}" @if(_processingType.isDefined && _processingType.get == processingType) {selected="selected"}>@{processingType}</option>
+        }
+    </select>
+}
+
+@pastValuesCountElement(spec: SeriesProcessingSpec) = {
+    <input type="text" id="pastValuesCount" style="width:80px" value="@spec.pastValuesCount">
+}
+
+@padWithZeroesElement(spec: SeriesProcessingSpec) = {
+    <input type="checkbox" id="addInitPaddingWithZeroes" name="addInitPaddingWithZeroes" @if(spec.addInitPaddingWithZeroes) { checked="checked"} />
+}
+
+@table = {
+    @displayTable(
+        items,
+        typeColumns[SeriesProcessingSpec](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (None, "Field Path", fieldPathElement),
+            (None, "Processing Type", {x => processingTypeElement(Some(x.processingType))}),
+            (None, "Past Values Count", pastValuesCountElement),
+            (None, "Pad With Zeroes?", padWithZeroesElement)
+        )
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        var model = specRowToModel(row);
+        return JSON.stringify(model);
+    }
+}
+
+@modalItemToRowJsFun = {
+    function(values) {
+        var fieldPath = values["fieldPath"].trim()
+        var processingType = values["processingType"].trim()
+        var pastValuesCount = values["pastValuesCount"].trim()
+        var addInitPaddingWithZeroes = values["addInitPaddingWithZeroes"]
+
+        var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
+        var fieldPathColumn = "<td><input type='text' id='fieldPath' style='width:80px' value='" + fieldPath + "'/></td>";
+        var processingTypeColumn = `<td>@processingTypeElement(None)</td>`
+        var pastValuesCountColumn = "<td><input type='text' id='pastValuesCount' style='width:80px' value='" + pastValuesCount + "'/></td>";
+        var addInitPaddingWithZeroesChecked = (addInitPaddingWithZeroes) ? "checked='checked'" : ""
+        var addInitPaddingWithZeroesColumn = "<td><input type='checkbox' id='addInitPaddingWithZeroes' name='addInitPaddingWithZeroes'" + addInitPaddingWithZeroesChecked + "'/></td>";
+
+
+        // create row
+        var row = $("<tr></tr>")
+        row.append(checkboxColumn)
+        row.append(fieldPathColumn)
+        row.append(processingTypeColumn)
+        row.append(pastValuesCountColumn)
+        row.append(addInitPaddingWithZeroesColumn)
+
+        row.find('#processingType').val(processingType)
+
+        return row;
+    }
+}
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = {
+    @labelValue(key, label, false, None, 4)(valueElement)
+}
+
+@modalInner(modalName: String) = {
+    <div class="row">
+        <input type="hidden" id="rowIndex">
+
+         @labelValueAux("fieldPath", "Field Path") {
+            <input type="text" id="fieldPath">
+         }
+
+         @labelValueAux("processingType", "Processing Type") {
+             @processingTypeElement(None)
+         }
+
+         @labelValueAux("pastValuesCount", "Past Values Count") {
+            <input type="text" id="pastValuesCount">
+         }
+
+         @labelValueAux("addInitPaddingWithZeroes", "Pad With Zeroes?") {
+            <input type="checkbox" id="addInitPaddingWithZeroes"/>
+         }
+    </div>
+}
+
+@dynamicTable("seriesProcessingSpec", table, true, rowToModelJsFun, modalItemToRowJsFun, modalInner("add_seriesProcessingSpecModal"), None, 12)
+
+<script type="text/javascript">
+     function setIfNotNull(item, fieldName, value) {
+        if (value != null)
+            item[fieldName] = value
+     }
+
+    function specRowToModel(row) {
+        function getValue(elementId) {
+            var element = row.find('#' + elementId);
+            var value = null;
+            if (element.length > 0) {
+                value = element.val().trim()
+                if (!value)
+                    value = null
+            }
+            return value;
+        }
+
+        function getIntValue(elementId, defaultNaNValue) {
+            var value = getValue(elementId)
+            var intValue = null;
+            if (value && value.length > 0) {
+                intValue = parseInt(value)
+                if (isNaN(intValue)) {
+                    intValue = defaultNaNValue
+                }
+            }
+            return intValue;
+        }
+
+        function getBoolValue(elementId) {
+            var value = getValue(elementId)
+            var boolValue = null;
+            if (value && value.length > 0) {
+                boolValue = (value == "true")
+            }
+            return boolValue;
+        }
+
+        var output = {};
+
+        // field path
+        setIfNotNull(output, "fieldPath", getValue("fieldPath"))
+
+        // processing type
+        setIfNotNull(output, "processingType", getValue("processingType"))
+
+        // past values count
+        setIfNotNull(output, "pastValuesCount", getIntValue("pastValuesCount"))
+
+        // addInitPaddingWithZeroes
+        output["addInitPaddingWithZeroes"] = row.find('#addInitPaddingWithZeroes').is(':checked')
+
+        return output;
+    }
+</script>

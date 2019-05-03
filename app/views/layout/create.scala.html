@@ -1,0 +1,38 @@
+@import views.html.layout.formErrors
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+
+@(
+	displayName: String,
+	messagePrefix: String,
+	form: Form[_],
+	elements : Html,
+	saveCall : Call,
+	listCall : Call,
+	formArgs: (Symbol,String)*
+)(
+	implicit context: WebContext
+)
+
+@main(Messages("create.title", displayName), None, None, None, None, Some(formErrors(messagePrefix, form.errors))) {
+
+	<div class="page-header">
+		<h3>@Messages("create.title", displayName)</h3>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+		    @helper.form(action = saveCall, formArgs: _*) {
+			    <fieldset>
+				    @elements
+			    </fieldset>
+
+				<hr/>
+			    <div class="actions pull-right">
+				    <input type="submit" value="Create" class="btn btn-primary">
+				    <a href="@listCall" class="btn btn-default">Cancel</a>
+			    </div>
+		    }
+		</div>
+	</div>
+}

@@ -1,0 +1,40 @@
+@import views.html.layout
+@import views.html.userprofile.editableUserProfileForm
+@import org.ada.server.models.User
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.routes
+
+@(form: Form[User])(implicit webContext: WebContext))
+
+@layout.main(webContext.configuration.getString("project.name").getOrElse("") + " Home") {
+    <div class="container" style="padding-bottom: 190px;" xmlns="http://www.w3.org/1999/html">
+        @userprofile.profileHeader(2)
+        <br>
+
+        @form.errors.map{ error =>
+            <div class="alert alert-dismissable alert-danger">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-md-8">
+            @helper.form(routes.UserProfileController.updateSettings) {
+                <fieldset>
+                    @editableUserProfileForm("user", form)
+                </fieldset>
+
+                <div class="actions">
+                    <input type="submit" value="Update" class="btn btn-primary">
+                    <a href="@routes.UserProfileController.profile()" class="btn btn-default">Cancel</a>
+                </div>
+            }
+            </div>
+        </div>
+
+    </div>
+}
+
+
+

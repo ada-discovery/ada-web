@@ -1,0 +1,37 @@
+@(
+    title : String,
+    chartElementName: String,
+    elements : Seq[(String, Seq[Any])],
+    jitter: Double = 0.3
+)
+
+// Be aware that plotly expects the full data set!
+// Apparently median, mean, etc are calculated automatically by plotly.
+
+<h3>@title</h3>
+<div id="@chartElementName"></div>
+<script type="text/javascript">
+
+    ID = document.getElementById('@chartElementName');
+
+    var data = [];
+
+    @elements.map{ case (name, data) =>
+        var tmp = {
+            y: [
+                @data.map{ case (value) => @value, }
+            ],
+            type: 'box',
+            jitter: @jitter,
+            name: @name
+        };
+        data.push(tmp);
+    }
+
+    var layout = {
+        //height: 380,
+        //width: 480
+    };
+
+    Plotly.newPlot(ID, data, layout);
+</script>

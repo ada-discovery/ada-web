@@ -1,0 +1,347 @@
+@import org.ada.web.models.Widget
+@import org.ada.server.models.Field
+@import reactivemongo.play.json.BSONFormats._
+@import views.html.layout.main
+@import views.html.chart.highcharts.highchartsJsImport
+@import views.html.dataset.datasetSubNavWithJs
+@import views.html.dataset.filter.{dataSetFilter, dataSetFilterJs}
+@import views.html.dataview.dataViewSelectionModal
+@import views.html.dataset.fixedTableRow
+@import views.html.elements.fieldTypeahead
+@import org.ada.web.controllers.dataset.routes.{DataSetSettingController => dataSetSettingRoutes}
+@import org.ada.server.models.{DataSpaceMetaInfo, Filter, FilterShowFieldStyle, FieldTypeId}
+@import org.ada.web.controllers.FilterConditionExtraFormats.coreFilterConditionFormat
+@import org.ada.web.util.toJsonHtml
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    title: String,
+    filters: Seq[Filter],
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo],
+    inputElements: Html,
+    extraActions: Option[Html],
+    extraBottomResources: Html,
+    highchartsUseBoost: Boolean = false,
+    widgetsDivOnRight: Boolean = false
+)(
+    implicit context: DataSetWebContext
+)
+
+@actions = {
+    <div class="row">
+        <div class="@if(extraActions.isDefined) { col-md-10 } else { col-md-12 }">
+            @fixedTableRow("filtersTr") {
+                @filters.zipWithIndex.map { case (filterSpec, index) =>
+                    <td style='padding-left: 10px; vertical-align:top'>
+                        @dataSetFilter(Some(filterSpec), filterShowFieldStyle, filterLabel = if(filters.size > 1) s"Filter ${index + 1}" else "Filter")
+                    </td>
+                }
+            }
+        </div>
+
+        @extraActions.getOrElse("")
+    </div>
+}
+
+@bottomResources = {
+
+    @highchartsJsImport(highchartsUseBoost)
+
+    @dataSetFilterJs()
+
+    <script type="text/javascript">
+
+        $(function() {
+            $('#inputDiv').on('hidden.bs.collapse', function () {
+                $("#widgetsDiv").removeClass("col-md-8");
+                $("#widgetsDiv").addClass("col-md-12");
+                $("#inputDiv").parent().removeClass("vertical-divider")
+
+                refreshHighcharts();
+
+                // TODO: this is a hack, generalize
+                const heatmapDiv = $("#heatmapDiv")
+                if (heatmapDiv.length > 0) {
+                    heatmapDiv.ada_charts('refresh')
+                }
+            })
+
+            $('#inputDiv').on('show.bs.collapse', function () {
+                $("#widgetsDiv").removeClass("col-md-12");
+                $("#widgetsDiv").addClass("col-md-8");
+                $("#inputDiv").parent().addClass("vertical-divider")
+
+                refreshHighcharts();
+
+                // TODO: this is a hack, generalize
+                const heatmapDiv = $("#heatmapDiv")
+                if (heatmapDiv.length > 0) {
+                    heatmapDiv.ada_charts('refresh')
+                }
+            })
+        })
+
+        function populateFullTypeahead(fieldPrefix, isFucus) {
+            var url = '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Enum, FieldTypeId.String, FieldTypeId.Boolean, FieldTypeId.Double, FieldTypeId.Integer, FieldTypeId.Date)).url)'
+            populateFieldTypeaheadFromUrlAux(fieldPrefix, url, isFucus)
+        }
+
+        function populateCategoricalTypeahead(fieldPrefix, isFucus) {
+            var url = '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Enum, FieldTypeId.String, FieldTypeId.Boolean, FieldTypeId.Json)).url)'
+            populateFieldTypeaheadFromUrlAux(fieldPrefix, url, isFucus)
+        }
+
+        function populateNumericalTypeahead(fieldPrefix, isFucus) {
+            var url = '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Integer, FieldTypeId.Double, FieldTypeId.Date)).url)'
+            populateFieldTypeaheadFromUrlAux(fieldPrefix, url, isFucus)
+        }
+
+        function populateBooleanTypeahead(fieldPrefix, isFucus) {
+            var url = '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Boolean)).url)'
+            populateFieldTypeaheadFromUrlAux(fieldPrefix, url, isFucus)
+        }
+
+        function populateMultiNumericalTypeahead(fieldPrefixes, isFucus) {
+            var url = '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Integer, FieldTypeId.Double, FieldTypeId.Date)).url)'
+            populateMultiFieldTypeaheadFromUrlAux(fieldPrefixes, url, isFucus)
+        }
+
+        function populateFieldTypeaheadFromUrlAux(fieldPrefix, url, isFocus) {
+            var typeaheadElement = $('#inputDiv #' + fieldPrefix + 'Typeahead');
+            var nameElement = $('#inputDiv #' + fieldPrefix + 'Name');
+            var focusFun = (isFocus) ? function() {setTimeout(function(){ $(typeaheadElement).focus();}, 250)} : null
+
+            populateFieldTypeahedFromUrl(
+                typeaheadElement,
+                nameElement,
+                url,
+                @filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id,
+                focusFun
+            )
+        }
+
+        function populateMultiFieldTypeaheadFromUrlAux(fieldPrefixes, url, isFocus) {
+            $.ajax({
+                url: url,
+                success: function (data) {
+                    $.each(fieldPrefixes, function(index, fieldPrefix) {
+                        var typeaheadElement = $('#inputDiv #' + fieldPrefix + 'Typeahead');
+                        var nameElement = $('#inputDiv #' + fieldPrefix + 'Name');
+
+                        populateFieldTypeahed(
+                            typeaheadElement,
+                            nameElement,
+                            data,
+                            @filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
+                        );
+                        if (index == 0 && isFocus) {
+                            setTimeout(function(){ $(typeaheadElement).focus();}, 250);
+                        }
+                    })
+                },
+                error: showErrorResponse
+            });
+        }
+
+        function activateAllFilters(submitAjaxFun) {
+            var filters = $(".filter-div")
+            var jsonConditions = [@filters.map { filterSpec => JSON.parse('@toJsonHtml(filterSpec.conditions)'), }];
+            var filterIds = [@filters.map { filterSpec => '@filterSpec._id.map(_.stringify).getOrElse("")', }];
+
+            $.each(filters, function (index, filterElement) {
+                activateFilter(filterElement, submitAjaxFun, jsonConditions[index], filterIds[index])
+            })
+        }
+
+        function activateFilter(filterElement, submitAjaxFun, jsonConditions, filterId) {
+            activateDataSetFilterAux(
+                filterElement,
+                jsonConditions,
+                filterId,
+                submitAjaxFun
+            )
+        }
+
+        function handleResponse(successMessage) {
+            return {
+                success: function (data) {
+                    // filter
+                    var filterElement = $(".filter-div");
+                    filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+
+                    // widgets
+                    var widgetsDiv = $("#widgetsDiv")
+                    updateWidgetsFromCallback(data.widgetsCallbackId, widgetsDiv, filterElement, 12, false, successMessage)
+                },
+                error: function (data) {
+                    $("#widgetsDiv").html("")
+                    hideMessages();
+                    showErrorResponse(data);
+                }
+            }
+        }
+
+        function handleHeatmapResponse(valueLabel, successMessage) {
+            return {
+                success: function (data) {
+                    // filter
+                    var filterElement = $(".filter-div");
+                    filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+
+                    $("#spinnerDiv").html("");
+                    addSpinner($("#spinnerDiv"), "margin-bottom: 20px;");
+                    $("#heatmapDiv").hide();
+
+                    dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getWidgets().ajax({
+                        data: {
+                            "callbackId": data.widgetsCallbackId
+                        },
+                        success: function(data) {
+                            if (successMessage) showMessage(successMessage);
+
+                            $("#spinnerDiv").html("");
+                            $("#heatmapDiv").show();
+
+                            const heatmapData = data[0][0]
+                            const values = [].concat.apply([], heatmapData.data)
+
+                            var fullData = {
+                                values: values, rows: heatmapData.xCategories, cols: heatmapData.yCategories, valueRange: [heatmapData.min, heatmapData.max],
+                                sequential: heatmapData.twoColors, xLabel: heatmapData.yAxisCaption, yLabel: heatmapData.xAxisCaption,
+                                textToChartRatio: 0.18, colLabelPos: 'top', rowLabelPos: 'left', tooltipValuePrefix: valueLabel
+                            }
+
+                            $("#heatmapDiv").ada_charts('update', fullData)
+                        },
+                        error: function(data) {
+                            $("#spinnerDiv").html("")
+                            hideMessages();
+                            showErrorResponse(data)
+                        }
+                    });
+                },
+                error: function (data) {
+                    $("#spinnerDiv").html("")
+                    hideMessages();
+                    showErrorResponse(data);
+                }
+            }
+        }
+
+        function handleScatterResponse(successMessage) {
+            return {
+                success: function (data) {
+                    // filter
+                    var filterElement = $(".filter-div");
+                    filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+
+                    $("#spinnerDiv").html("");
+                    addSpinner($("#spinnerDiv"), "margin-bottom: 20px;");
+                    $("#scatterDiv").hide();
+
+                    dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getWidgets().ajax({
+                        data: {
+                            "callbackId": data.widgetsCallbackId
+                        },
+                        success: function(data) {
+                            if (successMessage) showMessage(successMessage);
+
+                            $("#spinnerDiv").html("");
+                            $("#scatterDiv").show();
+
+                            const scatterData = data[0][0]
+
+                            console.log(scatterData)
+
+                            const values = scatterData.data.map(function (item, index) {
+                                return item[1].map(function (value, i) {
+                                    return [value[0], value[1], index];
+                                });
+                            });
+
+                            const categories = scatterData.data.map(function (item, index) {
+                                return {index: item[0]};
+                            });
+
+                            const valuesArray = [].concat.apply([], values)
+
+                            console.log(categories)
+                            console.log(valuesArray)
+
+                            var fullData = {
+                                values: valuesArray,
+                                categories: { name: 'Gender', 0: 'male', 1: 'female', 2: 'N/A'},
+                                title: scatterData.title,
+                                xAxisLabel: scatterData.xAxisCaption,
+                                yAxisLabel: scatterData.yAxisCaption,
+                                callback: d => console.log(d)
+                            }
+
+                            $("#scatterDiv").ada_charts('update', fullData)
+                        },
+                        error: function(data) {
+                            $("#spinnerDiv").html("")
+                            hideMessages();
+                            showErrorResponse(data)
+                        }
+                    });
+                },
+                error: function (data) {
+                    $("#spinnerDiv").html("")
+                    hideMessages();
+                    showErrorResponse(data);
+                }
+            }
+        }
+    </script>
+
+    @extraBottomResources
+}
+
+@main(title, Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs()), None, Some(bottomResources)) {
+
+    <div class="page-header">
+        <h3>
+            @title
+        </h3>
+    </div>
+
+    <div id="actions">
+        @actions
+    </div>
+
+    <hr/>
+
+    @if(widgetsDivOnRight) {
+        <table>
+            <tr>
+                <td style="vertical-align: top;">
+                    <button type="button" class="btn btn-default btn-circle" data-toggle="collapse" data-target="#inputDiv" title="Show/Hide">
+                        <span class="glyphicon glyphicon-resize-horizontal"></span>
+                    </button>
+                </td>
+                <td style="width: 100%;">
+                    <div class="row vertical-divider">
+                        <div id="inputDiv" class="col-md-4 col-sm-12 collapse in">
+                        @inputElements
+                        </div>
+
+                        <div id="widgetsDiv" class="col-md-8 col-sm-12">
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    } else {
+        <div id="inputDiv" class="row">
+           @inputElements
+        </div>
+
+        <div id="widgetsDiv" style="margin-top: 30px">
+        </div>
+    }
+
+    @dataViewSelectionModal("dataViewSelectionModal", dataViewRouter)
+}

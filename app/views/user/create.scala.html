@@ -1,0 +1,24 @@
+@import views.html.layout
+@import views.html.user.elements
+@import org.ada.server.models.{DataSpaceMetaInfo, User}
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import org.ada.web.controllers.DataSetControllerActionNames
+@import org.ada.web.controllers.routes
+
+@(
+	form: Form[User],
+	metaInfos: Traversable[DataSpaceMetaInfo],
+	controllerActionNames: DataSetControllerActionNames
+)(
+	implicit context: WebContext
+)
+
+@layout.create(
+    "User",
+	"user",
+	form,
+	elements(form, metaInfos, controllerActionNames),
+	routes.UserController.save(),
+	routes.UserController.listAll()
+)

@@ -1,0 +1,41 @@
+@import views.html.layout.formErrors
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.routes
+
+@(
+    form: Form[(String, String)]
+)(
+    implicit context: WebContext
+)
+
+@layout.main(title = "Ada Login", extraMessages = Some(formErrors("login", form.errors))) {
+
+    <div class="page-header">
+        <h1>Login</h1>
+    </div>
+
+    <div class="row">
+        @helper.form(routes.AuthController.authenticate){
+            <div class="login well well-lg col-md-6">
+
+                <div class="form-group">
+                    <label form="user"> LUMS ID: <br></label>
+                    <input type="text" class="form-control" id="id" name="id" value="" placeholder="LUMS login">
+                </div>
+
+                <div class="form-group">
+                    <label form="password"> Password: <br></label>
+                    <input type="password" class="form-control" id="password" name="password" value="" placeholder="Password">
+                </div>
+                <div class="col-md-12 row">
+                    <input type="submit" id="submit" value="Login" class="btn btn-primary btn-sm btn-block">
+                </div>
+                    @{/*<div class="pull-right"><a href="@routes.AuthController.passwordRecovery">Forgot password</a></div>*/}
+            </div>
+        }
+    </div>
+    <div class="row">
+        Don't have an account? <a href="@routes.AppController.contact()">Request one.</a>
+    </div>
+}

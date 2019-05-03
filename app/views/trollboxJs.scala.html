@@ -1,0 +1,45 @@
+@import org.ada.web.controllers.routes.javascript.{MessageController => messageJsRoutes}
+@import play.api.Configuration
+
+@()(implicit req: play.api.mvc.RequestHeader, webJarAssets: WebJarAssets, conf: Configuration)
+
+@helper.javascriptRouter("jsMessageRoutes")(
+    messageJsRoutes.saveUserMessage,
+    messageJsRoutes.listMostRecent
+)
+
+<script src="@routes.WebJarAssets.at(webJarAssets.locate("Autolinker.js", "Autolinker.min.js"))"></script>
+<script type="text/javascript" defer="defer">
+    $(function() {
+        $('.trollmessagebox').css('max-height',$(window).height() - 220);
+
+        jsMessageRoutes.org.ada.web.controllers.MessageController.listMostRecent(15).ajax( {
+            success: function(data) {
+                $.each(data.reverse(), function(index, json) {
+                    prependTrollboxJsonMessage(json, false);
+                });
+                $("#trollmessagebox").scrollTop($(document).height());
+                @if(conf.getBoolean("messages.listener.enabled").getOrElse(true)) {
+                    registerMessageEventSource('@org.ada.web.controllers.routes.MessageController.eventStream.url');
+                }
+            },
+            error: function(data){
+                console.log(data);
+            }
+        })
+    });
+
+    $("#shoutmessage").keydown(function(event) {
+        if (event.keyCode == 13) {
+            var message = $("#shoutmessage").val();
+            jsMessageRoutes.org.ada.web.controllers.MessageController.saveUserMessage(message).ajax( {
+                success: function() {
+                    $("#shoutmessage").val("");
+                },
+                error: function(data){
+                    $("#shoutmessage").val(data.responseText);
+                }
+            });
+        }
+    });
+</script>

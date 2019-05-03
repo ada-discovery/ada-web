@@ -1,0 +1,106 @@
+@import org.ada.web.controllers.dataset.DataSetRouter
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.incal.play.util.WebUtil.{matchesPath, getParamValue}
+@import org.ada.web.util.shorten
+@import org.ada.web.controllers.dataset.routes.{DataSpaceMetaInfoController => dataSpaceMetaInfoRoutes}
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo])(implicit webContext: WebContext)
+
+@listItem(call: Call, dataSetId: String, text: String) = {
+    @defining(getParamValue(toRequest.uri, "dataSet")) { reqDataSetId =>
+        <li @if(reqDataSetId.isDefined && reqDataSetId.get.equals(dataSetId)) {class="inner-node active"} else {class="inner-node"}>
+            <a href="@call">
+                <div class="nowrap inner-node-label">
+                    <span class="glyphicon glyphicon-chevron-right inner-node-icon"></span>
+                    @shorten(text)
+                </div>
+            </a>
+        </li>
+    }
+}
+
+@innerSpaceItem(spaceMetaInfo: DataSpaceMetaInfo) = {
+    @defining(dataSpaceMetaInfoRoutes.get(spaceMetaInfo._id.get)) { call =>
+        <li @if(matchesPath(call.url, toRequest.uri, Some(3), toConfiguration.getString("play.http.context"))) { class="dataspace inner-node active" } else {class="dataspace inner-node"} >
+            <a href="@call">
+                <div class="nowrap inner-node-label">
+                    <span class="btn-dataspace-expand">
+                        <span class="glyphicon glyphicon-plus inner-node-icon" aria-hidden="true"></span>
+                    </span>
+                    @shorten(spaceMetaInfo.name)
+                </div>
+            </a>
+        </li>
+    }
+}
+
+@topSpaceItem(spaceMetaInfo: DataSpaceMetaInfo) = {
+    @defining(dataSpaceMetaInfoRoutes.get(spaceMetaInfo._id.get)) { call =>
+        <li @if(matchesPath(call.url, toRequest.uri, Some(3), toConfiguration.getString("play.http.context"))) { class="dataspace top-node active" } else {class="dataspace top-node"}>
+            <button type="button" class="btn btn-sm btn-default btn-dataspace-expand btn-dataspace-expand-top" data-toggle="collapse" data-target="#dataSets-@spaceMetaInfo._id.get.stringify">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </button>
+            <a href="@call" class="float-left">
+                <h4>@spaceMetaInfo.name</h4>
+            </a>
+        </li>
+    }
+}
+
+@spaceItemWithDataSets(spaceMetaInfo: DataSpaceMetaInfo, topLevel: Boolean) = {
+    @if(topLevel) {
+        @topSpaceItem(spaceMetaInfo)
+    } else {
+        @innerSpaceItem(spaceMetaInfo)
+    }
+    <div id="dataSets-@{spaceMetaInfo._id.get.stringify}" class="collapse clear-left datasets-div sidebar-nav nav nav-pills nav-stacked">
+        @spaceMetaInfo.dataSetMetaInfos.filter(!_.hide).sortBy(_.sortOrder).map { setMetaInfo =>
+            @listItem(new DataSetRouter(setMetaInfo.id).getDefaultView, setMetaInfo.id, setMetaInfo.name)
+        }
+        @spaceMetaInfo.children.sortBy(_.sortOrder).map { childSpaceInfo =>
+            @spaceItemWithDataSets(childSpaceInfo, false)
+        }
+    </div>
+}
+
+<!--
+    <h3 class="text-muted" align="center">Studies</h3>
+    <hr/>
+-->
+
+<div class="row">
+    <button id="menu-button" class="hidden visible-xs-block pull-right" data-toggle="collapse" data-target="#sidebar-navigation">
+        <span class="sr-only">Side bar menu</span>
+        <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+    </button>
+</div>
+
+<div id="sidebar-navigation" class="collapse in">
+    <ul class="sidebar-nav nav nav-pills nav-stacked">
+        @dataSpaceMetaInfos.toSeq.sortBy(_.sortOrder).map { spaceMetaInfo =>
+            @spaceItemWithDataSets(spaceMetaInfo, true)
+        }
+    </ul>
+</div>
+
+<script type="text/javascript">
+    $(".datasets-div").each(function () {
+        if ($(this).find("li.inner-node.active").size() > 0) {
+            $(this).addClass("in")
+            updatePlusMinusIcon($(this).prev());
+        }
+    });
+
+    $(".dataspace.active").each(function () {
+        $(this).next().addClass("in");
+        updatePlusMinusIcon($(this));
+    });
+    $('.btn-dataspace-expand').on('click', function () {
+        updatePlusMinusIcon($(this));
+    });
+    if ($('#menu-button').is(':visible')) {
+        $('#sidebar-navigation').removeClass("in");
+    }
+</script>

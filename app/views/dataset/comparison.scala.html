@@ -1,0 +1,142 @@
+@import org.ada.server.models.{Field, Filter, FilterShowFieldStyle, DataSpaceMetaInfo}
+@import reactivemongo.play.json.BSONFormats._
+@import views.html.layout.main
+@import views.html.dataset.widgetsScreen
+@import views.html.dataset.filter.{dataSetFilter, dataSetFilterJs}
+@import views.html.elements.fieldTypeaheadDiv
+@import play.api.libs.json.Json
+@import play.api.i18n.Messages
+@import org.ada.web.controllers.dataset.routes.{DataSetSettingController => dataSetSettingRoutes}
+@import org.ada.web.controllers.FilterConditionExtraFormats.coreFilterConditionFormat
+@import org.ada.web.util.toJsonHtml
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.DataSetWebContext
+
+@(
+    dataSetName: String,
+    filters: Seq[Filter],
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    field: Option[Field],
+    groupField: Option[Field],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@bottomResources = {
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.calcComparison,
+        dataSetJsRouter.getWidgets,
+        dataSetJsRouter.getNewFilter
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            populateFullTypeahead("field", true);
+
+            $('#inputDiv #fieldTypeahead').keypress(function (e) {
+                if (e.which == 13) {
+                    calcComparison();
+                    return false;
+                }
+            });
+
+            activateAllFilters(function(filterOrId) {calcComparison()})
+        });
+
+        function addNewFilter() {
+            const filterCount = $("#filtersTr>td").length
+            if(filterCount < 6) {
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getNewFilter().ajax({
+                    success: function (data) {
+                        // filter
+                        var filterTd = $("<td style='padding-left: 10px; vertical-align:top'>")
+                        filterTd.html(data.replace("Filter:", "Filter " + (filterCount + 1) + ":"))
+                        $("#filtersTr").append(filterTd)
+                        var filterElement = filterTd.find(".filter-div")
+                        activateFilter(filterElement, function (filterOrId) { calcComparison()}, [], '')
+
+                        calcComparison();
+                    },
+                    error: showErrorResponse
+                });
+            } else {
+                hideMessages();
+                showError("Cannot add a new filter (max. number allowed is 6).")
+            }
+        }
+
+        function removeFilterRight() {
+            if($("#filtersTr>td").length > 2) {
+                $("#filtersTr td:last-child").remove();
+                calcComparison();
+            } else {
+                hideMessages();
+                showError("Cannot remove a filter (min. number allowed is 2).")
+            }
+        }
+
+        function calcComparison() {
+            var fieldName = $("#inputDiv #fieldName").val();
+            var fieldLabel = $("#inputDiv #fieldTypeahead").val();
+
+            var filterElements = $("#filtersTr").find(".filter-div").toArray();
+
+            var filterOrIds = filterElements.map(function(filterElement, index) {
+                return $(filterElement).multiFilter('getIdOrModel');
+            });
+
+            var filterOrIdsJson = JSON.stringify(filterOrIds)
+
+            if (!fieldName) {
+                showError("Comparison generation cannot be launched. No field specified.");
+            } else {
+                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.calcComparison(fieldName, filterOrIdsJson).ajax({
+                    success: function (data) {
+                        // filters
+                        var filters = $(".filter-div")
+                        $.each(filters, function (index, filterElement) {
+                            $(filterElement).multiFilter("replaceModelAndPanel", data.filterModels[index], data.conditionPanels[index]);
+                        })
+
+                        // widgets
+                        var widgetsDiv = $("#widgetsDiv")
+                        var successMessage = "Comparison generation for the field '" + fieldLabel + "' finished."
+                        updateWidgetsFromCallback(data.widgetsCallbackId, widgetsDiv, null, 12, false, successMessage)
+                    },
+                    error: function (data) {
+                        $("#widgetsDiv").html("")
+                        showErrorResponse(data);
+                    }
+                });
+
+                hideErrors();
+                showMessage("Comparison generation for the field '" + fieldLabel + "' launched.")
+            }
+        }
+    </script>
+}
+
+@inputElements = {
+    @fieldTypeaheadDiv(field, Some("col-md-3 col-sm-6"), "field", "Field")
+
+    <div class="pull-right">
+        <a class="btn btn-success btn-sm" href="#" onclick="addNewFilter();return false" data-toggle="tooltip" title="Add a New Filter">
+            <span class="glyphicon glyphicon-plus"></span>
+        </a>
+        <a class="btn btn-success btn-sm" href="#" onclick="removeFilterRight();return false" data-toggle="tooltip" title="Remove the Rightmost Filter">
+            <span class="glyphicon glyphicon-minus"></span>
+        </a>
+    </div>
+}
+
+@widgetsScreen(
+    Messages("comparison.title", dataSetName),
+    filters,
+    filterShowFieldStyle,
+    dataSpaceMetaInfos,
+    inputElements,
+    None,
+    bottomResources
+)
