@@ -1,0 +1,114 @@
+homepage.title = Ada: the {0} Discovery Platform
+
+error.date = {0} is in wrong format
+error.required = {0} is required
+
+create.title = Add a new {0}
+edit.title = Edit {0}
+show.title = Show {0}
+list.title = List {0}
+overviewList.title = Overview {0}
+list.count.title = {0,choice,0#No {1}|1#One {1}|1<{0,number,integer} {1}s} found
+typeOverview.title = {0} Fields
+distribution.title = {0} Distribution
+cumulativeCount.title = {0} Cumulative Count
+scatterAnalysis.title = {0} Scatter Analysis
+pearsonCorrelation.title = {0} Pearson Correlations
+matthewsCorrelation.title = {0} Matthews Correlations
+classification.title = Classification of {0}
+regression.title = Regression of {0}
+temporalClassification.title = Temporal Classification of {0}
+temporalRegression.title = Temporal Regression of {0}
+clusterization.title = Clustering of {0}
+seriesProcessing.title = Series Processing of {0}
+seriesTransformation.title = Series Transformation of {0}
+fractalis.title = Fractalis ({0})
+independenceTest.title = Independence Test of {0}
+network.title = {0} Network
+mds.title = MDS of {0}
+tsne.title = t-SNE of {0}
+documentation.title = Documentation: {0}
+heatmap.title = Heatmap of {0}
+table.title = {0} Table
+comparison.title = Comparison of {0}
+
+dataSetSetting.keyFieldName.label = Key Field
+dataSetSetting.exportOrderByFieldName.label = Export OrderBy Field
+dataSetSetting.listViewTableColumnNames.label = Overview Table Columns
+dataSetSetting.widgetSpecs.label = Stats Calculation  Specs
+dataSetSetting.defaultScatterXFieldName.label = Scatter X Field
+dataSetSetting.defaultScatterYFieldName.label = Scatter Y Field
+dataSetSetting.defaultDistributionFieldName.label = Distribution Field
+dataSetSetting.defaultCumulativeCountFieldName.label = Cumulative Count Field
+dataSetSetting.tranSMARTVisitFieldName.label = TranSMART Visit Field
+dataSetSetting.tranSMARTReplacements.label = TranSMART Export Char Replacements
+dataSetSetting.mongoAutoCreateIndexForProjection.label = Mongo Auto-create Index for Projection
+dataSetSetting.filterShowNonNullCount.label = Filter Show Non-Null Count
+
+dataSetImport.setting.keyFieldName.label = Key Field
+dataSetImport.setting.exportOrderByFieldName.label = Export OrderBy Field
+dataSetImport.setting.listViewTableColumnNames.label = Overview Columns
+dataSetImport.setting.distributionChartFieldNames.label = Distribution Chart Fields
+dataSetImport.setting.defaultScatterXFieldName.label = Scatter X Field
+dataSetImport.setting.defaultScatterYFieldName.label = Scatter Y Field
+dataSetImport.setting.defaultDistributionFieldName.label = Distribution Field
+dataSetImport.setting.defaultCumulativeCountFieldName.label = Cumulative Count Field
+dataSetImport.setting.tranSMARTVisitFieldName.label = TranSMART Visit Field
+dataSetImport.setting.tranSMARTReplacements.label = TranSMART Export Char Replacements
+dataSetImport.setting.cacheDataSet.label = Cache Data Set
+dataSetImport.setting.filterShowFieldStyle.label = Filter Show Field Style
+dataSetImport.setting.filterShowNonNullCount.label = Filter Show Non-Null Count
+dataSetImport.setting.overviewChartElementGridWidth.label = Element Grid Width
+dataSetImport.setting.mongoAutoCreateIndexForProjection.label = Mongo Auto-create Index for Projection
+dataSetImport.setting.storageType.label = Storage Type
+
+dataSetImport.dataView.tableColumnNames.label = Table Column Names
+dataSetImport.dataView.distributionCalcFieldNames.label = Distribution Calc Field Names
+dataSetImport.dataView.elementGridWidth.label = Element Grid Width
+dataSetImport.dataView.useOptimizedRepoChartCalcMethod.label = Optimized Per Chart Repo Calc
+
+dataSetImport.dataSpaceName.label = Study Name
+dataSetImport.eol.label = Specific EOL
+dataSetImport.path.label = Server-side Path
+
+dataSetImport.scheduled.label = Schedule?
+dataSetImport.scheduledTime.hour.label = Hour
+dataSetImport.scheduledTime.minute.label = Minute
+dataSetImport.scheduledTime.second.label = Second
+
+csvDataSetImport.dataSpaceName.label = Data Space Name
+csvDataSetImport.dataSetId.label = Data Set Id
+csvDataSetImport.dataSetName.label = Data Set Name
+csvDataSetImport.setting.dataSetId.label = Setting Data Set Id
+csvDataSetImport.matchQuotes.label.label = Match Quotes?
+csvDataSetImport.inferenceMaxEnumValuesCount.label = Inference Max Enum Values Count
+csvDataSetImport.inferenceMinAvgValuesPerEnum.label = Inference Min Avg Values Per Enum
+csvDataSetImport.path.label = Source data / path
+
+tranSmartDataSetImport.dataPath.label = Source data / path
+tranSmartDataSetImport.mappingPath.label = Source mapping / path
+
+jsonDataSetImport.inferenceMaxEnumValuesCount.label = Inference Max Enum Values Count
+jsonDataSetImport.inferenceMinAvgValuesPerEnum.label = Inference Min Avg Values Per Enum
+jsonDataSetImport.path.label = Source data / path
+
+synapseDataSetImport.downloadColumnFiles.label = Download Column Files?
+
+redCapDataSetImport.importDictionaryFlag.label = Import Dictionary?
+
+dataView.useOptimizedRepoChartCalcMethod.label = Optimized Per Widget Repo Calc
+
+filter.createdBy.label = Created By
+filter.timeCreated.label = Time Created
+
+login.id = User Id
+login.password = Password
+
+dataView.displayName = Data View
+category.displayName = Category
+field.displayName = Field
+filter.displayName = Filter
+classificationRun.displayName = Classification Run
+temporalClassificationRun.displayName = Temporal Classification Run
+regressionRun.displayName = Regression Run
+temporalRegressionRun.displayName = Temporal Regression Run
