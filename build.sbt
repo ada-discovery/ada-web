@@ -2,7 +2,7 @@ organization := "org.adada"
 
 name := "ada-web"
 
-version := "0.7.3.RC.4.2"
+version := "0.7.3.RC.5"
 
 description := "Web part of Ada Discovery Analytics backed by Play Framework."
 
