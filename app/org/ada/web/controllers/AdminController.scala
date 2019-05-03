@@ -73,7 +73,8 @@ class AdminController @Inject() (
     implicit request => Future {
       implicit val msg = messagesApi.preferred(request)
       try {
-        val clazz = Class.forName(className, true, this.getClass.getClassLoader)
+        val cls = Thread.currentThread().getContextClassLoader()
+        val clazz = Class.forName(className, true, cls)
         val instance = current.injector.instanceOf(clazz)
 
         if (instance.isInstanceOf[InputRunnable[_]]) {
@@ -107,8 +108,8 @@ class AdminController @Inject() (
     implicit request => Future {
       implicit val msg = messagesApi.preferred(request)
       try {
-        println(className)
-        val clazz = Class.forName(className, true, this.getClass.getClassLoader)
+        val cls = Thread.currentThread().getContextClassLoader()
+        val clazz = Class.forName(className, true, cls)
         val start = new ju.Date()
         val inputRunnable = current.injector.instanceOf(clazz).asInstanceOf[InputRunnable[Any]]
         val mapping = GenericMapping[Any](inputRunnable.inputType)

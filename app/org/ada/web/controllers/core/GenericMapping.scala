@@ -89,7 +89,8 @@ object GenericMapping {
   def applyCaseClass[T](typ: Type): Mapping[T] = {
     val mappings = caseClassMapping(typ)
     // ugly but somehow class information could be lost it the process (if a runtime type is used)
-    val clazz = Class.forName(typ.typeSymbol.fullName).asInstanceOf[Class[T]]
+    val cls = Thread.currentThread().getContextClassLoader()
+    val clazz = Class.forName(typ.typeSymbol.fullName, true, cls).asInstanceOf[Class[T]]
 
     new GenericMapping[T, Any](
       values => ReflectionUtil.construct[T](clazz, values.toSeq),
