@@ -35,6 +35,7 @@ GET         /ldap/:id/get                                                       
 # Admin
 GET         /admin/runnables                                                        org.ada.web.controllers.AdminController.listRunnables
 POST        /admin/runScript                                                        org.ada.web.controllers.AdminController.runScript(className : String)
+GET         /admin/getScriptInputForm                                               org.ada.web.controllers.AdminController.getScriptInputForm(className : String)
 POST        /admin/runInputScript                                                   org.ada.web.controllers.AdminController.runInputScript(className : String)
 POST        /admin/importLdapUsers                                                  org.ada.web.controllers.AdminController.importLdapUsers
 POST        /admin/purgeMissingLdapUsers                                            org.ada.web.controllers.AdminController.purgeMissingLdapUsers
