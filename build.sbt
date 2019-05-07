@@ -2,7 +2,7 @@ organization := "org.adada"
 
 name := "ada-web"
 
-version := "0.7.3.RC.5.2"
+version := "0.7.3.RC.5.3"
 
 description := "Web part of Ada Discovery Analytics backed by Play Framework."
 
@@ -25,7 +25,8 @@ routesImport ++= Seq(
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.7.3.RC.5.1",
+  "org.adada" %% "ada-server" % "0.7.3.RC.5.2",
+  "org.in-cal" %% "incal-core" % "0.1.4.1",
   "org.in-cal" %% "incal-play" % "0.1.6",
   "com.typesafe.play" %% "play-mailer" % "4.0.0",
   "jp.t2v" %% "play2-auth" % "0.14.1",

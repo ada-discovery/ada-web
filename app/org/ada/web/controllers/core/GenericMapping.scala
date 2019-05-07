@@ -6,12 +6,13 @@ import org.ada.server.models.{FieldTypeId, FieldTypeSpec, StorageType}
 import play.api.data.Forms._
 import play.api.data.format.Formats._
 import play.api.data.validation.Constraint
+import org.incal.core.util.ReflectionUtil
+import org.incal.core.util.ReflectionUtil._
 
 import scala.reflect.runtime.universe._
 import play.api.data._
 import java.{util => ju}
 
-import org.incal.core.util.ReflectionUtil
 import org.incal.play.formatters._
 import reactivemongo.bson.BSONObjectID
 import scala.collection.Traversable
@@ -78,36 +79,43 @@ object GenericMapping {
     new GenericMapping[Traversable[A], A](identity[Traversable[A]], Some(_), fs)
 
   def apply[T](typ: Type): Mapping[T] =
-    if (ReflectionUtil.isCaseClass(typ))
+    if (isCaseClass(typ))
       applyCaseClass(typ)
     else
       applySimpleType(typ)
 
-  def applySimpleType[T](typ: Type): Mapping[T] =
-    genericMapping(typ).asInstanceOf[Mapping[T]]
+  def applySimpleType[T](typ: Type): Mapping[T] = {
+    val currentMirror = newMirror(currentThreadClassLoader)
+
+    genericMapping(typ, currentMirror).asInstanceOf[Mapping[T]]
+  }
 
   def applyCaseClass[T](typ: Type): Mapping[T] = {
-    val mappings = caseClassMapping(typ)
-    // ugly but somehow class information could be lost it the process (if a runtime type is used)
-    val cls = Thread.currentThread().getContextClassLoader()
+    val cls = currentThreadClassLoader
+    val currentMirror = newMirror(cls)
+
+    val mappings = caseClassMapping(typ, currentMirror)
+    // ugly but somehow class information could be lost it the process (if a runtime type is used), hence we need to use a current thread class loader
+    // TODO: try to replace with ReflectionUtil.classNameToRuntimeType and typeToClass
     val clazz = Class.forName(typ.typeSymbol.fullName, true, cls).asInstanceOf[Class[T]]
 
     new GenericMapping[T, Any](
-      values => ReflectionUtil.construct[T](clazz, values.toSeq),
+      values => construct[T](clazz, values.toSeq),
       item => Some(item.asInstanceOf[Product].productIterator.toSeq),
       mappings
     )
   }
 
   private def caseClassMapping(
-    typ: Type
+    typ: Type,
+    mirror: Mirror
   ): Traversable[(String, Mapping[Any])] = {
-    val memberNamesAndTypes = ReflectionUtil.getCaseClassMemberNamesAndTypes(typ)
+    val memberNamesAndTypes = getCaseClassMemberNamesAndTypes(typ)
 
     memberNamesAndTypes.map { case (fieldName, memberType) =>
       val mapping =
         try {
-          genericMapping(memberType)
+          genericMapping(memberType, mirror)
         } catch {
           case e: AdaException => failover(memberType, e)
         }
@@ -119,13 +127,13 @@ object GenericMapping {
   @throws(classOf[AdaException])
   private def failover(memberType: Type, e: AdaException): Mapping[Any] =
     // check if it's the member type is a case class and apply recurrently
-    if (ReflectionUtil.isCaseClass(memberType)) {
+    if (isCaseClass(memberType)) {
       GenericMapping.applyCaseClass[Any](memberType)
     } else if (memberType <:< typeOf[Option[_]]) {
       val typ = memberType.typeArgs.head
 
       // if it's an option type continue with its inner type (for a case class)
-      if (ReflectionUtil.isCaseClass(typ)) {
+      if (isCaseClass(typ)) {
         val mapping = GenericMapping.applyCaseClass[Any](typ)
         optional(mapping).asInstanceOf[Mapping[Any]]
       } else {
@@ -147,13 +155,13 @@ object GenericMapping {
   private implicit val doubleSeqFormatter = SeqFormatter.applyDouble
 
   private def getJavaEnumOrdinalValues[E <: Enum[E]](enumType: Type): Map[Int, String] = {
-    val clazz = ReflectionUtil.typeToClass(enumType).asInstanceOf[Class[E]]
-    val enumValues = ReflectionUtil.javaEnumOrdinalValues(clazz)
+    val clazz = typeToClass(enumType).asInstanceOf[Class[E]]
+    val enumValues = javaEnumOrdinalValues(clazz)
     enumValues.map { case (ordinal, value) => (ordinal, value.toString) }
   }
 
   @throws(classOf[AdaException])
-  private def genericMapping(typ: Type): Mapping[Any] = {
+  private def genericMapping(typ: Type, mirror: Mirror): Mapping[Any] = {
     val mapping = typ match {
       // float
       case t if t matches typeOf[Float] =>
@@ -189,12 +197,12 @@ object GenericMapping {
 
       // enum
       case t if t subMatches typeOf[Enumeration#Value] =>
-        val enum = ReflectionUtil.enum(t)
+        val enum = ReflectionUtil.enum(t, mirror)
         of(EnumFormatter(enum))
 
       // Java enum
       case t if t subMatches typeOf[Enum[_]] =>
-        val clazz = ReflectionUtil.typeToClass(t)
+        val clazz = typeToClass(t, mirror)
         of(JavaEnumMapFormatter(clazz))
 
       // string
@@ -211,7 +219,7 @@ object GenericMapping {
 
       // optional
       case t if t <:< typeOf[Option[_]] =>
-        optional(genericMapping(t.typeArgs.head))
+        optional(genericMapping(t.typeArgs.head, mirror))
 
       // string seq
       case t if t subMatches typeOf[Seq[String]] =>
@@ -228,17 +236,17 @@ object GenericMapping {
       // seq
       case t if t subMatches typeOf[Seq[_]] =>
         val innerType = t.typeArgs.head
-        seq(genericMapping(innerType))
+        seq(genericMapping(innerType, mirror))
 
       // set
       case t if t subMatches typeOf[Set[_]] =>
         val innerType = t.typeArgs.head
-        set(genericMapping(innerType))
+        set(genericMapping(innerType, mirror))
 
       // list
       case t if t subMatches typeOf[List[_]] =>
         val innerType = t.typeArgs.head
-        list(genericMapping(innerType))
+        list(genericMapping(innerType, mirror))
 
       // traversable seq
       case t if t subMatches typeOf[Traversable[String]] =>
@@ -247,13 +255,13 @@ object GenericMapping {
       // traversable
       case t if t subMatches typeOf[Traversable[_]] =>
         val innerType = t.typeArgs.head
-        seq(genericMapping(innerType))
+        seq(genericMapping(innerType, mirror))
 
       // tuple2
       case t if t subMatches typeOf[Tuple2[_, _]] =>
         val typeArgs = t.typeArgs
-        val mapping1 = genericMapping(typeArgs(0))
-        val mapping2 = genericMapping(typeArgs(1))
+        val mapping1 = genericMapping(typeArgs(0), mirror)
+        val mapping2 = genericMapping(typeArgs(1), mirror)
         tuple(("1" -> mapping1), ("2" -> mapping2))
 
       // either valuer or seq (int)

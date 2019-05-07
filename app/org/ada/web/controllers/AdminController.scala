@@ -17,9 +17,8 @@ import java.{util => ju}
 
 import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.server.field.FieldUtil
-import org.incal.core.InputRunnable
+import org.incal.core.runnables.{InputRunnable, RunnableHtmlOutput}
 import org.ada.server.services.UserManager
-import org.ada.web.runnables.RunnableStringOutput
 
 import scala.reflect.ClassTag
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -166,8 +165,8 @@ class AdminController @Inject() (
     messageLogger.info(message)
 
     // has output
-    if (runnable.isInstanceOf[RunnableStringOutput]) {
-      val output = runnable.asInstanceOf[RunnableStringOutput].output.mkString
+    if (runnable.isInstanceOf[RunnableHtmlOutput]) {
+      val output = runnable.asInstanceOf[RunnableHtmlOutput].output.mkString
 
       Ok(adminviews.runnableOutput(runnable.getClass, output)).flashing("success" -> message)
     } else {
