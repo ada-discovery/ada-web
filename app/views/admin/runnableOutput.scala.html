@@ -1,0 +1,37 @@
+@import views.html.layout.main
+@import play.api.i18n.Messages
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.web.util
+@import views.html.elements._
+@import views.html.layout
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.routes
+
+@(
+    scriptClazz: Class[_],
+    output: String
+)(
+    implicit context: WebContext
+)
+
+@main(util.toHumanReadableCamel(scriptClazz.getSimpleName)) {
+
+    <div class="page-header">
+        <h3>
+            @util.toHumanReadableCamel(scriptClazz.getSimpleName)
+        </h3>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            @helper.form(action = routes.AdminController.runScript(scriptClazz.getName)) {
+                @Html(output)
+
+                <div class="actions pull-right">
+                    <input type="submit" value="Relaunch" autofocus class="btn btn-primary">
+                </div>
+            }
+        </div>
+    </div>
+}

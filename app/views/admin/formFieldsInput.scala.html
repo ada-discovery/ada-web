@@ -6,11 +6,14 @@
 @import views.html.layout
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
+@import org.ada.server.models.FieldTypeSpec
+@import org.ada.server.models.FieldTypeId
 
 @(
     title: String,
     form: Form[_],
-    call: Call
+    call: Call,
+    nameFieldTypeMap: Map[String, FieldTypeSpec]
 )(
     implicit context: WebContext
 )
@@ -18,7 +21,7 @@
 @inputTextAux(fieldName: String, defaultValue: Option[Any] = None) = @{
     defining(form(fieldName)) { field =>
         inputFieldText(
-            "xxx",
+            "genericForm",
             if (field.value.isEmpty && defaultValue.isDefined)
                 field.copy(value = Some(defaultValue.get.toString))
             else
@@ -29,35 +32,62 @@
     }
 }
 
-@selectAux(fieldName: String, enum: Enumeration) = {
-    @select("xxx", fieldName, form, util.enumToValueString(enum), true, Nil, 3)
+@selectAux(fieldName: String, enumValues: Seq[String]) = {
+    @select("genericForm", fieldName, form, enumValues.map(x => (x, x)), true, Nil, 3)
 }
 
-@main(util.toHumanReadableCamel(title)) {
+@checkboxAux(fieldName: String) = {
+    @checkbox("genericForm", fieldName, form, Nil, 3)
+}
+
+@bottomResources = {
+    <script type="text/javascript">
+            $(function () {
+                const firstElement = $('fieldset :input').first()
+                if (firstElement)
+                    firstElement.focus();
+            });
+    </script>
+}
+
+@main(util.toHumanReadableCamel(title), bottomResources = Some(bottomResources)) {
 
     <div class="page-header">
         <h3>
-            @util.toHumanReadableCamel(title)
+        @util.toHumanReadableCamel(title)
         </h3>
     </div>
 
     <div class="row">
         <div class="col-md-12">
-            @helper.form(action = call) {
-                <fieldset>
-                    @if(form.mapping.mappings.nonEmpty) {
-                        @form.mapping.mappings.filter(mapping => !mapping.key.isEmpty).map { mapping =>
-                            @inputTextAux(mapping.key)
-                        }
-                    } else {
-                        @inputTextAux("")
+        @helper.form(action = call) {
+            <fieldset>
+            @if(form.mapping.mappings.nonEmpty) {
+                @form.mapping.mappings.filter(mapping => !mapping.key.isEmpty).map { mapping =>
+                    @{
+                        nameFieldTypeMap.get(mapping.key).map { fieldTypeSpec: FieldTypeSpec =>
+                            defining(fieldTypeSpec.enumValues.map(_.map(_._2).toSeq.sorted).getOrElse(Nil)){ enumValues: Seq[String] =>
+                                if(fieldTypeSpec.fieldType == FieldTypeId.Boolean) {
+                                    checkboxAux(mapping.key)
+                                } else if(fieldTypeSpec.fieldType == FieldTypeId.Enum) {
+                                    selectAux(mapping.key, enumValues)
+                                } else
+                                    inputTextAux(mapping.key)
+                            }
+                        }.getOrElse(
+                            inputTextAux(mapping.key)
+                        )
                     }
-                </fieldset>
-
-                <div class="actions pull-right">
-                    <input type="submit" value="Submit" class="btn btn-primary">
-                </div>
+                }
+            } else {
+                @inputTextAux("")
             }
+            </fieldset>
+
+            <div class="actions pull-right">
+                <input type="submit" value="Submit" class="btn btn-primary">
+            </div>
+        }
         </div>
     </div>
 }
