@@ -28,8 +28,11 @@
             @helper.form(action = routes.AdminController.runScript(scriptClazz.getName)) {
                 @Html(output)
 
+                <hr/>
+
                 <div class="actions pull-right">
                     <input type="submit" value="Relaunch" autofocus class="btn btn-primary">
+                    <a href="@routes.AdminController.selectRunnable" class="btn btn-default">Back</a>
                 </div>
             }
         </div>

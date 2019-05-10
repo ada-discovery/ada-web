@@ -1,0 +1,53 @@
+@import views.html.layout.main
+@import play.api.mvc.Flash
+@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.ada.web.controllers.routes
+@import views.html.elements._
+@import org.ada.web.controllers.routes
+@import org.ada.server.models.FilterShowFieldStyle
+
+@()(implicit context: WebContext)
+
+@bottomResources = {
+    @typeaheadJsImport()
+
+    @helper.javascriptRouter("adminRoutes")(
+        routes.javascript.AdminController.runScript
+    )
+
+    <script type="text/javascript">
+        $(function () {
+            populateFieldTypeahedFromUrl(
+                $('#classNameTypeahead'),
+                $('#className'),
+                '@Html(routes.AdminController.getRunnableNames().url)',
+                @FilterShowFieldStyle.LabelsOnly.id,
+                function(){setTimeout(function(){ $('#classNameTypeahead').focus();}, 250)}
+            )
+        })
+
+        $('#classNameTypeahead').on("keydown", function(e) {
+            if(e.keyCode == 13) {
+                const className = $("#className").val()
+                submit('post', adminRoutes.org.ada.web.controllers.AdminController.runScript(className).url)
+            }
+        });
+    </script>
+}
+
+@main("Launch Runnable", bottomResources = Some(bottomResources)) {
+
+    <div class="page-header">
+        <h3>
+            @Messages("Launch Runnable")
+        </h3>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            @typeahead("classNameTypeahead", "className", placeholder = "Script Name", isLarge = true)
+        </div>
+    </div>
+}

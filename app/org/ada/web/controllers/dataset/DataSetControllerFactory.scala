@@ -29,9 +29,6 @@ protected class DataSetControllerFactoryImpl @Inject()(
   private val logger = Logger  // (this.getClass())
   protected val cache = MMap[String, DataSetController]()
 
-  private val libPrefix = "org.ada"
-  private val libPath = configuration.getString("lib.path")
-
   // TODO: locking and concurrency
   override def apply(dataSetId: String): Option[DataSetController] = {
     cache.get(dataSetId) match {

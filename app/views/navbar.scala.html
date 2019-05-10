@@ -45,14 +45,6 @@
                 }
                 @restrict(roles = List(Array(SecurityRole.admin))) {
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Extras<span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            @listItem(routes.TranslationController.find(), "DE-EN Translations", Some(3))
-                            <li role="separator" class="divider"></li>
-                        </ul>
-                    </li>
-
-                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">ML<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             @listItem(mlRoutes.ClassifierController.find(), "Classifiers")
@@ -90,7 +82,7 @@
                             </li>
 
                             <li role="separator" class="divider"></li>
-                            @listItem(routes.AdminController.listRunnables(), "Runnables")
+                            @listItem(routes.AdminController.selectRunnable(), "Runnables")
                         </ul>
                     </li>
                 }

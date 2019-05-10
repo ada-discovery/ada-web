@@ -17,8 +17,9 @@ import java.{util => ju}
 
 import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.server.field.FieldUtil
-import org.incal.core.runnables.{InputRunnable, RunnableHtmlOutput}
+import org.incal.core.runnables.{FutureRunnable, InputFutureRunnable, InputRunnable, RunnableHtmlOutput}
 import org.ada.server.services.UserManager
+import play.api.libs.json.{JsArray, Json}
 
 import scala.reflect.ClassTag
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,11 +35,18 @@ class AdminController @Inject() (
   private val messageLogger = MessageLogger(logger, messageRepo)
 
   // we scan only the jars starting with this prefix to speed up the class search
-  private val libPrefix = "org.ada"
-  private val libPath = configuration.getString("lib.path")
-  private val showAllRunnables = configuration.getBoolean("admin.runnables.show_all").getOrElse(false)
+  private val basePackages = Seq(
+    "org.ada.server.runnables",
+    "org.ada.server.runnables.core",
+    "org.ada.web.runnables",
+    "runnables",
+    "runnables.core"
+  )
 
-  private val runnablesHomeRedirect = Redirect(routes.AdminController.listRunnables())
+  private val packages = basePackages ++ configuration.getStringSeq("runnables.extra_packages").getOrElse(Nil)
+  private val searchRunnableSubpackages = configuration.getBoolean("runnables.subpackages.enabled").getOrElse(false)
+
+  private val runnablesHomeRedirect = Redirect(routes.AdminController.selectRunnable())
   private val appHomeRedirect = Redirect(routes.AppController.index())
 
   /**
@@ -47,30 +55,25 @@ class AdminController @Inject() (
     *
     * @return View listing all runnables in directory "runnables".
     */
-  def listRunnables = restrictAdminAnyNoCaching(deadbolt) {
+  def selectRunnable = restrictAdminAnyNoCaching(deadbolt) {
     implicit request => Future {
-
-      def findAux[T](packageName: String, fullMatch: Boolean)(implicit m: ClassTag[T]) =
-        findClasses[T](libPrefix, Some(packageName), fullMatch, None, libPath)
-
-      val foundClasses =
-        if (showAllRunnables) {
-          val classes1 = findAux[Runnable]("runnables", false)
-          val classes2 = findAux[InputRunnable[_]]("runnables", false)
-
-          classes1 ++ classes2
-        } else {
-          val classes1 = findAux[Runnable]("runnables", true)
-          val classes2 = findAux[InputRunnable[_]]("runnables", true)
-          val classes3 = findAux[Runnable]("runnables.core", true)
-          val classes4 = findAux[InputRunnable[_]]("runnables.core", true)
-
-          classes1 ++ classes2 ++ classes3 ++ classes4
-        }
-
-      val runnableNames = foundClasses.map(_.getName).sorted
-      Ok(adminviews.runnables(runnableNames))
+      Ok(adminviews.runnableSelection())
     }
+  }
+
+  private def findRunnableNames: Seq[String] = {
+    def findAux[T](implicit m: ClassTag[T]) =
+      packages.map { packageName =>
+        findClasses[T](Some(packageName), !searchRunnableSubpackages)
+      }.foldLeft(Stream[Class[T]]()){_++_}
+
+    val classes1 = findAux[Runnable]
+    val classes2 = findAux[InputRunnable[_]]
+    val classes3 = findAux[FutureRunnable]
+    val classes4 = findAux[InputFutureRunnable[_]]
+
+    val foundClasses = classes1 ++ classes2 ++ classes3 ++ classes4
+    foundClasses.map(_.getName).sorted
   }
 
   def runScript(className: String) = scriptActionAux(className) { implicit request => instance =>
@@ -192,5 +195,15 @@ class AdminController @Inject() (
       userManager.purgeMissing.map ( _ =>
         appHomeRedirect.flashing("success" -> "Missing users successfully purged.")
       )
+  }
+
+  def getRunnableNames = restrictAdminAnyNoCaching(deadbolt) {
+    implicit request => Future {
+      val runnableIdAndNames =  findRunnableNames.map { runnableName =>
+        val shortName = runnableName.split("\\.", -1).lastOption.getOrElse(runnableName)
+        Json.obj("name" -> runnableName, "label" -> org.ada.web.util.toHumanReadableCamel(shortName))
+      }
+      Ok(JsArray(runnableIdAndNames))
+    }
   }
 }
