@@ -391,7 +391,7 @@
             var chartTypeColumn = (isDistributionOrCumulativeCountType) ? `<td>@editableChartType(None)</td>` : "<td></td>";
 
             // concrete class name and check box columns
-            var concreteClassName = concreteClass.replace('models.','').replace('WidgetSpec','')
+            var concreteClassName = concreteClass.replace('org.ada.server.models.','').replace('WidgetSpec','')
             var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
             var concreteClassNameColumn = "<td>" + concreteClassName + "</td>";
 

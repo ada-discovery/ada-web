@@ -1,7 +1,6 @@
 package org.ada.web.controllers
 
 import javax.inject.Inject
-
 import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.web.controllers.dataset._
 import org.ada.server.dataaccess.RepoTypes.{DataSpaceMetaInfoRepo, UserRepo}
@@ -10,7 +9,6 @@ import play.api.data.Forms.{email, ignored, mapping, nonEmptyText, seq, text}
 import org.ada.server.models.{DataSpaceMetaInfo, User}
 import org.incal.core.dataaccess.AscSort
 import reactivemongo.bson.BSONObjectID
-import org.ada.web.services.MailClientProvider
 import views.html.{user => view}
 import play.api.mvc.{Action, AnyContent, Request, RequestHeader}
 import org.incal.core.util.ReflectionUtil.getMethodNames
@@ -18,13 +16,14 @@ import org.incal.play.Page
 import org.incal.play.controllers.{AdminRestrictedCrudController, CrudControllerImpl, HasBasicListView, HasFormShowEqualEditView}
 import org.incal.play.security.AuthAction
 import org.incal.play.security.SecurityUtil.restrictAdminAnyNoCaching
+import play.api.libs.mailer.{Email, MailerClient}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class UserController @Inject() (
     userRepo: UserRepo,
-    mailClientProvider: MailClientProvider,
+    mailerClient: MailerClient,
     dataSpaceMetaInfoRepo: DataSpaceMetaInfoRepo
   ) extends AdaCrudControllerImpl[User, BSONObjectID](userRepo)
     with AdminRestrictedCrudController[BSONObjectID]
@@ -109,14 +108,19 @@ class UserController @Inject() (
   ): Future[BSONObjectID] = {
 
     // send an email
-    val mailer = mailClientProvider.createClient()
-    val mail = mailClientProvider.createTemplate(
-      "User Created",
+    val email = Email(
+      "Ada: User Created",
+      "Ada Admin <admin@ada-discovery.org>",
       Seq(user.email),
-      bodyText = Some("A new user account has been created." + System.lineSeparator() +
-        "You can now log into the Ada Reporting System with this mail address.")
+      // sends text, HTML or both...
+      bodyText = Some(
+        "A new user account has been created." + System.lineSeparator() +
+        "You can now log into the Ada Discovery Analytics with this mail address."
+      )
+//      bodyHtml = Some(s"""<html><body><p>An <b>html</b> A new user account has been created</p></body></html>""")
     )
-    mailer.send(mail)
+
+    mailerClient.send(email)
 
     // remove repeated permissions
     val userToSave = user.copy(permissions = user.permissions.toSet.toSeq.sorted)

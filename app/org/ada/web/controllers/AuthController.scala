@@ -9,7 +9,6 @@ import play.api.mvc._
 import play.api.data.Forms._
 import play.api.data._
 import org.ada.server.services.UserManager
-import org.ada.web.services.MailClientProvider
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits._
@@ -18,10 +17,11 @@ import org.ada.web.models.security._
 import org.incal.play.controllers.BaseController
 import org.incal.play.security.AuthAction
 import org.ada.web.security.AdaAuthConfig
+import play.api.libs.mailer.MailerClient
 
 class AuthController @Inject() (
     val userManager: UserManager,
-    mailClientProvider: MailClientProvider
+    mailerClient: MailerClient
   ) extends BaseController with LoginLogout with AdaAuthConfig {
 
   private val logger = Logger
