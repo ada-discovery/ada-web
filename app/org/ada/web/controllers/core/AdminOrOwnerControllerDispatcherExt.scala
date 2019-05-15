@@ -15,8 +15,8 @@ trait AdminOrOwnerControllerDispatcherExt[C] {
 
   this: SecureControllerDispatcher[C] =>
 
-  protected def dispatchIsAdminOrOwnerAux(
-    objectOwnerId: Request[AnyContent] => Future[Option[BSONObjectID]],
+  protected def dispatchIsAdminOrOwnerOrPublicAux(
+    objectOwnerIdAndIsPublic: Request[AnyContent] => Future[Option[(BSONObjectID, Boolean)]],
     outputDeadboltHandler: Option[DeadboltHandler])(
     action: C => Action[AnyContent]
   ) = Action.async { implicit request =>
@@ -30,23 +30,30 @@ trait AdminOrOwnerControllerDispatcherExt[C] {
         toActionAny{ implicit req: AuthenticatedRequest[AnyContent] => outputHandler.onAuthFailure(req) }
 
       val accessingUserFuture = currentUser(request)
-      val objectOwnerIdFuture = objectOwnerId((request))
+      val objectOwnerIdIsPublicFuture = objectOwnerIdAndIsPublic((request))
 
       for {
-        objectOwnerId <- objectOwnerIdFuture
+        objectOwnerIdIsPublicOption <- objectOwnerIdIsPublicFuture
         accessingUser <- accessingUserFuture
       } yield {
-        objectOwnerId match {
-          case Some(createdById) =>
-            accessingUser.map { accessingUser =>
-              // if the user accessing the data view is the owner then  process, otherwise "unauthorized"
-              if (accessingUser._id.get.equals(createdById)) toActionAny(action) else unauthorizedAction
-            }.getOrElse(
-              // if we cannot determine the currently logged user for some reason return "unauthorized"
-              unauthorizedAction
-            )
-          case None => unauthorizedAction
-        }
+          objectOwnerIdIsPublicOption match {
+
+            case Some((createdById, isPublic)) =>
+              if (isPublic) {
+                // is public, all is ok
+                toActionAny(action)
+              } else
+                accessingUser.map { accessingUser =>
+                  // if the user accessing the data view is the owner then proceed, otherwise "unauthorized"
+                  if (accessingUser._id.get.equals(createdById)) toActionAny(action) else unauthorizedAction
+                }.getOrElse(
+                  // if we cannot determine the currently logged user for some reason return "unauthorized"
+                  unauthorizedAction
+                )
+
+            // if the owner (and public flag) not specified return "unauthorized"
+            case None => unauthorizedAction
+          }
       }
     }
 
@@ -60,6 +67,14 @@ trait AdminOrOwnerControllerDispatcherExt[C] {
     val extraRestrictions = restrictChainFuture2(Seq(isAdmin, checkOwner))_
     extraRestrictions(originalAction)(request)
   }
+
+  protected def dispatchIsAdminOrOwnerAux(
+    objectOwnerId: Request[AnyContent] => Future[Option[BSONObjectID]]
+  ) = dispatchIsAdminOrOwnerOrPublicAux(request =>
+    objectOwnerId(request).map(_.map((_, false))),
+    _: Option[DeadboltHandler])(
+    _ :C => Action[AnyContent]
+  )
 
   protected def dispatchIsAdmin(
     action: C => Action[AnyContent]

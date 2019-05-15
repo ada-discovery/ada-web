@@ -158,6 +158,6 @@ class DataViewDispatcher @Inject()(
         }
       }
 
-    dispatchIsAdminOrOwnerAux(objectOwnerFun, outputDeadboltHandler)(action)
+    dispatchIsAdminOrOwnerAux(objectOwnerFun)(outputDeadboltHandler, action)
   }
 }

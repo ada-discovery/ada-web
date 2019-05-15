@@ -1,8 +1,10 @@
+import PlayKeys._
+
 organization := "org.adada"
 
 name := "ada-web"
 
-version := "0.7.3.RC.7.SNAPSHOT.3"
+version := "0.7.3.RC.7.SNAPSHOT.6"
 
 description := "Web part of Ada Discovery Analytics backed by Play Framework."
 
@@ -44,6 +46,12 @@ libraryDependencies ++= Seq(
   "org.webjars.bower" % "Autolinker.js" % "0.25.0",      // to convert links to a-href elements
   "org.webjars" % "jquery-ui" % "1.11.1"
 )
+
+packagedArtifacts in publishLocal := {
+  val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publishLocal).value
+  val assets: java.io.File = (playPackageAssets in Compile).value
+  artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
+}
 
 // POM settings for Sonatype
 homepage := Some(url("https://ada-discovery.org"))

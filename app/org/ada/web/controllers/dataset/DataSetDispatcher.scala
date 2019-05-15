@@ -1,22 +1,34 @@
 package org.ada.web.controllers.dataset
 
+import be.objectify.deadbolt.scala.DeadboltHandler
 import javax.inject.Inject
-
+import org.ada.server.AdaException
+import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import org.incal.play.controllers.SecureControllerDispatcher
 import org.ada.server.models.Filter.FilterOrId
-import org.ada.server.models.{AggType, FieldTypeId}
+import org.ada.server.models.{AggType, FieldTypeId, User}
+import org.ada.server.services.UserManager
+import org.ada.web.controllers.core.AdminOrOwnerControllerDispatcherExt
 import reactivemongo.bson.BSONObjectID
 import org.incal.play.security.{AuthAction, SecurityRole}
 import org.ada.web.models.security.DataSetPermission
+import org.ada.web.security.AdaAuthConfig
 import org.incal.core.FilterCondition
 import org.incal.spark_ml.models.VectorScalerType
 import org.incal.play.PageOrder
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, Request}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class DataSetDispatcher @Inject() (
-  dscf: DataSetControllerFactory
+  dscf: DataSetControllerFactory,
+  dsaf: DataSetAccessorFactory,
+  val userManager: UserManager
 ) extends SecureControllerDispatcher[DataSetController]("dataSet")
-    with DataSetController {
+    with AdminOrOwnerControllerDispatcherExt[DataSetController]
+    with DataSetController
+    with AdaAuthConfig {
 
   override protected def getController(id: String) =
     dscf(id).getOrElse(
@@ -42,28 +54,6 @@ class DataSetDispatcher @Inject() (
   ) = dispatch(_.find(page, orderBy, filter))
 
   override def listAll(orderBy: String) = dispatch(_.listAll(orderBy))
-
-  override def getView(
-    dataViewId: BSONObjectID,
-    tablePages: Seq[PageOrder],
-    filterOrIds: Seq[FilterOrId],
-    filterChanged: Boolean
-  ) = dispatch(_.getView(dataViewId, tablePages, filterOrIds, filterChanged))
-
-  override def getDefaultView = dispatch(_.getDefaultView)
-
-  override def getViewElementsAndWidgetsCallback(
-    dataViewId: BSONObjectID,
-    tableOrder: String,
-    filterOrId: FilterOrId,
-    oldCountDiff: Option[Int]
-  ) = dispatchAjax(_.getViewElementsAndWidgetsCallback(dataViewId, tableOrder, filterOrId, oldCountDiff))
-
-  override def getNewFilterViewElementsAndWidgetsCallback(
-    dataViewId: BSONObjectID,
-    tableOrder: String,
-    totalCount: Int
-  ) = dispatchAjax(_.getNewFilterViewElementsAndWidgetsCallback(dataViewId, tableOrder, totalCount))
 
   override def getNewFilter  = dispatchAjax(_.getNewFilter)
 
@@ -177,6 +167,32 @@ class DataSetDispatcher @Inject() (
     pcaDims: Option[Int]
   ) = dispatchAjax(_.cluster(mlModelId, inputFieldNames, filterId, featuresNormalizationType, pcaDims))
 
+  // view actions
+
+  override def getDefaultView = dispatch(_.getDefaultView)
+
+  override def getView(
+    dataViewId: BSONObjectID,
+    tablePages: Seq[PageOrder],
+    filterOrIds: Seq[FilterOrId],
+    filterChanged: Boolean
+  ) = dispatchIsAdminOrOwnerOrPublic(dataViewId, _.getView(dataViewId, tablePages, filterOrIds, filterChanged))
+
+  override def getViewElementsAndWidgetsCallback(
+    dataViewId: BSONObjectID,
+    tableOrder: String,
+    filterOrId: FilterOrId,
+    oldCountDiff: Option[Int]
+  ) = dispatchIsAdminOrOwnerOrPublicAjax(dataViewId, _.getViewElementsAndWidgetsCallback(dataViewId, tableOrder, filterOrId, oldCountDiff))
+
+  override def getNewFilterViewElementsAndWidgetsCallback(
+    dataViewId: BSONObjectID,
+    tableOrder: String,
+    totalCount: Int
+  ) = dispatchIsAdminOrOwnerOrPublicAjax(dataViewId, _.getNewFilterViewElementsAndWidgetsCallback(dataViewId, tableOrder, totalCount))
+
+  // series processing
+
   override def getSeriesProcessingSpec = dispatch(_.getSeriesProcessingSpec)
 
   override def runSeriesProcessing = dispatch(_.runSeriesProcessing)
@@ -270,4 +286,38 @@ class DataSetDispatcher @Inject() (
     limit: Option[Int],
     skip: Option[Int]
   ) = dispatch(_.findCustom(filterOrId, orderBy, projection, limit, skip))
+
+  // aux function for access control
+
+  protected def dispatchIsAdminOrOwnerOrPublic(
+    id: BSONObjectID,
+    action: DataSetController => Action[AnyContent]
+  ): Action[AnyContent] =
+    dispatchIsAdminOrOwnerOrPublicAux(id, action, None)
+
+  protected def dispatchIsAdminOrOwnerOrPublicAjax(
+    id: BSONObjectID,
+    action: DataSetController => Action[AnyContent]
+  ): Action[AnyContent] =
+    dispatchIsAdminOrOwnerOrPublicAux(id, action, Some(unauthorizedDeadboltHandler))
+
+  protected def dispatchIsAdminOrOwnerOrPublicAux(
+    id: BSONObjectID,
+    action: DataSetController => Action[AnyContent],
+    outputDeadboltHandler: Option[DeadboltHandler]
+  ): Action[AnyContent] = {
+
+    val objectOwnerFun = {
+      request: Request[AnyContent] =>
+        val dataSetId = getControllerId(request)
+        val dsa = dsaf(dataSetId).getOrElse(throw new AdaException(s"Data set id $dataSetId not found."))
+        dsa.dataViewRepo.get(id).map {
+          _.flatMap(dataView =>
+            dataView.createdById.map((_, !dataView.isPrivate))
+          )
+        }
+    }
+
+    dispatchIsAdminOrOwnerOrPublicAux(objectOwnerFun, outputDeadboltHandler)(action)
+  }
 }

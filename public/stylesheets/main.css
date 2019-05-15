@@ -1,0 +1,527 @@
+@import url('https://fonts.googleapis.com/css?family=Merriweather');
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+    padding-top: 50px;
+    background-color: #f5f5f2;
+}
+
+.content {
+    background-color: #fff;
+    padding: 20px 40px 20px 40px;
+    -webkit-border-radius: 0 0 6px 6px;
+    -moz-border-radius: 0 0 6px 6px;
+    border-radius: 0 0 6px 6px;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    -moz-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+
+.inner-content {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.navbar-custom {
+    color: #FFFFFF;
+    background-color: dodgerblue;
+    border-color: dodgerblue;
+}
+
+.navbar .navbar-brand:focus,
+.navbar .navbar-brand:hover,
+.navbar .nav > li > a:hover,
+.navbar .nav > .open > a,
+.navbar .nav > .open > a:focus,
+.navbar .nav > .open > a:hover {
+    background-color: #005BC0;
+}
+
+.navbar .nav > .active > a,
+.navbar .nav > .active > a:focus,
+.navbar .nav > .active > a:hover {
+    background-color: #0074D9;
+}
+
+
+.sidebar-nav > li.top-node {
+    margin-top: 10px;
+    clear: left;
+}
+
+.sidebar-nav > li.top-node > a,
+.sidebar-nav > li.top-node > a:focus,
+.sidebar-nav > li.top-node > a:hover {
+    color: darkgray;
+}
+
+.sidebar-nav > li.top-node > a {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.sidebar-nav > li.inner-node > a {
+    padding-left: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.inner-node-label {
+    font-size: 12px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.inner-node-icon {
+    padding-right: 10px;
+    font-size: 14px
+}
+
+.btn-dataspace-expand-top {
+    float: left;
+    display: inline-block;
+    margin-right: 5px;
+    margin-top: 10px;
+}
+
+.datasets-div {
+    margin-left: 20px;
+}
+
+.navbar-brand {
+    /*font-family: 'Oswald', sans-serif !important;*/
+    /*font-weight: 700;*/
+    margin-left: -55px !important;
+    padding: 8px 20px;
+    /* padding: 8px 30px; */
+}
+
+footer {
+    padding-top: 10px;
+    padding-bottom: 20px;
+}
+
+.menu {
+    padding-top: 10px;
+}
+
+.page-header {
+    margin-top: 5px;
+    font-family: 'Merriweather', sans-serif !important; /* Merriweather  Lobster Roboto Condensed */
+    font-weight: 400;
+    font-size: 35px;
+    border-bottom: 3px solid #f8f8f8;
+}
+
+.container .text-muted {
+  margin: 15px 0;
+}
+
+code {
+  font-size: 80%;
+}
+
+.topRight {
+    position: absolute;
+    right: 20px;
+    top: 70px;
+}
+
+tr.clickable-row {
+  cursor: pointer;
+}
+
+.typeahead-large.tt-input,
+.typeahead-large.tt-hint{
+    font-size: 18px;
+    height: 54px;
+    width: 300px;
+}
+
+.typeahead-full-width.tt-input,
+.typeahead-full-width.tt-hint{
+    width: 100%;
+}
+
+.typeahead.form-control,
+.tt-input.form-control {
+    width: 100% !important;
+    height: 38px
+}
+
+.twitter-typeahead, .tt-hint, .tt-input, .tt-menu {
+    width: 100%;
+}
+
+.messageDivider {
+    border-top: 3px dotted #eeeeee !important;
+}
+
+.top-padded {
+    padding-top: 15px;
+}
+
+.green {
+    color: green;
+}
+
+.btn-clean {
+    background-color: transparent;
+}
+
+.trollbox {
+    background-color: #fff;
+    padding: 15px 15px 30px 15px;
+    margin-right: 15px;
+    margin-top: 15px;
+    -webkit-border-radius: 6px 6px 6px 6px;
+    -moz-border-radius: 6px 6px 6px 6px;
+    border-radius: 6px 6px 6px 6px;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    -moz-box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    position: fixed;
+}
+
+.trollmessagebox {
+    max-height:900px;
+    overflow-y:auto;
+}
+
+.trollbox .tooltip-inner {
+    font-size: 16px;
+    max-width:300px;
+}
+
+.trollbox .alert {
+    padding: 2px 10px 2px 10px;
+    margin-top: 0px;
+    margin-bottom: 0px
+}
+
+.trollbox .alert-success,
+.trollbox .alert-info {
+    padding: 10px 10px 10px 10px;
+    margin-top: 5px;
+    margin-bottom: 5px
+}
+
+.treeDiv {
+    max-height:600px;
+    overflow-y:auto;
+}
+
+.topVerticalAlign {
+    vertical-align:top
+}
+
+.label-inverse {
+    color: #000000;
+}
+
+.float-left {
+    float: left;
+}
+
+.clear-left {
+    clear: left;
+}
+
+.label-filter {
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+/*.row.vertical-divider {*/
+    /*overflow: hidden;*/
+/*}*/
+
+.row.vertical-divider > div[class^="col-"] {
+    /*text-align: center;*/
+    /*padding-bottom: 100px;*/
+    /*margin-bottom: -100px;*/
+    border-left: 3px solid #F2F7F9;
+    border-right: 3px solid #F2F7F9;
+}
+.row.vertical-divider div[class^="col-"]:first-child {
+    border-left: none;
+}
+.row.vertical-divider div[class^="col-"]:last-child {
+    border-right: none;
+}
+
+.category-node {
+    color:dodgerblue;
+}
+
+.jstree-default a.jstree-search {
+    color:dimgrey;
+}
+
+.jsTree-filter {
+    margin-left: 5px;
+    padding-bottom: 10px
+}
+
+.jsTree-tree {
+    margin-left: 5px;
+    margin-right: 10px;
+    max-height: 600px;
+    overflow-y: scroll;
+}
+
+tr.vertical-divider > td {
+    /*text-align: center;*/
+    border-left: 3px solid #F2F7F9;
+    border-right: 3px solid #F2F7F9;
+}
+tr.vertical-divider > td:first-child {
+    border-left: none;
+}
+tr.vertical-divider > td:last-child {
+    border-right: none;
+}
+
+#widgetSpecDiv > table > tr {
+    cursor: pointer;
+}
+
+/* Carousel base class */
+
+.carousel {
+    height: 500px;
+    margin-bottom: 30px;
+}
+/* Since positioning the image, we need to help out the caption */
+.carousel-caption {
+    z-index: 10;
+    background: rgba(30, 144, 255, 0.7);
+    position: absolute;
+    top: 54%;
+    padding-top: 0px;
+    height:200px;
+    /*transform: translateY(-60%);*/
+    /*color: gray;*/
+}
+
+/* Declare heights because of positioning of img element */
+.carousel .item {
+    height: 500px
+}
+
+.carousel-inner > .item > img.carousel-img {
+    position: absolute;
+    top: 0%;  /* position the top  edge of the element at the middle of the parent */
+    left: 50%; /* position the left edge of the element at the middle of the parent */
+
+    transform: translate(-50%, -0%); /* This is a shorthand of
+                                        translateX(-50%) and translateY(-50%) */
+}
+
+a.carousel-control.left{
+   /* background-image: linear-gradient(to right, #8e9eab 0, #eef2f3 100%); // 142 158 171       238 242 243 rgb(171,186,171) rgb(255,255,255) */
+   background-image: linear-gradient(to right, rgba(142, 158, 171, 0.8) 0%, rgba(238, 242, 243, 0) 100%);
+}
+a.carousel-control.right{
+     background-image: linear-gradient(to left, rgba(142, 158, 171, 0.8) 0%, rgba(238, 242, 243, 0) 100%);
+}
+
+.homepage-jumbotron {
+     background-color:whitesmoke !important;
+}
+
+.modal.in .modal-right {
+     -webkit-transform: translate(100%, 0);
+     -ms-transform: translate(100%, 0);
+     -o-transform: translate(100%, 0);
+     transform: translate(100%, 0);
+}
+
+.modal.in .modal-left {
+     -webkit-transform: translate(-100%, 0);
+     -ms-transform: translate(-100%, 0);
+     -o-transform: translate(-100%, 0);
+     transform: translate(-100%, 0);
+}
+
+.spinner {
+     border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 135px;
+    height: 135px;
+    animation: spin 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(360deg) scale(0.95);
+    }
+    100% {
+        transform: rotate(720deg) scale(0.8);
+    }
+}
+
+.conditionValue {
+    width: 200px;
+    max-width: 200px
+}
+
+.documentation {
+    margin-bottom: 50px;
+    font-size: 18px;
+}
+
+.documentation-caption {
+    color: #317eac;
+}
+
+.documentation-section-navigation-caption {
+    color: #626262;
+}
+
+.col-md-8-5, .col-md-1-75 {
+    position: relative;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+@media (min-width: 992px) {
+    .col-md-8-5, .col-md-1-75 {
+        float: left;
+    }
+    .col-md-8-5 {
+        width: 70.833%
+    }
+    .col-md-1-75 {
+        width: 14.583%
+    }
+}
+
+/* sub menu stuff */
+
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu>.dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -6px;
+    margin-left: -1px;
+    -webkit-border-radius: 0 6px 6px 6px;
+    -moz-border-radius: 0 6px 6px;
+    border-radius: 0 6px 6px 6px;
+}
+
+.dropdown-submenu:hover>.dropdown-menu {
+    display: block;
+}
+
+.dropdown-submenu>a:after {
+    display: block;
+    content: " ";
+    float: right;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 5px 0 5px 5px;
+    border-left-color: #ccc;
+    margin-top: 5px;
+    margin-right: -10px;
+}
+
+.dropdown-submenu:hover>a:after {
+    border-left-color: #fff;
+}
+
+.dropdown-submenu.pull-left {
+    float: none;
+}
+
+.dropdown-submenu.pull-left>.dropdown-menu {
+    left: -100%;
+    margin-left: 10px;
+    -webkit-border-radius: 6px 0 6px 6px;
+    -moz-border-radius: 6px 0 6px 6px;
+    border-radius: 6px 0 6px 6px;
+}
+
+.nowrap {
+    white-space: nowrap ;
+}
+
+.horizontal-scroll {
+    overflow-x: auto;
+    width: auto;
+}
+
+.filter-part {
+    display:inline-block;
+    margin-right: 15px;
+}
+
+.condition {
+    font-size: 18px;
+}
+
+.aligned-container {
+    display: flex;
+    align-items: center;
+}
+
+.fixed-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.fixed-table>tbody>tr>td {
+    border-left: 6px solid #F2F7F9;
+    border-right: 6px solid #F2F7F9;
+}
+
+.fixed-table>tbody>tr>td:first-child {
+    border-left: none;
+}
+
+.fixed-table>tbody>tr>td:last-child {
+    border-right: none;
+}
+
+.bootstrap-select .btn {
+    background-color: white;
+    color: #626262;
+}
+
+.bootstrap-select .dropdown-toggle.btn-default {
+    background-color: white;
+    color: #626262;
+}
+
+.btn-circle {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    padding: 6px 0;
+    font-size: 12px;
+    line-height: 1.428571429;
+    border-radius: 15px;
+}
+
+.input-lg-full {
+    height: 54px;
+    line-height: 54px;
+    padding: 14px 16px;
+    font-size: 18px;
+    border-radius: 6px;
+    width: 100%
+}

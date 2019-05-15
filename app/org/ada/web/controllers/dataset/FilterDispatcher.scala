@@ -61,6 +61,6 @@ class FilterDispatcher @Inject()(
         }
     }
 
-    dispatchIsAdminOrOwnerAux(objectOwnerFun, None)(action)
+    dispatchIsAdminOrOwnerAux(objectOwnerFun)(None, action)
   }
 }
