@@ -4,7 +4,7 @@ organization := "org.adada"
 
 name := "ada-web"
 
-version := "0.7.3.RC.7.SNAPSHOT.6"
+version := "0.7.3.RC.7.SNAPSHOT.7"
 
 description := "Web part of Ada Discovery Analytics backed by Play Framework."
 
@@ -24,7 +24,7 @@ routesImport ++= Seq(
   "org.ada.web.controllers.QueryStringBinders._"
 )
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 
 libraryDependencies ++= Seq(
   "org.adada" %% "ada-server" % "0.7.3.RC.7.SNAPSHOT.3",
@@ -53,7 +53,21 @@ packagedArtifacts in publishLocal := {
   artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
 }
 
+// Asset stages
+
+pipelineStages in Assets := Seq(closure, cssCompress, digest, gzip)
+
+excludeFilter in gzip := (excludeFilter in gzip).value || new SimpleFileFilter(file => new File(file.getAbsolutePath + ".gz").exists)
+
+includeFilter in closure := (includeFilter in closure).value && new SimpleFileFilter(f => f.getPath.contains("javascripts"))
+
+includeFilter in cssCompress := (includeFilter in cssCompress).value && new SimpleFileFilter(f => f.getPath.contains("stylesheets"))
+
+//includeFilter in uglify := GlobFilter("javascripts/*.js")
+
+
 // POM settings for Sonatype
+
 homepage := Some(url("https://ada-discovery.org"))
 
 publishMavenStyle := true
