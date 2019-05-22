@@ -1,0 +1,3 @@
+db.getCollection('dataset_imports').updateMany({concreteClass : "models.RedCapDataSetImport"},
+	{ $set: { "eventNames": [] } }
+)

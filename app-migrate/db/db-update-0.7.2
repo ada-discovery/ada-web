@@ -1,0 +1,141 @@
+db.getCollection('dictionaries').find({'classificationResults': {$exists: true}}).forEach(function(item)
+{
+    var toUpdate = false
+    for(i = 0; i != item.classificationResults.length; ++i)
+    {
+	var result = item.classificationResults[i];
+	if (result["setting-trainingTestingSplit"]) {
+		result["setting-trainingTestSplitRatio"] = result["setting-trainingTestingSplit"]
+		delete result["setting-trainingTestingSplit"];
+		toUpdate = true;	 
+	}
+    }
+
+    if (toUpdate) {
+        db.getCollection('dictionaries').save(item);
+    }
+})
+
+db.getCollection('dictionaries').find({'regressionResults': {$exists: true}}).forEach(function(item)
+{
+    var toUpdate = false
+    for(i = 0; i != item.regressionResults.length; ++i)
+    {
+	var result = item.regressionResults[i];
+	if (result["setting-trainingTestingSplit"]) {
+		result["setting-trainingTestSplitRatio"] = result["setting-trainingTestingSplit"]
+		delete result["setting-trainingTestingSplit"];
+		toUpdate = true;	 
+	}
+    }
+
+    if (toUpdate) {
+        db.getCollection('dictionaries').save(item);
+    }
+})
+
+function replace(result, prefix, newPrefix, name) {
+        const oldName = prefix + "-" + name
+        const newName = newPrefix + "-" + name
+
+        if (result[oldName]) { 
+		print(oldName + " -> " + newName)
+ 		result[newName] = result[oldName]
+ 		delete result[oldName];
+	}
+}
+
+db.getCollection('dictionaries').find({'classificationResults': {$exists: true}}).forEach(function(item)
+{
+    var toUpdate = false
+    for(i = 0; i != item.classificationResults.length; ++i)
+    {
+	var result = item.classificationResults[i];
+	// io spec
+	replace(result, "setting", "runSpec-ioSpec", "inputFieldNames")
+	replace(result, "setting", "runSpec-ioSpec", "outputFieldName")
+	replace(result, "setting", "runSpec-ioSpec", "filterId")
+	replace(result, "setting", "runSpec-ioSpec", "replicationFilterId")
+
+	// ml model
+	replace(result, "setting", "runSpec", "mlModelId")
+
+	// learning setting
+	replace(result, "setting", "runSpec-learningSetting", "featuresNormalizationType")
+	replace(result, "setting", "runSpec-learningSetting", "featuresSelectionNum") 
+	replace(result, "setting", "runSpec-learningSetting", "pcaDims") 
+	replace(result, "setting", "runSpec-learningSetting", "trainingTestSplitRatio") 
+	replace(result, "setting", "runSpec-learningSetting", "samplingRatios") 
+	replace(result, "setting", "runSpec-learningSetting", "repetitions") 
+	replace(result, "setting", "runSpec-learningSetting", "crossValidationFolds") 
+	replace(result, "setting", "runSpec-learningSetting", "crossValidationEvalMetric") 
+	replace(result, "setting", "runSpec-learningSetting", "binCurvesNumBins")
+        
+        toUpdate = true;
+    }
+
+    if (toUpdate) {
+        db.getCollection('dictionaries').save(item);
+    }
+})
+
+db.getCollection('dictionaries').find({'regressionResults': {$exists: true}}).forEach(function(item)
+{
+    var toUpdate = false
+    for(i = 0; i != item.regressionResults.length; ++i)
+    {
+	var result = item.regressionResults[i];
+	// io spec
+	replace(result, "setting", "runSpec-ioSpec", "inputFieldNames")
+	replace(result, "setting", "runSpec-ioSpec", "outputFieldName")
+	replace(result, "setting", "runSpec-ioSpec", "filterId")
+	replace(result, "setting", "runSpec-ioSpec", "replicationFilterId")
+
+	// ml model
+	replace(result, "setting", "runSpec", "mlModelId")
+
+	// learning setting
+	replace(result, "setting", "runSpec-learningSetting", "featuresNormalizationType")
+	replace(result, "setting", "runSpec-learningSetting", "outputNormalizationType")
+	replace(result, "setting", "runSpec-learningSetting", "pcaDims") 
+	replace(result, "setting", "runSpec-learningSetting", "trainingTestSplitRatio") 
+	replace(result, "setting", "runSpec-learningSetting", "repetitions") 
+	replace(result, "setting", "runSpec-learningSetting", "crossValidationFolds") 
+	replace(result, "setting", "runSpec-learningSetting", "crossValidationEvalMetric") 
+	replace(result, "setting", "runSpec-learningSetting", "collectOutputs")
+
+	if (!result["runSpec-learningSetting-collectOutputs"]) {
+		result["runSpec-learningSetting-collectOutputs"] = false
+	}
+
+        toUpdate = true;
+    }
+
+    if (toUpdate) {
+        db.getCollection('dictionaries').save(item);
+    }
+})
+
+db.getCollection('dictionaries').find({}).forEach(function(item)
+{
+    var toUpdate = false;
+    if (item.classificationResults) {
+        for(i = 0; i != item.classificationResults.length; ++i)
+        {
+            item.classificationResults[i].concreteClass = "org.incal.spark_ml.models.result.StandardClassificationResult";
+            toUpdate = true
+        }
+    }
+
+    if (item.regressionResults) {
+        for(i = 0; i != item.regressionResults.length; ++i)
+        {
+            item.regressionResults[i].concreteClass = "org.incal.spark_ml.models.result.StandardRegressionResult";
+            toUpdate = true
+        }
+    }
+
+    if (toUpdate) {
+        db.getCollection('dictionaries').save(item);
+    }
+})

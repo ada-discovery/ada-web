@@ -1,0 +1,49 @@
+db.getCollection('dataset_settings').update({},
+	{$unset:{tranSMARTVisitFieldName:"", tranSMARTReplacements: ""}},
+	{multi: true}
+)
+
+db.getCollection('dictionaries').find().forEach(function(item)
+{
+    var toUpdate = false
+    for(i = 0; i != item.dataviews.length; ++i)
+    {
+	for(j = 0; j != item.dataviews[i].widgetSpecs.length; ++j)
+   	{
+	    var widgetSpec = item.dataviews[i].widgetSpecs[j];
+
+	    switch(widgetSpec.concreteClass) {
+	        case "models.CorrelationWidgetSpec" :
+                    toUpdate = true;
+                    widgetSpec.correlationType = "Pearson";
+                    break;
+	    }
+       }
+    }
+
+    if (toUpdate) {
+        db.getCollection('dictionaries').save(item);
+    }
+})
+
+db.getCollection('dictionaries').find().forEach(function(item)
+{
+    var toUpdate = false
+    for(i = 0; i != item.dataviews.length; ++i)
+    {
+	for(j = 0; j != item.dataviews[i].widgetSpecs.length; ++j)
+   	{
+	    var widgetSpec = item.dataviews[i].widgetSpecs[j];
+
+	    switch(widgetSpec.concreteClass) {
+	        case "models.TemplateHtmlWidgetSpec":
+                    widgetSpec.concreteClass = "models.CustomHtmlWidgetSpec";
+                    break;
+	    }
+       }
+    }
+
+    if (toUpdate) {
+        db.getCollection('dictionaries').save(item);
+    }
+})

@@ -1,0 +1,15 @@
+db.getCollection('classifications').find().forEach(function(item)
+{
+	var name = item.concreteClass.substr(item.concreteClass.lastIndexOf(".") + 1)
+        var newClassName = "org.incal.spark_ml.models.classification." + name
+        item.concreteClass = newClassName
+        db.getCollection('classifications').save(item);
+})
+
+db.getCollection('regressions').find().forEach(function(item)
+{
+	var name = item.concreteClass.substr(item.concreteClass.lastIndexOf(".") + 1)
+        var newClassName = "org.incal.spark_ml.models.regression." + name
+        item.concreteClass = newClassName
+        db.getCollection('regressions').save(item);
+})

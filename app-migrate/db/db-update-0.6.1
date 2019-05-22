@@ -1,0 +1,22 @@
+db.getCollection('dataset_imports').find({'dataView': {$exists: true}}).forEach(function(item)
+{
+    item.dataView.isPrivate = false;
+    db.getCollection('dataset_imports').save(item);
+})
+
+db.getCollection('dictionaries').find().forEach(function(item)
+{
+    for(i = 0; i != item.dataviews.length; ++i)
+    {
+	var dataView = item.dataviews[i];
+ 	dataView.isPrivate = false;
+    }
+
+    for(i = 0; i != item.filters.length; ++i)
+    {
+	var filter = item.filters[i];
+ 	filter.isPrivate = false;
+    }
+
+    db.getCollection('dictionaries').save(item);
+})

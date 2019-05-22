@@ -1,0 +1,30 @@
+db.getCollection('dictionaries').find().forEach(function(item)
+{
+    for(i = 0; i != item.dataviews.length; ++i)
+    {
+        var dataView = item.dataviews[i]
+
+	if (dataView.useOptimizedRepoChartCalcMethod) {
+            dataView.generationMethod = "Repo and Full Data"
+        } else {
+            dataView.generationMethod = "Auto"
+        }
+        delete dataView.useOptimizedRepoChartCalcMethod
+    }
+
+    db.getCollection('dictionaries').save(item);
+})
+
+
+db.getCollection('dataset_imports').find({'dataView': {$exists: true}}).forEach(function(item){
+    var dataView = item.dataView
+
+    if (dataView.useOptimizedRepoChartCalcMethod) {
+        dataView.generationMethod = "Repo and Full Data"
+    } else {
+        dataView.generationMethod = "Auto"
+    }
+    delete dataView.useOptimizedRepoChartCalcMethod
+
+    db.getCollection('dataset_imports').save(item);
+})
