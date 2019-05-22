@@ -151,10 +151,12 @@ object GenericMapping {
     def subMatches(types: Type*) = types.exists(typ <:< _)
   }
 
-  private implicit val bsonObjectIDFormatter = BSONObjectIDStringFormatter
+  private implicit val bsonObjectIdFormatter = BSONObjectIDStringFormatter
+
   private implicit val stringSeqFormatter = SeqFormatter.apply
   private implicit val intSeqFormatter = SeqFormatter.asInt
   private implicit val doubleSeqFormatter = SeqFormatter.asDouble
+  private implicit val bsonObjectIdSeqFormatter = BSONObjectIDSeqFormatter.apply
 
   private def getJavaEnumOrdinalValues[E <: Enum[E]](enumType: Type): Map[Int, String] = {
     val clazz = typeToClass(enumType).asInstanceOf[Class[E]]
