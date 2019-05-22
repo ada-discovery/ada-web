@@ -47,8 +47,8 @@ class RegressorController @Inject()(
   private implicit val randomRegressionForestFeatureSubsetStrategyFormatter = EnumFormatter(RandomRegressionForestFeatureSubsetStrategy)
   private implicit val gbtRegressionLossTypeFormatter = EnumFormatter(GBTRegressionLossType)
 
-  private implicit val intSeqFormatter = SeqFormatter.applyInt
-  private implicit val doubleSeqFormatter = SeqFormatter.applyDouble
+  private implicit val intSeqFormatter = SeqFormatter.asInt
+  private implicit val doubleSeqFormatter = SeqFormatter.asDouble
 
   private implicit val intEitherSeqFormatter = EitherSeqFormatter[Int]
   private implicit val doubleEitherSeqFormatter = EitherSeqFormatter[Double]

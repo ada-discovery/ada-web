@@ -42,7 +42,7 @@ class UnsupervisedLearningController @Inject()(
 
   private implicit val kMeansInitModeFormatter = EnumFormatter(KMeansInitMode)
   private implicit val ldaptimizerFormatter = EnumFormatter(LDAOptimizer)
-  private implicit val doubleSeqFormatter = SeqFormatter.applyDouble
+  private implicit val doubleSeqFormatter = SeqFormatter.asDouble
 
   protected val kMeansForm = Form(
     mapping(

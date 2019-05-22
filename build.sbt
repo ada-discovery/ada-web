@@ -1,18 +1,19 @@
 import PlayKeys._
+import com.typesafe.config._
 
 organization := "org.adada"
 
 name := "ada-web"
 
-version := "0.7.3.RC.7.SNAPSHOT.7"
+// load version from the app config
+val conf = ConfigFactory.parseFile(new java.io.File("conf/application.conf")).resolve()
+version := conf.getString("app.version")
 
 description := "Web part of Ada Discovery Analytics backed by Play Framework."
 
 isSnapshot := false
 
 scalaVersion := "2.11.12"
-
-val playVersion = "2.5.9"
 
 resolvers ++= Seq(
   Resolver.mavenLocal
@@ -26,9 +27,11 @@ routesImport ++= Seq(
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 
+PlayKeys.devSettings := Seq("play.server.netty.maxInitialLineLength" -> "16384")
+
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.7.3.RC.7.SNAPSHOT.3",
-  "org.in-cal" %% "incal-play" % "0.1.6",
+  "org.adada" %% "ada-server" % "0.7.3.RC.7",
+  "org.in-cal" %% "incal-play" % "0.1.7",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
   "jp.t2v" %% "play2-auth" % "0.14.1",
@@ -39,9 +42,9 @@ libraryDependencies ++= Seq(
   "org.webjars" % "typeaheadjs" % "0.11.1",              // typeahead (autocompletion)
   "org.webjars" % "html5shiv" % "3.7.0",
   "org.webjars" % "respond" % "1.4.2",
-  "org.webjars" % "highcharts" % "5.0.14",
+  "org.webjars" % "highcharts" % "5.0.14",               // highcharts for plotting
   "org.webjars.npm" % "bootstrap-select" % "1.13.2",     // bootstrap select element
-  "org.webjars.bower" % "plotly.js" % "1.5.1",
+  "org.webjars.bower" % "plotly.js" % "1.5.1",           // not used - can be removed
   "org.webjars.bower" % "d3" % "3.5.16",
   "org.webjars.bower" % "Autolinker.js" % "0.25.0",      // to convert links to a-href elements
   "org.webjars" % "jquery-ui" % "1.11.1"
@@ -52,6 +55,9 @@ packagedArtifacts in publishLocal := {
   val assets: java.io.File = (playPackageAssets in Compile).value
   artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
 }
+
+// remove custom conf form the jar
+mappings in (Compile, packageBin) ~= { _.filter(!_._1.getName.endsWith("custom.conf")) }
 
 // Asset stages
 

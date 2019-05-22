@@ -1,5 +1,0 @@
-@import views.html.elements.inputTextReadonly
-
-@(domainName: String, form: Form[_])(implicit msg: play.api.i18n.Messages)
-
-@form.mapping.mappings.map(_.key).filter(key => !key.isEmpty && !key.equals("id")).map{key => @inputTextReadonly(domainName, key, form)}

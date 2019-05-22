@@ -18,9 +18,15 @@
                 @Messages("homepage.title", context.configuration.getString("project.name").getOrElse(""))
             </div>
             <div class="col-md-3 col-sm-12">
-                <a target="_blank" href="@context.configuration.getString("project.url").get">
-                    <img class="img-responsive pull-right" src="@CustomDirAssets.versioned(context.configuration.getString("project.logo").get)" />
-                </a>
+                @context.configuration.getString("project.url").map { url =>
+                    <a target="_blank" href="@url">
+                        @context.configuration.getString("project.logo").map { logo =>
+                            <img class="img-responsive pull-right" src="@CustomDirAssets.versioned(logo)" />
+                        }.getOrElse {
+                            <div class="pull-right">&rarr;</div>
+                        }
+                    </a>
+                }
             </div>
             </div>
         </div>

@@ -20,6 +20,7 @@ import org.ada.server.field.FieldUtil
 import org.incal.core.runnables.{FutureRunnable, InputFutureRunnable, InputRunnable, RunnableHtmlOutput}
 import org.ada.server.services.UserManager
 import play.api.libs.json.{JsArray, Json}
+import runnables.DsaInputFutureRunnable
 
 import scala.reflect.ClassTag
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,6 +40,7 @@ class AdminController @Inject() (
     "org.ada.server.runnables",
     "org.ada.server.runnables.core",
     "org.ada.web.runnables",
+    "org.ada.web.runnables.core",
     "runnables",
     "runnables.core"
   )
@@ -71,8 +73,9 @@ class AdminController @Inject() (
     val classes2 = findAux[InputRunnable[_]]
     val classes3 = findAux[FutureRunnable]
     val classes4 = findAux[InputFutureRunnable[_]]
+    val classes5 = findAux[DsaInputFutureRunnable[_]]
 
-    val foundClasses = classes1 ++ classes2 ++ classes3 ++ classes4
+    val foundClasses = classes1 ++ classes2 ++ classes3 ++ classes4 ++ classes5
     foundClasses.map(_.getName).sorted
   }
 

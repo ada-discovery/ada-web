@@ -48,8 +48,8 @@ class ClassifierController @Inject()(
   private implicit val gbtClassificationLossTypeFormatter = EnumFormatter(GBTClassificationLossType)
   private implicit val bayesModelTypeFormatter = EnumFormatter(BayesModelType)
 
-  private implicit val intSeqFormatter = SeqFormatter.applyInt
-  private implicit val doubleSeqFormatter = SeqFormatter.applyDouble
+  private implicit val intSeqFormatter = SeqFormatter.asInt
+  private implicit val doubleSeqFormatter = SeqFormatter.asDouble
 
   private implicit val intEitherSeqFormatter = EitherSeqFormatter[Int]
   private implicit val doubleEitherSeqFormatter = EitherSeqFormatter[Double]

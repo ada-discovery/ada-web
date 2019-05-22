@@ -14,7 +14,9 @@ import play.api.data._
 import java.{util => ju}
 
 import org.incal.play.formatters._
+import play.api.data.format.Formatter
 import reactivemongo.bson.BSONObjectID
+
 import scala.collection.Traversable
 
 private class GenericMapping[R, A](
@@ -151,8 +153,8 @@ object GenericMapping {
 
   private implicit val bsonObjectIDFormatter = BSONObjectIDStringFormatter
   private implicit val stringSeqFormatter = SeqFormatter.apply
-  private implicit val intSeqFormatter = SeqFormatter.applyInt
-  private implicit val doubleSeqFormatter = SeqFormatter.applyDouble
+  private implicit val intSeqFormatter = SeqFormatter.asInt
+  private implicit val doubleSeqFormatter = SeqFormatter.asDouble
 
   private def getJavaEnumOrdinalValues[E <: Enum[E]](enumType: Type): Map[Int, String] = {
     val clazz = typeToClass(enumType).asInstanceOf[Class[E]]
@@ -232,6 +234,10 @@ object GenericMapping {
       // double seq
       case t if t subMatches typeOf[Seq[Double]] =>
         of[Seq[Double]]
+
+      // BSON Object id seq
+      case t if t subMatches typeOf[Seq[BSONObjectID]] =>
+        of[Seq[BSONObjectID]]
 
       // seq
       case t if t subMatches typeOf[Seq[_]] =>
