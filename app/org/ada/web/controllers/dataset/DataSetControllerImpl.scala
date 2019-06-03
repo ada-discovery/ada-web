@@ -39,7 +39,7 @@ import play.api.mvc.{Filter => _, _}
 import reactivemongo.play.json.BSONFormats._
 import org.ada.server.services.ml.MachineLearningService
 import views.html.dataset
-import org.ada.server.models.DataSetTransformation._
+import org.ada.server.models.datatrans.DataSetTransformation2._
 import org.ada.server.calc.impl.{ChiSquareResult, IndependenceTestResult, OneWayAnovaResult, Quartiles}
 import org.ada.server.services.StatsService
 import be.objectify.deadbolt.scala.AuthenticatedRequest
@@ -48,6 +48,7 @@ import org.ada.web.controllers.FilterConditionExtraFormats.coreFilterConditionFo
 import org.ada.web.controllers.core.{AdaExceptionHandler, AdaReadonlyControllerImpl, ExportableAction}
 import org.ada.web.models._
 import org.ada.server.models._
+import org.ada.server.models.datatrans._
 import org.incal.core.{ConditionType, FilterCondition}
 import org.incal.core.ConditionType._
 import org.incal.core.FilterCondition.toCriterion
@@ -144,11 +145,11 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
   private lazy val fractalisServerUrl = configuration.getString("fractalis.server.url")
 
-  private val resultDataSetMapping: Mapping[DerivedDataSetSpec] = mapping(
+  private val resultDataSetMapping: Mapping[ResultDataSetSpec] = mapping(
     "id" -> nonEmptyText,
     "name" -> nonEmptyText,
     "storageType" -> of[StorageType.Value]
-  )(DerivedDataSetSpec.apply)(DerivedDataSetSpec.unapply)
+  )(ResultDataSetSpec.apply)(ResultDataSetSpec.unapply)
 
   private val seriesProcessingSpecForm = Form(
     mapping(
@@ -2230,7 +2231,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
           // Independence Test
           val numValues = idClassMap.values.map(classId => (classId.toString, classId.toString)).toMap
-          val clusterClassField = Field("cluster_class", Some("Cluster Class"), FieldTypeId.Enum, false, Some(numValues))
+          val clusterClassField = Field("cluster_class", Some("Cluster Class"), FieldTypeId.Enum, false, numValues)
           val fieldNameLabelMap = fields.map(field => (field.name, field.labelOrElseName)).toMap
 
           val testResults = statsService.testIndependenceSorted(jsonsWithClasses, fields, clusterClassField)
@@ -2362,7 +2363,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
   private def getAllowedValues(field: Field): Traversable[(String, String)] =
     field.fieldType match {
-      case FieldTypeId.Enum => field.numValues.map(_.toSeq.sortBy(_._1)).getOrElse(Nil)
+      case FieldTypeId.Enum => field.enumValues.toSeq.sortBy(_._1)
       case FieldTypeId.Boolean => Seq(
         "true" -> field.displayTrueValue.getOrElse("true"),
         "false" -> field.displayFalseValue.getOrElse("false")

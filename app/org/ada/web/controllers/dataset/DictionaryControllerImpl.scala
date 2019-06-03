@@ -79,7 +79,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
 
   override protected val typeTag = implicitly[TypeTag[Field]]
   override protected val format = fieldFormat
-  override protected val excludedFieldNames = Set("category", "numValues")
+  override protected val excludedFieldNames = Set("category", "enumValues")
 
   private val fieldNameLabels = Seq(
     ("fieldType", Some("Field Type")),
@@ -95,7 +95,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
       "label" ->  optional(nonEmptyText),
       "fieldType" -> of[FieldTypeId.Value],
       "isArray" -> boolean,
-      "numValues" -> optional(of[Map[String, String]]),
+      "enumValues" -> of[Map[String, String]],
       "displayDecimalPlaces" ->  optional(number(0, 20)),
       "displayTrueValue" ->  optional(nonEmptyText),
       "displayFalseValue" ->  optional(nonEmptyText),
@@ -110,7 +110,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
       field.label,
       field.fieldType,
       field.isArray,
-      field.numValues,
+      field.enumValues,
       field.displayDecimalPlaces,
       field.displayTrueValue,
       field.displayFalseValue,

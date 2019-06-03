@@ -67,7 +67,7 @@
                 @form.mapping.mappings.filter(mapping => !mapping.key.isEmpty).map { mapping =>
                     @{
                         nameFieldTypeMap.get(mapping.key).map { fieldTypeSpec: FieldTypeSpec =>
-                            defining(fieldTypeSpec.enumValues.map(_.map(_._2).toSeq.sorted).getOrElse(Nil)){ enumValues: Seq[String] =>
+                            defining(fieldTypeSpec.enumValues.map(_._2).toSeq.sorted){ enumValues: Seq[String] =>
                                 if(fieldTypeSpec.fieldType == FieldTypeId.Boolean) {
                                     checkboxAux(mapping.key)
                                 } else if(fieldTypeSpec.fieldType == FieldTypeId.Enum) {

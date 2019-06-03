@@ -1,0 +1,56 @@
+db.getCollection('dictionaries').find({}).forEach(function(item)
+{
+    for(i = 0; i != item.dataviews.length; ++i)
+    {
+        for(j = 0; j != item.dataviews[i].widgetSpecs.length; ++j)
+        {
+            var widgetSpec = item.dataviews[i].widgetSpecs[j];
+            widgetSpec.concreteClass = "org.ada.server." + widgetSpec.concreteClass;
+        }
+    }
+
+    db.getCollection('dictionaries').save(item);
+})
+
+
+db.getCollection('dataset_imports').find({'dataView': {$exists: true}}).forEach(function(item)
+{
+    for(i = 0; i != item.dataView.widgetSpecs.length; ++i)
+    {
+        var widgetSpec = item.dataView.widgetSpecs[i];
+        widgetSpec.concreteClass = "org.ada.server." + widgetSpec.concreteClass;
+    }
+
+    db.getCollection('dataset_imports').save(item);
+})
+
+
+db.getCollection('dataset_imports').find({}).forEach(function(item)
+{
+    item.concreteClass = "org.ada.server.models.dataimport." + item.concreteClass.substring(7);
+    db.getCollection('dataset_imports').save(item);
+})
+
+
+db.getCollection('unsupervisedLearnings').find({}).forEach(function(item)
+{
+    item.concreteClass = "org.ada.server." + item.concreteClass;
+    db.getCollection('unsupervisedLearnings').save(item);
+})
+
+db.getCollection('dictionaries').find({}).forEach(function(item)
+{
+    for(i = 0; i != item.fields.length; ++i)
+    {
+	    var field = item.fields[i];
+
+	    if (field.numValues) {
+		    field.enumValues = field.numValues;
+		    delete field.numValues;
+	    } else {
+		    field.enumValues = {};	
+	    }
+    }
+
+    db.getCollection('dictionaries').save(item);
+})

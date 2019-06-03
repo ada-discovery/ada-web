@@ -1,0 +1,101 @@
+@import play.api.i18n.Messages
+@import views.html.elements._
+@import org.ada.server.models.datatrans.ChangeFieldEnumsTransformation
+@import views.html.table.{displayTable, dynamicTable}
+@import views.html.elements.labelValue
+@import views.html.datasettrans.sourceDataSetTypeahead
+@import org.ada.web.util.typeColumns
+@import views.html.table.dynamicTableJsImport
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(form: Form[ChangeFieldEnumsTransformation])(implicit webContext: WebContext)
+
+@sourceDataSetTypeahead("changeFieldEnumsTransformation", form)
+
+@dynamicTableJsImport()
+
+@fieldNameElement(item: (String, String, String)) = {
+    <input type="text" id="fieldName" value="@item._1">
+}
+
+@enumOldElement(item: (String, String, String)) = {
+    <input type="text" id="enumOld" value="@item._2">
+}
+
+@enumNewElement(item: (String, String, String)) = {
+    <input type="text" id="enumNew" value="@item._3">
+}
+
+@table = {
+    @displayTable(
+        form.value.map(_.fieldNameOldNewEnums).getOrElse(Nil),
+        typeColumns[(String, String, String)](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (None, "Field Name", fieldNameElement),
+            (None, "Enum Old", enumOldElement),
+            (None, "Enum New", enumNewElement)
+        )
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        var model = rowToModel(row);
+        return JSON.stringify(model);
+    }
+}
+
+@modalItemToRowJsFun = {
+    function(values) {
+        var fieldName = values["fieldName"].trim()
+        var enumOld = values["enumOld"].trim()
+        var enumNew = values["enumNew"].trim()
+
+        var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
+        var fieldNameColumn = "<td><input type='text' id='fieldName' value='" + fieldName + "'/></td>";
+        var enumOldColumn = "<td><input type='text' id='enumOld' value='" + enumOld + "'/></td>";
+        var enumNewColumn = "<td><input type='text' id='enumNew' value='" + enumNew + "'/></td>";
+
+        // create row
+        var row = $("<tr></tr>")
+        row.append(checkboxColumn)
+        row.append(fieldNameColumn)
+        row.append(enumOldColumn)
+        row.append(enumNewColumn)
+
+        return row;
+    }
+}
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = {
+    @labelValue(key, label, false, None, 4)(valueElement)
+}
+
+@modalInner = {
+    <div class="row">
+        @labelValueAux("fieldName", "Field Name") {
+            <input type="text" id="fieldName">
+        }
+
+        @labelValueAux("enumOld", "Old Enum Value") {
+            <input type="text" id="enumOld">
+        }
+
+        @labelValueAux("enumNew", "New Enum Value") {
+            <input type="text" id="enumNew">
+        }
+    </div>
+}
+
+@labelValue("fieldNameOldNewEnums", "Old->New Enum Mappings"){
+    @dynamicTable("fieldNameOldNewEnum", table, true, rowToModelJsFun, modalItemToRowJsFun, modalInner, None, 12)
+}
+
+<script type="text/javascript">
+    function rowToModel(row) {
+        function value(x) { return getRowValue(row, x) }
+
+        return [value("fieldName"), value("enumOld"), value("enumNew")]
+    }
+</script>

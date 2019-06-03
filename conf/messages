@@ -98,6 +98,16 @@ redCapDataSetImport.importDictionaryFlag.label = Import Dictionary?
 
 dataView.useOptimizedRepoChartCalcMethod.label = Optimized Per Widget Repo Calc
 
+dataSetTranslation.resultDataSetSpec.name.label = Result Data Set Name
+dataSetTranslation.resultDataSetSpec.id.label = Result Data Set Id
+dataSetTranslation.resultDataSetSpec.storageType.label = Storage Type
+dataSetTranslation.timeCreated.label = Time Created
+dataSetTranslation.timeLastExecuted.label = Time Last Executed
+
+dataSetTranslation.streamSpec.batchSize.label = Batch Size
+dataSetTranslation.streamSpec.backpressureBufferSize.label = Backpressure Buffer Size
+dataSetTranslation.streamSpec.parallelism.label = Parallelism
+
 filter.createdBy.label = Created By
 filter.timeCreated.label = Time Created
 
@@ -112,3 +122,6 @@ classificationRun.displayName = Classification Run
 temporalClassificationRun.displayName = Temporal Classification Run
 regressionRun.displayName = Regression Run
 temporalRegressionRun.displayName = Temporal Regression Run
+dataSetImport.displayName = Data Set Import
+dataSetTransformation.displayName = "Data Set Transformation
+user.displayName = User

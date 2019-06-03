@@ -1,0 +1,90 @@
+@import org.ada.server.models.datatrans.RenameFieldsTransformation
+@import org.ada.web.util.typeColumns
+@import views.html.datasetimport.schedulePanel
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, sourceDataSetTypeahead}
+@import views.html.table.{displayTable, dynamicTable}
+@import views.html.table.dynamicTableJsImport
+@import views.html.elements.labelValue
+@import views.html.elements._
+@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(form: Form[RenameFieldsTransformation])(implicit webContext: WebContext)
+
+@sourceDataSetTypeahead("renameFieldsTransformation", form)
+
+@dynamicTableJsImport()
+
+@oldFieldNameElement(item: (String, String)) = {
+    <input type="text" id="oldFieldName" value="@item._1">
+}
+
+@newFieldNameElement(item: (String, String)) = {
+    <input type="text" id="newFieldName" value="@item._2">
+}
+
+@table = {
+    @displayTable(
+        form.value.map(_.fieldOldNewNames).getOrElse(Nil),
+        typeColumns[(String, String)](
+            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
+            (None, "Old Field Name", oldFieldNameElement),
+            (None, "New Field Name", newFieldNameElement)
+        )
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        var model = rowToModel(row);
+        return JSON.stringify(model);
+    }
+}
+
+@modalItemToRowJsFun = {
+    function(values) {
+        var oldFieldName = values["oldFieldName"].trim()
+        var newFieldName = values["newFieldName"].trim()
+
+        var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
+        var oldFieldNameColumn = "<td><input type='text' id='oldFieldName' value='" + oldFieldName + "'/></td>";
+        var newFieldNameColumn = "<td><input type='text' id='newFieldName' value='" + newFieldName + "'/></td>";
+
+        // create row
+        var row = $("<tr></tr>")
+        row.append(checkboxColumn)
+        row.append(oldFieldNameColumn)
+        row.append(newFieldNameColumn)
+
+        return row;
+    }
+}
+
+@labelValueAux(key: String, label: Any)(valueElement : Any) = {
+    @labelValue(key, label, false, None, 4)(valueElement)
+}
+
+@modalInner = {
+    <div class="row">
+        @labelValueAux("oldFieldName", "Old Field Name") {
+            <input type="text" id="oldFieldName">
+        }
+
+        @labelValueAux("newFieldName", "New Field Name") {
+            <input type="text" id="newFieldName">
+        }
+    </div>
+}
+
+@labelValue("fieldOldNewNames", "Old->New Field Name Mappings"){
+    @dynamicTable("fieldOldNewName", table, true, rowToModelJsFun, modalItemToRowJsFun, modalInner, None, 12)
+}
+
+<script type="text/javascript">
+    function rowToModel(row) {
+        function value(x) { return getRowValue(row, x) }
+
+        return [value("oldFieldName"), value("newFieldName")]
+    }
+</script>

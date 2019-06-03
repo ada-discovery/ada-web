@@ -1,36 +1,22 @@
 @import org.ada.server.models.dataimport.JsonDataSetImport
-@import views.html.datasetimport.{settingPanel, fileOrPathInput, dataSetInfoPanel, schedulePanel, dataViewPanel}
+@import views.html.datasetimport.fileOrPathInput
 @import views.html.elements._
-@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
 
-@(form: Form[JsonDataSetImport])(implicit msg: Messages)
+@(form: Form[JsonDataSetImport])(implicit webContext: WebContext)
 
-@dataSetInfoPanel("jsonDataSetImport", form)
-
-<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[JsonDataSetImport].getName}">
-
-<div class="panel panel-default">
-    <div class="panel-heading">JSON Import Specifics</div>
-    <div class="panel-body">
-        @fileOrPathInput("jsonDataSetImport", "sourceChoice", "Source", "dataFile", "path", form)
-        @inputText("jsonDataSetImport", "charsetName", form)
-        @checkbox("jsonDataSetImport", "inferFieldTypes", form)
-        @inputText("jsonDataSetImport", "inferenceMaxEnumValuesCount", form)
-        @inputText("jsonDataSetImport", "inferenceMinAvgValuesPerEnum", form)
-        @checkbox("jsonDataSetImport", "booleanIncludeNumbers", form)
-        @inputText("jsonDataSetImport", "saveBatchSize", form)
-    </div>
-</div>
-
-@settingPanel(form)
-@dataViewPanel(form)
-@schedulePanel(form)
+@fileOrPathInput("jsonDataSetImport", "sourceChoice", "Source", "dataFile", "path", form)
+@inputText("jsonDataSetImport", "charsetName", form)
+@checkbox("jsonDataSetImport", "inferFieldTypes", form)
+@inputText("jsonDataSetImport", "inferenceMaxEnumValuesCount", form)
+@inputText("jsonDataSetImport", "inferenceMinAvgValuesPerEnum", form)
+@checkbox("jsonDataSetImport", "booleanIncludeNumbers", form)
+@inputText("jsonDataSetImport", "saveBatchSize", form)
 
 <script type="text/javascript">
     $('form').submit(function(ev) {
         ev.preventDefault();
-        handleSettingSubmission();
-        handleDataViewSubmission();
 
         var importLocalFile = $('input[name="sourceChoice"]:checked').val() == "1"
         if (importLocalFile)

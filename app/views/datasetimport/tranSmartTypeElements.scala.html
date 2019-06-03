@@ -1,37 +1,23 @@
 @import org.ada.server.models.dataimport.TranSmartDataSetImport
+@import views.html.datasetimport.fileOrPathInput
 @import views.html.elements._
-@import play.api.i18n.Messages
-@import views.html.datasetimport.{settingPanel, fileOrPathInput, dataSetInfoPanel, schedulePanel, dataViewPanel}
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
 
-@(form: Form[TranSmartDataSetImport])(implicit msg: Messages)
+@(form: Form[TranSmartDataSetImport])(implicit webContext: WebContext)
 
-@dataSetInfoPanel("tranSmartDataSetImport", form)
-
-<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[TranSmartDataSetImport].getName}">
-
-<div class="panel panel-default">
-    <div class="panel-heading">tranSMART Import Specifics</div>
-    <div class="panel-body">
-        @fileOrPathInput("tranSmartDataSetImport", "dataSourceChoice", "Data Source", "dataFile", "dataPath", form)
-        @fileOrPathInput("tranSmartDataSetImport", "mappingSourceChoice", "Mapping Source", "mappingFile", "mappingPath", form)
-        @inputText("tranSmartDataSetImport", "charsetName", form)
-        @checkbox("tranSmartDataSetImport", "matchQuotes", form)
-        @checkbox("tranSmartDataSetImport", "inferFieldTypes", form)
-        @inputText("tranSmartDataSetImport", "inferenceMaxEnumValuesCount", form)
-        @inputText("tranSmartDataSetImport", "inferenceMinAvgValuesPerEnum", form)
-        @inputText("tranSmartDataSetImport", "saveBatchSize", form)
-    </div>
-</div>
-
-@settingPanel(form)
-@dataViewPanel(form)
-@schedulePanel(form)
+@fileOrPathInput("tranSmartDataSetImport", "dataSourceChoice", "Data Source", "dataFile", "dataPath", form)
+@fileOrPathInput("tranSmartDataSetImport", "mappingSourceChoice", "Mapping Source", "mappingFile", "mappingPath", form)
+@inputText("tranSmartDataSetImport", "charsetName", form)
+@checkbox("tranSmartDataSetImport", "matchQuotes", form)
+@checkbox("tranSmartDataSetImport", "inferFieldTypes", form)
+@inputText("tranSmartDataSetImport", "inferenceMaxEnumValuesCount", form)
+@inputText("tranSmartDataSetImport", "inferenceMinAvgValuesPerEnum", form)
+@inputText("tranSmartDataSetImport", "saveBatchSize", form)
 
 <script type="text/javascript">
     $('form').submit(function(ev) {
         ev.preventDefault();
-        handleSettingSubmission();
-        handleDataViewSubmission();
 
         var localDataFile = $('input[name="dataSourceChoice"]:checked').val() == "1"
         if (localDataFile)

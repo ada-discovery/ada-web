@@ -37,7 +37,10 @@ class UserController @Inject() (
       "email" -> email,
       "roles" -> seq(text),
       "permissions" -> seq(text)
-      )(User.apply)(User.unapply))//(SecurityUtil.secureUserApply)(SecurityUtil.secureUserUnapply))
+    )(User.apply)(User.unapply))
+
+  override protected val entityNameKey = "user"
+  override protected def formatId(id: BSONObjectID) = id.stringify
 
   override protected val homeCall = routes.UserController.find()
 

@@ -273,13 +273,14 @@ function populateFieldTypeahed(typeaheadElement, fieldNameElement, fieldNameAndL
 function selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption) {
     var fieldName = fieldNameElement.val();
 
-    var matchedFieldNameLabel = $.grep(fieldNameAndLabels, function (nameLabel) {
-        return nameLabel[0] == fieldName
+    var matchedField = $.grep(fieldNameAndLabels, function (field) {
+        var name = (Array.isArray(field)) ? field[0] : field.name;
+        return name == fieldName
     });
 
-    if (matchedFieldNameLabel.length > 0) {
-        var name = matchedFieldNameLabel[0][0]
-        var label = matchedFieldNameLabel[0][1]
+    if (matchedField.length > 0) {
+        var name = (Array.isArray(matchedField[0])) ? matchedField[0][0] : matchedField[0].name;
+        var label = (Array.isArray(matchedField[0])) ? matchedField[0][1] : matchedField[0].label;
 
         var selectElement = null;
 
@@ -338,11 +339,11 @@ function populateFieldTypeahedAux(typeaheadElement, fieldNameElement, source, sh
  * @param showOption 0 - show field names only, 1 - show field labels only,
  *                   2 - show field labels, and field names if no label defined, 3 - show both, field names and labels
  */
-function populateFieldTypeahedFromUrl(typeaheadElement, fieldNameElement, url, showOption, postFunction) {
+function populateFieldTypeahedFromUrl(typeaheadElement, fieldNameElement, url, showOption, postFunction, initSelectByNameElement) {
     $.ajax({
         url: url,
         success: function (fieldNameAndLabels) {
-            populateFieldTypeahed(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption);
+            populateFieldTypeahed(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption, initSelectByNameElement);
             if (postFunction) {
                 postFunction()
             }

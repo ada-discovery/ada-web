@@ -2,13 +2,11 @@ package org.ada.web.runnables.core
 
 import javax.inject.Inject
 import org.ada.server.AdaException
-import org.incal.core.runnables.InputRunnable
+import org.incal.core.runnables.{InputRunnable, InputRunnableExt}
 import play.api.Configuration
 import play.api.libs.mailer.{Email, MailerClient}
 
-import scala.reflect.runtime.universe.typeOf
-
-class SendEmail @Inject()(mailerClient: MailerClient, configuration: Configuration) extends InputRunnable[SendEmailSpec] {
+class SendEmail @Inject()(mailerClient: MailerClient, configuration: Configuration) extends InputRunnableExt[SendEmailSpec] {
 
   override def run(input: SendEmailSpec) = {
 
@@ -25,8 +23,6 @@ class SendEmail @Inject()(mailerClient: MailerClient, configuration: Configurati
 
     mailerClient.send(email)
   }
-
-  override def inputType = typeOf[SendEmailSpec]
 }
 
 case class SendEmailSpec(

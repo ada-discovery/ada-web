@@ -1,0 +1,41 @@
+@import views.html.datasetimport.schedulePanel
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel}
+@import views.html.elements._
+@import play.api.i18n.Messages
+@import org.ada.server.models.datatrans.DataSetTransformation
+
+@(
+    form: Form[_ <: DataSetTransformation],
+    className: String)(
+    typeSpecificElements: Html)(
+    implicit msg: Messages
+)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{className}">
+
+@resultDataSetInfoPanel(form)
+
+<div class="panel panel-default">
+    <div class="panel-heading">Transformation Specifics</div>
+    <div class="panel-body">
+        @typeSpecificElements
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        @if(form("timeCreated").value.isDefined) {
+            @inputTextReadonly("dataSetTranslation", "timeCreated", form)
+        }
+        @if(form("timeLastExecuted").value.isDefined) {
+            @inputTextReadonly("dataSetTranslation", "timeLastExecuted", form)
+        }
+
+        <a class="pull-right" href="#advancedSetting" data-toggle="collapse">Show Advanced</a>
+    </div>
+</div>
+
+<div id="advancedSetting" class="collapse">
+    @streamSpecPanel(form)
+    @schedulePanel(form)
+</div>

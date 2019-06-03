@@ -163,8 +163,6 @@ class ClassifierController @Inject()(
     implicit manifest: Manifest[E]
   ) extends CreateEditFormViews[E, BSONObjectID] {
 
-    private val messagePrefix = firstCharToLowerCase(manifest.runtimeClass.getSimpleName)
-
     override protected[controllers] def fillForm(item: E) =
       form.fill(item)
 
@@ -245,13 +243,7 @@ class ClassifierController @Inject()(
   // default form... unused
   override protected[controllers] val form = logisticRegressionForm.asInstanceOf[Form[Classifier]]
 
-  def create(concreteClassName: String) = restrictAdminAnyNoCaching(deadbolt) {
-    implicit request =>
-
-      getFormWithViews(concreteClassName)
-        .createViewWithContextX(implicitly[WebContext])
-        .map(Ok(_))
-  }
+  override def create(concreteClassName: String) = restrictAny(super.create(concreteClassName))
 
   override protected type ListViewData = (
     Page[Classifier],

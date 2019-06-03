@@ -1,0 +1,13 @@
+@import org.ada.server.models.datatrans.DataSetTransformation
+@import views.html.elements._
+
+@(form: Form[_ <: DataSetTransformation])(implicit msg: Messages)
+
+<div class="panel panel-default">
+    <div class="panel-heading">Stream Info</div>
+    <div class="panel-body">
+        @inputText("dataSetTranslation", "streamSpec.batchSize", form)
+        @inputText("dataSetTranslation", "streamSpec.backpressureBufferSize", form)
+        @inputText("dataSetTranslation", "streamSpec.parallelism", form)
+    </div>
+</div>

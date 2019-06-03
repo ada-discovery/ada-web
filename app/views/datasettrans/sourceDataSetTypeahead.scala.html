@@ -1,0 +1,33 @@
+@import views.html.layout.main
+@import play.api.mvc.Flash
+@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.elements.inputTypeahead
+@import org.ada.web.controllers.dataset.datatrans.routes
+@import org.ada.server.models.FilterShowFieldStyle
+
+@(domainName: String, form: Form[_])(implicit context: WebContext)
+
+@typeaheadJsImport()
+
+@inputTypeahead(
+    domainName,
+    "sourceDataSetId",
+    "sourceDataSetTypeahead",
+    form,
+    "Data Set"
+)
+
+<script type="text/javascript">
+    $(function () {
+        populateFieldTypeahedFromUrl(
+            $('#sourceDataSetTypeahead'),
+            $('#sourceDataSetId'),
+            '@Html(routes.DataSetTransformationController.dataSetNameAndLabels().url)',
+            @FilterShowFieldStyle.LabelsOnly.id,
+            null,
+            true
+        )
+    })
+</script>

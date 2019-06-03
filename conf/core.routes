@@ -43,16 +43,29 @@ POST        /admin/importLdapUsers                                              
 POST        /admin/purgeMissingLdapUsers                                            org.ada.web.controllers.AdminController.purgeMissingLdapUsers
 
 # Data Set Import
-GET         /admin/dataSetImport                                                    org.ada.web.controllers.dataset.DataSetImportController.find(p: Int ?= 0, s: String ?= "dataSpaceName", filter: Seq[org.incal.core.FilterCondition] ?= Nil)
-GET         /admin/dataSetImport/all                                                org.ada.web.controllers.dataset.DataSetImportController.listAll(s: String ?= "dataSpaceName")
-GET         /admin/dataSetImport/new                                                org.ada.web.controllers.dataset.DataSetImportController.create(concreteClassName: String)
-POST        /admin/dataSetImport/execute/:id                                        org.ada.web.controllers.dataset.DataSetImportController.execute(id: BSONObjectID)
-POST        /admin/dataSetImport/save                                               org.ada.web.controllers.dataset.DataSetImportController.save
-GET         /admin/dataSetImport/:id/get                                            org.ada.web.controllers.dataset.DataSetImportController.get(id: BSONObjectID)
-POST        /admin/dataSetImport/:id                                                org.ada.web.controllers.dataset.DataSetImportController.update(id: BSONObjectID)
-POST        /admin/dataSetImport/:id/delete                                         org.ada.web.controllers.dataset.DataSetImportController.delete(id: BSONObjectID)
-GET         /admin/dataSetImport/copy                                               org.ada.web.controllers.dataset.DataSetImportController.copy(dataSetImportId: BSONObjectID)
-GET         /admin/dataSetImport/idAndNames                                         org.ada.web.controllers.dataset.DataSetImportController.idAndNames
+GET         /admin/dataSetImport                                                    org.ada.web.controllers.dataset.dataimport.DataSetImportController.find(p: Int ?= 0, s: String ?= "dataSpaceName", filter: Seq[org.incal.core.FilterCondition] ?= Nil)
+GET         /admin/dataSetImport/all                                                org.ada.web.controllers.dataset.dataimport.DataSetImportController.listAll(s: String ?= "dataSpaceName")
+GET         /admin/dataSetImport/new                                                org.ada.web.controllers.dataset.dataimport.DataSetImportController.create(concreteClassName: String)
+POST        /admin/dataSetImport/execute/:id                                        org.ada.web.controllers.dataset.dataimport.DataSetImportController.execute(id: BSONObjectID)
+POST        /admin/dataSetImport/save                                               org.ada.web.controllers.dataset.dataimport.DataSetImportController.save
+GET         /admin/dataSetImport/:id/get                                            org.ada.web.controllers.dataset.dataimport.DataSetImportController.get(id: BSONObjectID)
+POST        /admin/dataSetImport/:id                                                org.ada.web.controllers.dataset.dataimport.DataSetImportController.update(id: BSONObjectID)
+POST        /admin/dataSetImport/:id/delete                                         org.ada.web.controllers.dataset.dataimport.DataSetImportController.delete(id: BSONObjectID)
+GET         /admin/dataSetImport/copy                                               org.ada.web.controllers.dataset.dataimport.DataSetImportController.copy(dataSetImportId: BSONObjectID)
+GET         /admin/dataSetImport/idAndNames                                         org.ada.web.controllers.dataset.dataimport.DataSetImportController.idAndNames
+
+# Data Set Transformation
+GET         /admin/dataSetTransformation                                            org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.find(p: Int ?= 0, s: String ?= "dataSpaceName", filter: Seq[org.incal.core.FilterCondition] ?= Nil)
+GET         /admin/dataSetTransformation/all                                        org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.listAll(s: String ?= "dataSpaceName")
+GET         /admin/dataSetTransformation/new                                        org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.create(concreteClassName: String)
+POST        /admin/dataSetTransformation/execute/:id                                org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.execute(id: BSONObjectID)
+POST        /admin/dataSetTransformation/save                                       org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.save
+GET         /admin/dataSetTransformation/:id/get                                    org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.get(id: BSONObjectID)
+POST        /admin/dataSetTransformation/:id                                        org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.update(id: BSONObjectID)
+POST        /admin/dataSetTransformation/:id/delete                                 org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.delete(id: BSONObjectID)
+GET         /admin/dataSetTransformation/copy                                       org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.copy(dataSetTransformationId: BSONObjectID)
+GET         /admin/dataSetTransformation/idAndNames                                 org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.idAndNames
+GET         /admin/dataSetTransformation/dataSetNameAndLabels                       org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.dataSetNameAndLabels
 
 # User Management
 GET         /users                                                                  org.ada.web.controllers.UserController.find(p: Int ?= 0, s: String ?= "ldapDn", filter: Seq[org.incal.core.FilterCondition] ?= Nil)

@@ -1,0 +1,35 @@
+@import org.ada.server.models.dataimport.DataSetImport
+@import views.html.datasetimport.{settingPanel, fileOrPathInput, dataSetInfoPanel, schedulePanel, dataViewPanel}
+@import views.html.elements._
+@import play.api.i18n.Messages
+
+@(
+    form: Form[_ <: DataSetImport],
+    className: String)(
+    typeSpecificElements: Html)(
+    implicit msg: Messages
+)
+
+<input type="hidden" id="concreteClass" name="concreteClass" value="@{className}">
+
+@dataSetInfoPanel("csvDataSetImport", form)
+
+<div class="panel panel-default">
+    <div class="panel-heading">Import Specifics</div>
+    <div class="panel-body">
+        @typeSpecificElements
+    </div>
+</div>
+
+@settingPanel(form)
+@dataViewPanel(form)
+@schedulePanel(form)
+
+<script type="text/javascript">
+    $('form').submit(function(ev) {
+        ev.preventDefault();
+        handleSettingSubmission();
+        handleDataViewSubmission();
+        this.submit();
+    });
+</script>

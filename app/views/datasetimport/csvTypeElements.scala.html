@@ -1,40 +1,26 @@
 @import org.ada.server.models.dataimport.CsvDataSetImport
-@import views.html.datasetimport.{settingPanel, fileOrPathInput, dataSetInfoPanel, schedulePanel, dataViewPanel}
+@import views.html.datasetimport.fileOrPathInput
 @import views.html.elements._
-@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
 
-@(form: Form[CsvDataSetImport])(implicit msg: Messages)
+@(form: Form[CsvDataSetImport])(implicit webContext: WebContext)
 
-@dataSetInfoPanel("csvDataSetImport", form)
-
-<input type="hidden" id="concreteClass" name="concreteClass" value="@{classOf[CsvDataSetImport].getName}">
-
-<div class="panel panel-default">
-    <div class="panel-heading">CSV Import Specifics</div>
-    <div class="panel-body">
-        @fileOrPathInput("csvDataSetImport", "sourceChoice", "Source", "dataFile", "path", form)
-        @inputText("csvDataSetImport", "delimiter", form)
-        @inputText("csvDataSetImport", "eol", form)
-        @inputText("csvDataSetImport", "charsetName", form)
-        @checkbox("csvDataSetImport", "matchQuotes", form)
-        @checkbox("csvDataSetImport", "inferFieldTypes", form)
-        @inputText("csvDataSetImport", "inferenceMaxEnumValuesCount", form)
-        @inputText("csvDataSetImport", "inferenceMinAvgValuesPerEnum", form)
-        @inputText("csvDataSetImport", "arrayDelimiter", form)
-        @checkbox("csvDataSetImport", "booleanIncludeNumbers", form)
-        @inputText("csvDataSetImport", "saveBatchSize", form)
-    </div>
-</div>
-
-@settingPanel(form)
-@dataViewPanel(form)
-@schedulePanel(form)
+@fileOrPathInput("csvDataSetImport", "sourceChoice", "Source", "dataFile", "path", form)
+@inputText("csvDataSetImport", "delimiter", form)
+@inputText("csvDataSetImport", "eol", form)
+@inputText("csvDataSetImport", "charsetName", form)
+@checkbox("csvDataSetImport", "matchQuotes", form)
+@checkbox("csvDataSetImport", "inferFieldTypes", form)
+@inputText("csvDataSetImport", "inferenceMaxEnumValuesCount", form)
+@inputText("csvDataSetImport", "inferenceMinAvgValuesPerEnum", form)
+@inputText("csvDataSetImport", "arrayDelimiter", form)
+@checkbox("csvDataSetImport", "booleanIncludeNumbers", form)
+@inputText("csvDataSetImport", "saveBatchSize", form)
 
 <script type="text/javascript">
     $('form').submit(function(ev) {
         ev.preventDefault();
-        handleSettingSubmission();
-        handleDataViewSubmission();
 
         var importLocalFile = $('input[name="sourceChoice"]:checked').val() == "1"
         if (importLocalFile)

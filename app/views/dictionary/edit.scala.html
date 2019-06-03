@@ -1,11 +1,13 @@
 @import views.html.layout
-@import views.html.elements.{inputText, select}
+@import views.html.elements.{inputText, inputTextReadonly, select}
 @import views.html.dataset.{datasetMenu, datasetSubNavWithJs}
 @import org.ada.server.models.DataSpaceMetaInfo
 @import org.ada.server.models.Category
 @import org.ada.server.models.Field
+@import org.ada.server.models.FieldTypeId
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.util.enumToValueString
 
 @(
     displayName: String,
@@ -18,11 +20,11 @@
 )
 
 @elements = {
-    @inputText("field", "name", form)
+    @inputTextReadonly("field", "name", form)
     @inputText("field", "label", form)
-    @inputText("field", "fieldType", form)
+    @select("field", "fieldType", form, enumToValueString(FieldTypeId), false)
     @inputText("field", "isArray", form)
-    @inputText("field", "numValues", form, Seq('_label -> "Enum Values"))
+    @inputText("field", "enumValues", form, Seq('_label -> "Enum Values"))
     @inputText("field", "displayDecimalPlaces", form)
     @inputText("field", "displayTrueValue", form)
     @inputText("field", "displayFalseValue", form)

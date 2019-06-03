@@ -30,15 +30,13 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 PlayKeys.devSettings := Seq("play.server.netty.maxInitialLineLength" -> "16384")
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.7.3.RC.7",
-  "org.in-cal" %% "incal-play" % "0.1.7",
+  "org.adada" %% "ada-server" % "0.7.3.RC.8",
+  "org.in-cal" %% "incal-play" % "0.1.8",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
   "jp.t2v" %% "play2-auth" % "0.14.1",
-  "commons-net" % "commons-net" % "3.5",                 // for ftp access
+//  "commons-net" % "commons-net" % "3.5",                 // for ftp access
   "org.scalaz" % "scalaz-core_2.11" % "7.2.1",
-  "org.webjars" % "bootstrap" % "3.3.7",
-  "org.webjars" % "bootswatch-united" % "3.3.4+1",
   "org.webjars" % "typeaheadjs" % "0.11.1",              // typeahead (autocompletion)
   "org.webjars" % "html5shiv" % "3.7.0",
   "org.webjars" % "respond" % "1.4.2",

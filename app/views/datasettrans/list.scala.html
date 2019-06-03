@@ -1,0 +1,117 @@
+@import views.html.layout
+@import views.html.table.paginatedTable
+@import views.html.dataset.{datasetMenu}
+@import views.html.filter.filterWithJs
+@import org.ada.web.controllers.dataset.datatrans.routes.{DataSetTransformationController => dataSetTransformationRoutes}
+@import org.ada.web.util.{formatTimeElement, toHumanReadableCamel, typeColumns}
+@import org.ada.server.models.{DataSpaceMetaInfo, Field, Filter, FilterShowFieldStyle}
+@import org.ada.server.models.datatrans._
+@import org.ada.server.models.ScheduledTime
+@import org.incal.play.controllers.WebContext._
+@import org.incal.play.controllers.WebContext
+@import reactivemongo.bson.BSONObjectID
+@import org.incal.play.Page
+@import org.incal.core.FilterCondition
+
+@(
+    page: Page[DataSetTransformation],
+    conditions: Seq[FilterCondition],
+    transformationClasses: Traversable[(Class[_], String)],
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit webContext: WebContext
+)
+
+@transformationLink(clazz: Class[_], title: String) = {
+    <li>
+        <a href="@dataSetTransformationRoutes.create(clazz.getName)">
+            @title
+        </a>
+    </li>
+}
+
+@actions = {
+    <div class="row">
+        <div class="col-md-10">
+            @filterWithJs(
+                Filter(conditions),
+                dataSetTransformationRoutes.find(),
+                Left(Seq(
+                    Field("resultDataSetSpec.id", Some("Data Set Id")),
+                    Field("resultDataSetSpec.name", Some("Data Set Name"))
+                )),
+                None,
+                Some(FilterShowFieldStyle.LabelsOnly)
+            )
+        </div>
+        <div class="dropdown pull-right">
+            <ul class="list-inline">
+                <li>
+                    <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-toggle="tooltip" title="Add Data Set Import">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        @transformationClasses.map((transformationLink(_, _)).tupled)
+                    </ul>
+                </li>
+                <li>
+                    <a class="btn btn-success btn-sm" href="#" data-toggle="modal" data-target="#dataSetTransformationSelectionModal" title="Copy Data Set Import">
+                        <span class="glyphicon glyphicon-duplicate"></span>
+                    </a>
+                </li>
+            </ul>
+            @typeaheadSelectionModal("dataSetTransformationSelectionModal", "dataSetTransformation", "Data Set Transformation", dataSetTransformationRoutes.idAndNames, Some(dataSetTransformationRoutes.copy(BSONObjectID.generate)))
+        </div>
+    </div>
+}
+
+@scheduleTime(scheduledTime: ScheduledTime) = {
+    @Html(formatTimeElement(scheduledTime.hour, true, "&nbsp;&nbsp;&nbsp;&nbsp;") + formatTimeElement(scheduledTime.minute, true, "&nbsp;&nbsp;&nbsp;&nbsp;") + formatTimeElement(scheduledTime.second, false, "&nbsp;&nbsp;&nbsp;&nbsp;"))
+}
+
+@scheduleCheckbox(dataSetImport: DataSetTransformation) = {
+    <ul class="list-inline">
+        <li>
+            <input type="checkbox" class="no-rowClicked" @if(dataSetImport.scheduled) { checked="checked" } disabled="disabled"/>
+        </li>
+        @if(dataSetImport.scheduled) {
+            <li class="topVerticalAlign">
+                @scheduleTime(dataSetImport.scheduledTime.get)
+            </li>
+        }
+    </ul>
+}
+
+@executeLink(dataSetTransformation: DataSetTransformation) = {
+    <a class="btn btn-default btn-xs btn-clean no-rowClicked" href="#" onclick="submit('post', '@dataSetTransformationRoutes.execute(dataSetTransformation._id.get)'); return false;">
+        <span class="glyphicon glyphicon-play green" aria-hidden="true"></span>
+    </a>
+}
+
+@table = @{
+    paginatedTable(
+        page,
+        dataSetTransformationRoutes.find(_, _, conditions),
+        typeColumns[DataSetTransformation](
+            (Some("sourceDataSetIds"), "Source Data Set(s)", _.sourceDataSetIds.mkString(", ")),
+            (Some("dataSetName"), "Data Set Name", _.resultDataSetName),
+            (Some("concreteClass"), "Type", {transformationInfo => toHumanReadableCamel(transformationInfo.getClass.getSimpleName)}),
+            (Some("timeCreated"), "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
+            (Some("timeLastExecuted"), "Time Last Executed", _.timeLastExecuted.map(_.format("yyyy-MM-dd HH:mm:ss")).getOrElse("")),
+            (Some("scheduled"), "Scheduled?", scheduleCheckbox),
+            (None, "Execute Now", executeLink)
+        ),
+        Some({ item : Any => dataSetTransformationRoutes.get(item.asInstanceOf[DataSetTransformation]._id.get)})
+    )
+}
+
+@layout.list(
+    "Data Set Transformation",
+    None,
+    page.total,
+    Some(actions),
+    Some(table),
+    None,
+    Some(datasetMenu(dataSpaceMetaInfos))
+)

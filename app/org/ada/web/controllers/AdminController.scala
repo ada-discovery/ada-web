@@ -8,7 +8,6 @@ import org.ada.server.util.ClassFinderUtil.findClasses
 import org.incal.play.security.SecurityUtil.restrictAdminAnyNoCaching
 import org.incal.play.controllers.BaseController
 import play.api.{Configuration, Logger}
-import play.api.Play.current
 import play.api.data.Form
 import play.api.mvc.AnyContent
 import play.api.mvc.Result
@@ -17,8 +16,10 @@ import java.{util => ju}
 
 import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.server.field.FieldUtil
-import org.incal.core.runnables.{FutureRunnable, InputFutureRunnable, InputRunnable, RunnableHtmlOutput}
+import org.incal.core.runnables._
 import org.ada.server.services.UserManager
+import org.incal.core.util.ReflectionUtil.currentThreadClassLoader
+import play.api.inject.Injector
 import play.api.libs.json.{JsArray, Json}
 import runnables.DsaInputFutureRunnable
 
@@ -29,7 +30,8 @@ import scala.concurrent.Future
 class AdminController @Inject() (
     messageRepo: MessageRepo,
     userManager: UserManager,
-    configuration: Configuration
+    configuration: Configuration,
+    injector: Injector
   ) extends BaseController {
 
   private val logger = Logger
@@ -69,13 +71,15 @@ class AdminController @Inject() (
         findClasses[T](Some(packageName), !searchRunnableSubpackages)
       }.foldLeft(Stream[Class[T]]()){_++_}
 
-    val classes1 = findAux[Runnable]
-    val classes2 = findAux[InputRunnable[_]]
-    val classes3 = findAux[FutureRunnable]
-    val classes4 = findAux[InputFutureRunnable[_]]
-    val classes5 = findAux[DsaInputFutureRunnable[_]]
+    val foundClasses =
+      findAux[Runnable] ++
+      findAux[InputRunnable[_]] ++
+      findAux[InputRunnableExt[_]] ++
+      findAux[FutureRunnable] ++
+      findAux[InputFutureRunnable[_]] ++
+      findAux[InputFutureRunnableExt[_]] ++
+      findAux[DsaInputFutureRunnable[_]]
 
-    val foundClasses = classes1 ++ classes2 ++ classes3 ++ classes4 ++ classes5
     foundClasses.map(_.getName).sorted
   }
 
@@ -153,7 +157,7 @@ class AdminController @Inject() (
 
         action(request)(instance)
       } catch {
-        case e: ClassNotFoundException =>
+        case _: ClassNotFoundException =>
           runnablesHomeRedirect.flashing("errors" -> s"Script ${className} does not exist.")
 
         case e: Exception =>
@@ -181,9 +185,8 @@ class AdminController @Inject() (
   }
 
   private def getInjectedInstance(className: String) = {
-    val cls = Thread.currentThread().getContextClassLoader()
-    val clazz = Class.forName(className, true, cls)
-    current.injector.instanceOf(clazz)
+    val clazz = Class.forName(className, true, currentThreadClassLoader)
+    injector.instanceOf(clazz)
   }
 
   def importLdapUsers = restrictAdminAnyNoCaching(deadbolt) {

@@ -327,7 +327,7 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
             else
               fieldTypeSpec
 
-          val stringEnums = roundedFieldSpec.enumValues.map(_.map { case (from, to) => (from.toString, to)})
+          val stringEnums = roundedFieldSpec.enumValues.map { case (from, to) => (from.toString, to) }
           val label = toHumanReadableCamel(name.replaceAllLiterally("-", " ").replaceAllLiterally("Stats", ""))
           Field(name, Some(label), roundedFieldSpec.fieldType, roundedFieldSpec.isArray, stringEnums, roundedFieldSpec.displayDecimalPlaces)
         }

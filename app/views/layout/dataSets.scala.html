@@ -4,7 +4,7 @@
 @import org.incal.play.security.SecurityRole
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
-@import org.ada.web.controllers.dataset.{routes => dataSetRoutes}
+@import org.ada.web.controllers.dataset.dataimport.{routes => dataSetImportRoutes}
 @import org.ada.web.controllers.routes
 
 @(
@@ -23,7 +23,7 @@
 @noDataSetsErrorMessage = {
     @restrictOr(roles = List(Array(SecurityRole.admin))) {
         @messageBox {
-            No data sets available. Go <a href="@dataSetRoutes.DataSetImportController.find()">here</a> and import one.
+            No data sets available. Go <a href="@dataSetImportRoutes.DataSetImportController.find()">here</a> and import one.
         }
     } {
         @messageBox {

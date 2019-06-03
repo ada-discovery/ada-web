@@ -8,6 +8,8 @@
 @import org.ada.web.controllers.routes
 @import org.ada.web.controllers.ml.{routes => mlRoutes}
 @import org.ada.web.controllers.dataset.{routes => dataSetRoutes}
+@import org.ada.web.controllers.dataset.dataimport.{routes => dataSetImportRoutes}
+@import org.ada.web.controllers.dataset.datatrans.{routes => dataSetTransformationRoutes}
 
 @()(implicit webContext: WebContext)
 
@@ -57,7 +59,8 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                             Admin<span class="caret"></span></a>
                         <ul class="dropdown-menu multi-level">
-                            @listItem(dataSetRoutes.DataSetImportController.find(), "Data Set Imports")
+                            @listItem(dataSetImportRoutes.DataSetImportController.find(), "Data Set Imports")
+                            @listItem(dataSetTransformationRoutes.DataSetTransformationController.find(), "Data Set Transformations")
                             @listItem(dataSetRoutes.DataSetSettingController.find(), "Data Set Settings")
                             @listItem(routes.HtmlSnippetController.find(), "HTML Snippets")
                             <li role="separator" class="divider"></li>
