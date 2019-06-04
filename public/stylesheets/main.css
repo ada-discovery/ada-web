@@ -247,6 +247,7 @@ tr.clickable-row {
     border-left: 3px solid #F2F7F9;
     border-right: 3px solid #F2F7F9;
 }
+
 .row.vertical-divider div[class^="col-"]:first-child {
     border-left: none;
 }
@@ -477,6 +478,7 @@ a.carousel-control.right{
 .aligned-container {
     display: flex;
     align-items: center;
+   /* flex-wrap: wrap; */
 }
 
 .fixed-table {

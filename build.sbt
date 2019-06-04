@@ -35,7 +35,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
   "jp.t2v" %% "play2-auth" % "0.14.1",
-//  "commons-net" % "commons-net" % "3.5",                 // for ftp access
   "org.scalaz" % "scalaz-core_2.11" % "7.2.1",
   "org.webjars" % "typeaheadjs" % "0.11.1",              // typeahead (autocompletion)
   "org.webjars" % "html5shiv" % "3.7.0",
