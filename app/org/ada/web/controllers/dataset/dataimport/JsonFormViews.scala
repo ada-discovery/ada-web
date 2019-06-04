@@ -10,6 +10,8 @@ import views.html.{datasetimport => view}
 
 object JsonFormViews extends DataSetImportFormViews[JsonDataSetImport] {
 
+  override protected val imagePath = Some("images/logos/json_100.png")
+
   override protected val extraMappings = Seq(
     "inferenceMaxEnumValuesCount" -> optional(number(min = 1)),
     "inferenceMinAvgValuesPerEnum" -> optional(of[Double]).verifying("Must be positive", _.map(_ > 0).getOrElse(true)),

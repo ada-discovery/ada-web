@@ -9,6 +9,9 @@ import views.html.{datasetimport => view}
 
 object SynapseFormViews extends DataSetImportFormViews[SynapseDataSetImport] {
 
+  override protected val imagePath = Some("images/logos/synapse.png")
+  override protected val imageLink = Some("https://www.synapse.org")
+
   override protected val extraMappings = Seq(
     "batchSize" -> optional(number(min = 1)),
     "bulkDownloadGroupNumber" -> optional(number(min = 1))

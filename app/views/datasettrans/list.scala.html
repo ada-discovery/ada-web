@@ -16,7 +16,7 @@
 @(
     page: Page[DataSetTransformation],
     conditions: Seq[FilterCondition],
-    transformationClasses: Traversable[(Class[_], String)],
+    classDisplayNameMap: Map[Class[_], String],
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit webContext: WebContext
@@ -52,7 +52,7 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        @transformationClasses.map((transformationLink(_, _)).tupled)
+                        @classDisplayNameMap.toSeq.sortBy(_._2).map((transformationLink(_, _)).tupled)
                     </ul>
                 </li>
                 <li>
@@ -96,7 +96,7 @@
         typeColumns[DataSetTransformation](
             (Some("sourceDataSetIds"), "Source Data Set(s)", _.sourceDataSetIds.mkString(", ")),
             (Some("dataSetName"), "Data Set Name", _.resultDataSetName),
-            (Some("concreteClass"), "Type", {transformationInfo => toHumanReadableCamel(transformationInfo.getClass.getSimpleName)}),
+            (Some("concreteClass"), "Type", {info =>  classDisplayNameMap.get(info.getClass).getOrElse(toHumanReadableCamel(info.getClass.getSimpleName)) }),
             (Some("timeCreated"), "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
             (Some("timeLastExecuted"), "Time Last Executed", _.timeLastExecuted.map(_.format("yyyy-MM-dd HH:mm:ss")).getOrElse("")),
             (Some("scheduled"), "Scheduled?", scheduleCheckbox),

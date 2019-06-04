@@ -16,6 +16,7 @@
 @(
     page: Page[DataSetImport],
     conditions: Seq[FilterCondition],
+    classDisplayNameMap: Map[Class[_], String],
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit webContext: WebContext
@@ -51,12 +52,7 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        @importLink(classOf[CsvDataSetImport], "CSV Import")
-                        @importLink(classOf[JsonDataSetImport], "JSON Import")
-                        @importLink(classOf[TranSmartDataSetImport], "TranSmart Import")
-                        @importLink(classOf[RedCapDataSetImport], "Red Cap Import")
-                        @importLink(classOf[SynapseDataSetImport], "Synapse Import")
-                        @importLink(classOf[EGaitDataSetImport], "eGait Import")
+                        @classDisplayNameMap.toSeq.sortBy(_._2).map((importLink(_, _)).tupled)
                     </ul>
                 </li>
                 <li>
@@ -100,7 +96,7 @@
         typeColumns[DataSetImport](
             (Some("dataSpaceName"), "Data Space Name", _.dataSpaceName),
             (Some("dataSetName"), "Data Set Name", _.dataSetName),
-            (Some("concreteClass"), "Type", {importInfo => toHumanReadableCamel(importInfo.getClass.getSimpleName)}),
+            (Some("concreteClass"), "Type", {importInfo =>  classDisplayNameMap.get(importInfo.getClass).getOrElse(toHumanReadableCamel(importInfo.getClass.getSimpleName)) }),
             (Some("timeCreated"), "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
             (Some("timeLastExecuted"), "Time Last Executed", _.timeLastExecuted.map(_.format("yyyy-MM-dd HH:mm:ss")).getOrElse("")),
             (Some("scheduled"), "Scheduled?", scheduleCheckbox),

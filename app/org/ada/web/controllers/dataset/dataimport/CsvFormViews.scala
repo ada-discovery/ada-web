@@ -10,8 +10,9 @@ import views.html.{datasetimport => view}
 
 object CsvFormViews extends DataSetImportFormViews[CsvDataSetImport] {
 
-  override protected val displayName =
-    "CSV Data Set Import"
+  override protected[controllers] val displayName = "CSV"
+
+  override protected val imagePath = Some("images/logos/csv_100.png")
 
   override protected val extraMappings =
     Seq(

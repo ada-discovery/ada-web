@@ -10,8 +10,10 @@ import views.html.{datasetimport => view}
 
 object TranSmartFormViews extends DataSetImportFormViews[TranSmartDataSetImport] {
 
-  override protected val displayName =
-    "TranSMART Data Set (and Dictionary) Import"
+  override protected[controllers] val displayName = "TranSMART"
+
+  override protected val imagePath = Some("images/logos/transmart.png")
+  override protected val imageLink = Some("https://transmartfoundation.org")
 
   override protected val extraMappings = Seq(
     "inferenceMaxEnumValuesCount" -> optional(number(min = 1)),

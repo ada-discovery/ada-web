@@ -61,6 +61,7 @@ class DataSetImportController @Inject()(
   private lazy val importRetryNum = configuration.getInt("datasetimport.retrynum").getOrElse(3)
 
   override protected val createEditFormViews = dataSetImportFormViewsCentral()
+  private val importClassNameMap: Map[Class[_], String] = createEditFormViews.map(x => (x.man.runtimeClass, x.displayName)).toMap
 
   // default form... unused
   override protected val form = CsvFormViews.form.asInstanceOf[Form[DataSetImport]]
@@ -70,6 +71,7 @@ class DataSetImportController @Inject()(
   override protected type ListViewData = (
     Page[DataSetImport],
     Seq[FilterCondition],
+    Map[Class[_], String],
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -80,10 +82,10 @@ class DataSetImportController @Inject()(
     for {
       tree <- dataSpaceService.getTreeForCurrentUser(request)
     } yield
-      (page, conditions, tree)
+      (page, conditions, importClassNameMap, tree)
   }
 
-  override protected def listView = { implicit ctx => (view.list(_, _, _)).tupled}
+  override protected def listView = { implicit ctx => (view.list(_, _, _, _)).tupled}
 
   override def create(concreteClassName: String) = restrictAny(super.create(concreteClassName))
 

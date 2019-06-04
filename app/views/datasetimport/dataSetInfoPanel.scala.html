@@ -1,20 +1,14 @@
 @import org.ada.server.models.dataimport.DataSetImport
 @import views.html.elements._
 
-@(domainName: String, form: Form[_ <: DataSetImport])(implicit msg: Messages)
+@(form: Form[_ <: DataSetImport])(implicit msg: Messages)
 
 <div class="panel panel-default">
     <div class="panel-heading">Data Set Info</div>
     <div class="panel-body">
-        @inputText(domainName, "dataSpaceName", form)
-        @inputText(domainName, "dataSetName", form)
-        @inputText(domainName, "dataSetId", form)
-        @if(form("timeCreated").value.isDefined) {
-            @inputTextReadonly(domainName, "timeCreated", form)
-        }
-        @if(form("timeLastExecuted").value.isDefined) {
-            @inputTextReadonly(domainName, "timeLastExecuted", form)
-        }
+        @inputText("dataSetImport", "dataSpaceName", form)
+        @inputText("dataSetImport", "dataSetName", form)
+        @inputText("dataSetImport", "dataSetId", form)
     </div>
 </div>
 

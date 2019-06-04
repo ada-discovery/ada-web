@@ -6,16 +6,12 @@ import org.incal.play.controllers.WebContext
 import org.incal.play.formatters.JsonFormatter
 import play.api.data.Form
 import play.api.data.Forms.{of, seq}
-import play.api.i18n.Messages
 import views.html.{datasettrans => view}
 
 object RenameFieldsFormViews extends DataSetTransformationFormViews[RenameFieldsTransformation] {
 
   private implicit val tupleFormat = TupleFormat[String, String]
   private implicit val tupleFormatter = JsonFormatter[(String, String)]
-
-  override protected[controllers] val displayName =
-    "Rename Fields"
 
   override protected val extraMappings =
     Seq(

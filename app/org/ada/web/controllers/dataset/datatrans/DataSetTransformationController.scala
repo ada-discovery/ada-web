@@ -49,7 +49,7 @@ class DataSetTransformationController @Inject()(
   private lazy val importRetryNum = configuration.getInt("datasetimport.retrynum").getOrElse(3)
 
   override protected val createEditFormViews = dataSetTransformationFormViewsCentral()
-  private val transformationClassesAndNames = createEditFormViews.map(x => (x.man.runtimeClass, x.displayName))
+  private val transformationClassNameMap: Map[Class[_], String] = createEditFormViews.map(x => (x.man.runtimeClass, x.displayName)).toMap
 
   // default form... unused
   override protected val form = CopyFormViews.form.asInstanceOf[Form[DataSetTransformation]]
@@ -61,7 +61,7 @@ class DataSetTransformationController @Inject()(
   override protected type ListViewData = (
     Page[DataSetTransformation],
     Seq[FilterCondition],
-    Traversable[(Class[_], String)],
+    Map[Class[_], String],
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -72,7 +72,7 @@ class DataSetTransformationController @Inject()(
     for {
       tree <- dataSpaceService.getTreeForCurrentUser(request)
     } yield
-      (page, conditions, transformationClassesAndNames, tree)
+      (page, conditions, transformationClassNameMap, tree)
   }
 
   override protected def listView = { implicit ctx => (view.list(_, _, _, _)).tupled }
@@ -130,12 +130,12 @@ class DataSetTransformationController @Inject()(
       }
   }
 
-  def dataSetNameAndLabels = Action.async { implicit request =>
+  def dataSetIds = Action.async { implicit request =>
     for {
       dataSpaces <- dataSpaceMetaInfoRepo.find()
     } yield {
       val dataSetNameLabels = dataSpaces.flatMap(_.dataSetMetaInfos).toSeq.sortBy(_.id).map { dataSetInfo =>
-        Json.obj("name" -> dataSetInfo.id , "label" -> dataSetInfo.name)
+        Json.obj("name" -> dataSetInfo.id , "label" -> dataSetInfo.id)
       }
       Ok(Json.toJson(dataSetNameLabels))
     }

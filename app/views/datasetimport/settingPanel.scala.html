@@ -13,9 +13,9 @@
             <input type="hidden" id="setting_dataSetId" name="setting.dataSetId" value="">
             <hr/>
             @select("dataSetImport", "setting.storageType", form, enumToValueString(StorageType), true)
-            <a class="pull-right" href="#advancedSetting" data-toggle="collapse">Show Advanced</a>
+            <a class="pull-right" href="#moreSetting" data-toggle="collapse">Show More</a>
 
-            <div id="advancedSetting" class="collapse">
+            <div id="moreSetting" class="collapse">
                 @checkbox("dataSetImport", "setting.mongoAutoCreateIndexForProjection", form)
                 @inputText("dataSetImport", "setting.keyFieldName", form)
                 @inputText("dataSetImport", "setting.exportOrderByFieldName", form)

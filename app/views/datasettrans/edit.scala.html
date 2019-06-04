@@ -13,24 +13,43 @@
 
 <input type="hidden" id="concreteClass" name="concreteClass" value="@{className}">
 
+
+@timeCreatedDiv(mdWidth: Int, labelGridWidth: Int, addBorder: Boolean) = {
+    <div class="col-md-@mdWidth col-sm-12" @if(addBorder) { style="border-right: 3px solid #F2F7F9" }>
+        @if(form("timeCreated").value.isDefined) {
+            @inputTextReadonly("dataSetImport", "timeCreated", form, labelGridWidth = labelGridWidth)
+        }
+    </div>
+}
+
+@timeLastExecutedDiv = {
+    <div class="col-md-4 col-sm-12" style="border-right: 3px solid #F2F7F9">
+        @if(form("timeLastExecuted").value.isDefined) {
+            @inputTextReadonly("dataSetImport", "timeLastExecuted", form, labelGridWidth = 4)
+        }
+    </div>
+}
+
+<div class="row">
+    @if(form("timeLastExecuted").value.isDefined) {
+        @timeCreatedDiv(4, 4, false)
+        @timeLastExecutedDiv
+    } else {
+        @timeCreatedDiv(8, 3, true)
+    }
+
+    <div class="col-md-offset-1 col-md-3 col-sm-12">
+    </div>
+</div>
+
+<hr/>
+
 @resultDataSetInfoPanel(form)
 
 <div class="panel panel-default">
     <div class="panel-heading">Transformation Specifics</div>
     <div class="panel-body">
         @typeSpecificElements
-    </div>
-</div>
-
-<div class="panel panel-default">
-    <div class="panel-body">
-        @if(form("timeCreated").value.isDefined) {
-            @inputTextReadonly("dataSetTranslation", "timeCreated", form)
-        }
-        @if(form("timeLastExecuted").value.isDefined) {
-            @inputTextReadonly("dataSetTranslation", "timeLastExecuted", form)
-        }
-
         <a class="pull-right" href="#advancedSetting" data-toggle="collapse">Show Advanced</a>
     </div>
 </div>

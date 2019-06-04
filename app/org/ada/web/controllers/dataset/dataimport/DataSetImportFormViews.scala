@@ -24,8 +24,13 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
   implicit manifest: Manifest[E]
 ) extends CreateEditFormViews[E, BSONObjectID] {
 
-  protected val displayName: String = toHumanReadableCamel(simpleClassName)
+  private val domainNameSuffix = "DataSetImport"
+  private val humanReadableSuffix = toHumanReadableCamel(domainNameSuffix)
+  protected[controllers] val displayName: String = toHumanReadableCamel(simpleClassName.replaceAllLiterally(domainNameSuffix, ""))
   private val className =  manifest.runtimeClass.getName
+
+  protected val imagePath: Option[String] = None
+  protected val imageLink: Option[String] = None
 
   protected implicit val seqFormatter = SeqFormatter.apply
   private implicit val mapFormatter = MapJsonFormatter.apply
@@ -101,7 +106,7 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
   protected val viewElements: (Form[E], WebContext) => Html
 
   protected def editViews(form: Form[E])(implicit webContext: WebContext) =
-    view.edit(form, className)(viewElements(form, webContext))(webContext.msg)
+    view.edit(form, className, imagePath, imageLink)(viewElements(form, webContext))(webContext.msg)
 
   protected val defaultCreateInstance: Option[() => E] = None
 
@@ -113,7 +118,7 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
       val filledForm = if (form.hasErrors) form else defaultCreateInstance.map(x => form.fill(x())).getOrElse(form)
 
       layout.create(
-        displayName,
+        displayName + " " + humanReadableSuffix,
         messagePrefix,
         filledForm,
         editViews(filledForm),
@@ -126,7 +131,7 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
   override protected def editView = { implicit ctx: WebContext =>
     data: IdForm[BSONObjectID, E] =>
       layout.edit(
-        displayName,
+        displayName + " " + humanReadableSuffix,
         messagePrefix,
         data.form.errors,
         editViews(data.form),

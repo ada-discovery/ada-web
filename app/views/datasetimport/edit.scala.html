@@ -2,28 +2,78 @@
 @import views.html.datasetimport.{settingPanel, fileOrPathInput, dataSetInfoPanel, schedulePanel, dataViewPanel}
 @import views.html.elements._
 @import play.api.i18n.Messages
+@import org.incal.play.routes.CustomDirAssets
 
 @(
     form: Form[_ <: DataSetImport],
-    className: String)(
+    className: String,
+    image: Option[String],
+    link: Option[String])(
     typeSpecificElements: Html)(
     implicit msg: Messages
 )
 
 <input type="hidden" id="concreteClass" name="concreteClass" value="@{className}">
 
-@dataSetInfoPanel("csvDataSetImport", form)
+@logoElement = {
+    @image.map { image =>
+        <img class="img-responsive" src="@CustomDirAssets.versioned(image)" />
+    }.getOrElse {
+        <div>&rarr;</div>
+    }
+}
+
+@timeCreatedDiv(mdWidth: Int, labelGridWidth: Int, addBorder: Boolean) = {
+    <div class="col-md-@mdWidth col-sm-12" @if(addBorder) { style="border-right: 3px solid #F2F7F9" }>
+        @if(form("timeCreated").value.isDefined) {
+            @inputTextReadonly("dataSetImport", "timeCreated", form, labelGridWidth = labelGridWidth)
+        }
+    </div>
+}
+
+@timeLastExecutedDiv = {
+    <div class="col-md-4 col-sm-12" style="border-right: 3px solid #F2F7F9">
+        @if(form("timeLastExecuted").value.isDefined) {
+            @inputTextReadonly("dataSetImport", "timeLastExecuted", form, labelGridWidth = 4)
+        }
+    </div>
+}
+
+
+<div class="row">
+    @if(form("timeLastExecuted").value.isDefined) {
+        @timeCreatedDiv(4, 4, false)
+        @timeLastExecutedDiv
+    } else {
+        @timeCreatedDiv(8, 3, true)
+    }
+
+    <div class="col-md-offset-1 col-md-3 col-sm-12">
+        @link.map { url =>
+            <a target="_blank" href="@url">@logoElement</a>
+        }.getOrElse {
+            @logoElement
+        }
+    </div>
+</div>
+
+<hr/>
+
+@dataSetInfoPanel(form)
 
 <div class="panel panel-default">
     <div class="panel-heading">Import Specifics</div>
     <div class="panel-body">
         @typeSpecificElements
+        <a class="pull-right" href="#advancedSetting" data-toggle="collapse">Show Advanced</a>
     </div>
 </div>
 
-@settingPanel(form)
-@dataViewPanel(form)
-@schedulePanel(form)
+<div id="advancedSetting" class="collapse">
+    @settingPanel(form)
+    @dataViewPanel(form)
+    @schedulePanel(form)
+</div>
 
 <script type="text/javascript">
     $('form').submit(function(ev) {

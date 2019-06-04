@@ -7,9 +7,6 @@ import views.html.{datasettrans => view}
 
 object DropFieldsFormViews extends DataSetTransformationFormViews[DropFieldsTransformation] {
 
-  override protected[controllers] val displayName =
-    "Drop Fields"
-
   override protected val viewElements =
     view.dropFieldsElements(_: Form[DropFieldsTransformation])(_: WebContext)
 }

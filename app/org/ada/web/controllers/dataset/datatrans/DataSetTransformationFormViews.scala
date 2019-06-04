@@ -25,7 +25,9 @@ abstract protected[controllers] class DataSetTransformationFormViews[E <: DataSe
   implicit manifest: Manifest[E]
 ) extends CreateEditFormViews[E, BSONObjectID] {
 
-  protected[controllers] val displayName: String = toHumanReadableCamel(simpleClassName)
+  private val domainNameSuffix = "Transformation"
+  private val humanReadableSuffix = toHumanReadableCamel(domainNameSuffix)
+  protected[controllers] val displayName: String = toHumanReadableCamel(simpleClassName.replaceAllLiterally(domainNameSuffix, ""))
   private val className =  manifest.runtimeClass.getName
 
   protected implicit val seqFormatter = SeqFormatter.apply
@@ -94,7 +96,7 @@ abstract protected[controllers] class DataSetTransformationFormViews[E <: DataSe
       val filledForm = if (form.hasErrors) form else defaultCreateInstance.map(x => form.fill(x())).getOrElse(form)
 
       layout.create(
-        displayName,
+        displayName + " " + humanReadableSuffix,
         messagePrefix,
         filledForm,
         editViews(filledForm),
@@ -106,7 +108,7 @@ abstract protected[controllers] class DataSetTransformationFormViews[E <: DataSe
   override protected def editView = { implicit ctx: WebContext =>
     data: IdForm[BSONObjectID, E] =>
       layout.edit(
-        displayName,
+        displayName + " " + humanReadableSuffix,
         messagePrefix,
         data.form.errors,
         editViews(data.form),

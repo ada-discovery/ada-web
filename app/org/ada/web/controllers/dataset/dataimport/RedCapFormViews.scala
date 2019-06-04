@@ -5,10 +5,12 @@ import org.ada.server.models.{DataSetSetting, StorageType}
 import org.incal.play.controllers.WebContext
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.i18n.Messages
 import views.html.{datasetimport => view}
 
-object RedCapFormViews extends DataSetImportFormViews[RedCapDataSetImport] { // "RedCap Data Set Import"
+object RedCapFormViews extends DataSetImportFormViews[RedCapDataSetImport] {
+
+  override protected val imagePath = Some("images/logos/redcap.jpg")
+  override protected val imageLink = Some("https://www.project-redcap.org")
 
   override protected val extraMappings = Seq(
 //    "url" -> nonEmptyText,
