@@ -1,15 +1,257 @@
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
 @import views.html.documentation.core
-@import views.html.documentation.imageSection
+@import views.html.documentation.{sectionNavigation, imageSection, section}
+@import org.incal.play.routes.CustomDirAssets
+@import org.ada.web.controllers.UserDataSetPermissions
 
 @()(implicit context: WebContext)
 
-@core("User Management") {
+@core("Authentication and User Management") {
 
-    @imageSection(picPath = Some("images/documentation/edit_user.png"), picOffset = 0, withLine = false) {
+    @sectionNavigation()(
+        ("section_ldap", "LDAP Settings"),
+        ("section_user_management", "Basic User Management"),
+        ("section_permissions", "Permissions")
+    )
+
+    @imageSection(id = Some("section_ldap"), caption = Some("LDAP Settings"), picPath = Some("images/documentation/ldap_settings.png"), withLine = true, picOffset = 0) {
         <p>
-            Coming soon.
+            Ada does not store any passwords but rather relies on LDAP for authentication.
+            Several LDAP settings are available, which all start with the <code>ldap</code> prefix (e.g. <code>ldap.dit</code>):
+            <ul>
+                <li><b>host</b>
+                    refers to the host of an LDAP server. Defaults to <code>localhost</code>.
+                    Normally set by the environmental variable <code>ADA_LDAP_HOST</code> (in <code>set_env.sh</code> for production).
+                </li>
+
+                <li><b>port</b>
+                    of the LDAP server. Defaults to <code>389</code>.
+                </li>
+
+                <li><b>bindDN</b>
+                    is the DN for the bind operation.
+                </li>
+
+                <li><b>bindPassword</b>
+                    is the password for the bind operation. Normally set by the environmental variable <code>ADA_LDAP_PASSWORD</code>.
+                </li>
+
+                <li><b>dit</b>
+                    is the LDAP root directory used for authentication. In particular, the <code>dit</code> is combined with an user id as a suffix: <code>uid=$id,$dit</code> that is passed to LDAP together with a password during authentication.
+                </li>
+
+                <li><b>groups</b>
+                    are the names of the LDAP groups (defined as a sequence), in which the requested Ada users reside. Note that this setting is used solely for an automatic import of users form LDAP to Ada. Defaults to <code>[]</code>.
+                </li>
+
+                <li><b>mode</b>
+                    of the LDAP server with possible values: <code>remote</code> to use a (normal) standalone remote server, <code>local</code> to start an in-memory local server, and <code>none</code> to disables LDAP completely. Defaults to <code>local</code>.
+                </li>
+
+                <li><b>debugusers</b>
+                    indicates whether debug users (<code>admin</code> and <code>basic</code>) should be enabled. Defaults to <code>false</code>. Warning: once enabled the admin and basic users can log in without any authentication using <code>/loginAdmin</code> and <code>/loginBasic</code> endpoints, which is fine for local (restricted) deployments but should be absolutely avoided for public use!
+                </li>
+
+                <li><b>encryption</b>
+                    used for the LDAP connection. Can be either <code>ssl</code>, <code>starttls</code>, or <code>none</code>. Defaults to <code>none</code>, which means client certificates are disabled and server certificates are always trusted.
+                </li>
+
+                <li><b>trustStore</b>
+                    is a location of certificates from trusted Certificate Authorities (optional).
+                </li>
+
+                <li><b>connectTimeout</b>
+                    in milliseconds (optional).
+                </li>
+
+                <li><b>responseTimeout</b>
+                    in milliseconds (optional).
+                </li>
+
+                <li><b>pooledSchemaTimeout</b>
+                    in milliseconds (optional).
+                </li>
+
+                <li><b>abandonOnTimeout</b>
+                    in milliseconds (optional).
+                </li>
+
+                <li><b>recursiveDitAuthenticationSearch</b>
+                    if set to <code>true</code> an LDAP sub-search authentication is enabled.
+                    This experimental feature first traverses all sub entries of the <code>dit</code> path. If it finds a requested user it feeds its path (as a suffix) for the authentication together with the user id. Defaults to <code>false</code>.
+                </li>
+            </ul>
+        <p>
+        <br/>
+        <p>
+        In nutshell, there are two basic scenarios:
         </p>
+        <p>
+        1. if you don't have an LDAP server, don't need authentication, and want to use dummy <code>admin</code> and <code>basic</code> users you can simply set the following lines in <code>custom.conf</code>:
+
+<pre>
+<code>ldap {
+    mode = "none"
+    debugusers = true
+}
+</code></pre>
+
+        or
+
+<pre>
+<code>ldap {
+    mode = "local"
+    port = "65505"
+    debugusers = true
+}
+</code></pre>
+        </p>
+        <br/>
+        <p>
+        2. If you have an existing LDAP server you want to authenticate against you need to configure the host and bind password environmental variables in <code>set_env.sh</code>
+
+<pre>
+<code>export ADA_LDAP_HOST="ldap.north.edu"
+export ADA_LDAP_BIND_PASSWORD="XXX"
+</code></pre>
+
+        and set the following lines in <code>custom.conf</code>
+
+<pre>
+<code>ldap {
+    dit = "cn=accounts,dc=north,dc=edu"
+    groups = ["cn=ada-group,cn=groups,cn=accounts,dc=north,dc=edu"]
+    bindDN = "uid=ldap-reader,cn=users,cn=accounts,dc=north,dc=edu"
+}
+</code></pre>
+        or without environmental variables (purely in <code>custom.conf</code>) as
+<pre>
+<code>ldap {
+    host = "ldap.north.edu"
+    dit = "cn=accounts,dc=north,dc=edu"
+    groups = ["cn=ada-group,cn=groups,cn=accounts,dc=north,dc=edu"]
+    bindDN = "uid=ldap-reader,cn=users,cn=accounts,dc=north,dc=edu"
+    bindPassword = "XXX
+}
+</code></pre>
+        The currently used LDAP settings can be reviewed by clicking on <code>LDAP Settings</code> located in the Admin menu (see the screenshot on on the right).
+        </p>
+    }
+
+
+    @imageSection(id = Some("section_user_management"), caption = Some("Basic User Management"), picPath = Some("images/documentation/admin_menu.png"), withLine = true) {
+        <p>
+            There are several basic user management actions admins can conveniently perform:
+            <ul>
+                <li>
+                    <b>Import Users</b> from the specified LDAP <code>groups</code> to Ada using the <code>Admin &rarr; User Actions &rarr; Import from LDAP</code> function.
+                </li>
+                <li>
+                    <b>Purge Missing Users</b> who exist only locally but not in the LDAP server by using <code>Admin &rarr; User Actions &rarr; Purge Missing</code>.
+                </li>
+                <li>
+                    <b>Make User Admin</b> by selecting a desired user in the list <code>Admin &rarr; Users</code> (double click on a table row), adding a new role by clicking <img src="@CustomDirAssets.versioned("images/documentation/new_purple_button.png")"/> and typing <code>admin</code>, and finally confirming with <code>Update</code>.
+                </li>
+                <li>
+                    <b>Add a New User</b> manually by entering its user name and email in the form (<code>Admin &rarr; Users &rarr; Actions &rarr; Add a new user</code>).
+                    Note that normally users should be imported automatically from LDAP by invoking the <code>Import from LDAP</code> function.
+                </li>
+                <li>
+                    <b>Copy Permissions</b> from one user to another by <code>Admin &rarr; Users &rarr; Actions &rarr; Copy User's Permissions</code>.
+                </li>
+                <li>
+                    <b>Filter Users by Permission</b> by <code>Admin &rarr; Users &rarr; Actions &rarr; Filter by permission</code> and entering a permission prefix.
+                    This function is especially handy if you want to obtain a list of all the users who have access to a certain data set, in which case <code>DS:[data set id]</code> must be entered (see the section Permissions bellow).
+                </li>
+            </ul>
+        </p>
+    }
+
+    @section(id = Some("section_permissions"), caption = Some("Permissions"), withLine = false) {
+        <p>
+            Admins have access to all the data sets and can perform all the actions throughout the application.
+            On the other side, all non-admin users need to have explicitly assigned permissions to able to access specific data sets and perform specific actions.
+            Basic users can not execute or manipulate any data set import or transformation, or manage other users's permissions (obviously).
+        </p>
+
+        <p>
+            All data set permissions start with <code>DS:</code> prefix and can be fine grained to the level of individual actions following the hierarchy: <code>DS:[data set id].[controller].[action]</code>.
+        </p>
+
+        The <code>[controller]</code> corresponds to an actual web controller, which serves actions for the tabs or menu options in the top bar:
+
+        <ul>
+            <li>
+                <code>dataSet</code>: Views and Analytics
+            </li>
+            <li>
+                <code>field</code>: Dictionary
+            </li>
+            <li>
+                <code>category</code>: Categorical Tree
+            </li>
+            <li>
+                <code>filter</code>: Setting &rarr; Filters
+            </li>
+            <li>
+                <code>dataview</code>: Setting &rarr; Views
+            </li>
+            <li>
+                <code>classificationRun</code>: Analytics &rarr; ML Classification &rarr; Standard
+            </li>
+            <li>
+                <code>regressionRun</code>: Analytics &rarr; ML Regression &rarr; Standard
+            </li>
+            <li>
+                <code>temporalClassificationRun</code>: Analytics &rarr; ML Classification &rarr; Temporal
+            </li>
+            <li>
+                <code>temporalRegressionRun</code>: Analytics &rarr; ML Regression &rarr; Temporal
+            </li>
+        </ul>
+
+        Data set permissions can by assigned by choosing <code><img src="@CustomDirAssets.versioned("images/documentation/new_ds_button.png")"/> &rarr; Custom</code> and selecting a desired data set id, controller name, and action. Note that a wildcard <code>ALL</code> can be selected as a controller or action.<br/>
+        Examples:
+        <ul>
+            <li>
+                <code>DS:ml.eeg_eye_state.dataset.exportViewRecordsAsCsv</code> gives a user right to <code>exportViewRecordsAsCsv</code> for the data set <code>ml.eeg_eye_state</code>.
+            </li>
+            <li>
+                <code>DS:ml.eeg_eye_state.classificationRun</code> gives a user right to invoke <i>any</i> actions of the controller <code>classificationRun</code> of the data set <code>ml.eeg_eye_state</code>.
+            </li>
+            <li>
+                <code>DS:ml.eeg_eye_state</code> gives a user full rights to perform any action (of any controller) on the data set <code>ml.eeg_eye_state</code>.
+                Note that <code>Setting &rarr; General</code> is accessible only for admins and also each user can edit (or delete) only the filters and views that he/she created.
+            </li>
+        </ul>
+
+        <p>
+        In a nutshell, there are three common permission scenarios facilitated by the following functions:
+        <ul>
+            <li>
+                <code>Standard</code> (recommended) - invoked by <code><img src="@CustomDirAssets.versioned("images/documentation/new_ds_button.png")"/> &rarr; Standard</code>.<br/>
+                All standard actions are allowed: views, analytics, filters, and views, but no metadata manipulation (e.g., dictionary and categorical tree) and no ML. In particular, the individual permissions/actions are:
+                <pre><code>@UserDataSetPermissions.standard.mkString("\n")</code></pre>
+            </li>
+            <li>
+                <code>View-Only</code> - invoked by <code><img src="@CustomDirAssets.versioned("images/documentation/new_ds_button.png")"/> &rarr; View-Only</code>.<br/>
+                User can only <i>see</i> already existing views and filter them. The allowed actions are:
+                <pre><code>@UserDataSetPermissions.viewOnly.mkString("\n")</code></pre>
+            </li>
+            <li>
+                <code>All</code> - invoked by <code><img src="@CustomDirAssets.versioned("images/documentation/new_ds_button.png")"/> &rarr; Custom</code> and choosing <code>ALL</code> as a controller.<br/>
+                User can perform all actions for a given data set.
+            </li>
+        </ul>
+        </p>
+    } {
+        <div clas="row">
+            <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/edit_user.png")"/>
+        </div>
+
+        <div clas="row" style="margin-top: 40px">
+            <img class="img-responsive" src="@CustomDirAssets.versioned("images/documentation/adding_user_permission.png")"/>
+        </div>
     }
 }

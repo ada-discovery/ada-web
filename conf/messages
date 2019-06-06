@@ -1,7 +1,7 @@
 homepage.title = Ada: the {0} Discovery Platform
 
-error.date = {0} is in wrong format
-error.required = {0} is required
+error.date = Value is in wrong format (date expected)
+error.required = Value is required
 
 create.title = Add a new {0}
 edit.title = Edit {0}

@@ -30,7 +30,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 PlayKeys.devSettings := Seq("play.server.netty.maxInitialLineLength" -> "16384")
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.7.3.RC.8",
+  "org.adada" %% "ada-server" % "0.7.3.RC.9.SNAPSHOT.3",
   "org.in-cal" %% "incal-play" % "0.1.8",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
@@ -46,6 +46,8 @@ libraryDependencies ++= Seq(
   "org.webjars.bower" % "Autolinker.js" % "0.25.0",      // to convert links to a-href elements
   "org.webjars" % "jquery-ui" % "1.11.1"
 )
+
+excludeDependencies += "io.netty" % "netty-transport-native-epoll"// % "4.0.41.Final" classifier "linux-x86_64"
 
 packagedArtifacts in publishLocal := {
   val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publishLocal).value

@@ -10,10 +10,10 @@
 @layout.show(
     "LDAP Settings",
     displayTable(
-        settings.toList.filter(!_._1.equals("bindPassword")),
-        typeColumns[(String, ConfigValue)](
+        settings.listAll,
+        typeColumns[(String, Any)](
             (None, "Configuration Key", _._1),
-            (None, "Value", _._2.unwrapped)
+            (None, "Value", { case (key, value) => if (key == "ldap.bindPassword") "<i>Not Shown</i>" else value})
         )
     )
 )
