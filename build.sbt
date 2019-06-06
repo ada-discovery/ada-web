@@ -47,8 +47,6 @@ libraryDependencies ++= Seq(
   "org.webjars" % "jquery-ui" % "1.11.1"
 )
 
-excludeDependencies += "io.netty" % "netty-transport-native-epoll"// % "4.0.41.Final" classifier "linux-x86_64"
-
 packagedArtifacts in publishLocal := {
   val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publishLocal).value
   val assets: java.io.File = (playPackageAssets in Compile).value
