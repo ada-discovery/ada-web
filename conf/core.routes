@@ -33,14 +33,17 @@ GET         /ldap/users/all                                                     
 GET         /ldap/:id/get                                                           org.ada.web.controllers.LdapUserController.get(id: String)
 
 # Admin
-GET         /admin/runnables/select                                                 org.ada.web.controllers.AdminController.selectRunnable
-GET         /admin/runnables/names                                                  org.ada.web.controllers.AdminController.getRunnableNames
-POST        /admin/runnables/run                                                    org.ada.web.controllers.AdminController.runScript(className : String)
-GET         /admin/runnables/inputForm                                              org.ada.web.controllers.AdminController.getScriptInputForm(className : String)
-POST        /admin/runnables/runForInput                                            org.ada.web.controllers.AdminController.runInputScript(className : String)
-
 POST        /admin/importLdapUsers                                                  org.ada.web.controllers.AdminController.importLdapUsers
 POST        /admin/purgeMissingLdapUsers                                            org.ada.web.controllers.AdminController.purgeMissingLdapUsers
+
+# Runnable
+GET         /runnables/select                                                       org.ada.web.controllers.RunnableController.selectRunnable
+GET         /runnables/names                                                        org.ada.web.controllers.RunnableController.getRunnableNames
+POST        /runnables/run                                                          org.ada.web.controllers.RunnableController.runScript(className : String)
+GET         /runnables/inputForm                                                    org.ada.web.controllers.RunnableController.getScriptInputForm(className : String)
+POST        /runnables/runForInput                                                  org.ada.web.controllers.RunnableController.runInputScript(className : String)
+
+
 
 # Data Set Import
 GET         /admin/dataSetImport                                                    org.ada.web.controllers.dataset.dataimport.DataSetImportController.find(p: Int ?= 0, s: String ?= "dataSpaceName", filter: Seq[org.incal.core.FilterCondition] ?= Nil)
