@@ -1,11 +1,10 @@
 package org.ada.web.controllers
 
 import java.util.Date
-import java.util.concurrent.TimeoutException
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import org.ada.web.controllers.core.AdaCrudControllerImpl
-import org.incal.core.dataaccess.InCalDataAccessException
 import org.ada.server.AdaException
 import org.ada.server.models.{Filter, HtmlSnippet, HtmlSnippetId}
 import org.ada.server.models.HtmlSnippet._
@@ -14,14 +13,11 @@ import org.incal.play.controllers.{AdminRestrictedCrudController, HasBasicFormCr
 import org.incal.play.formatters.EnumFormatter
 import org.incal.play.security.AuthAction
 import org.ada.server.dataaccess.RepoTypes._
-import play.api.Logger
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json.__
 import play.api.mvc.{Action, AnyContent, Request}
 import reactivemongo.bson.BSONObjectID
-import org.ada.web.security.AdaAuthConfig
-import org.ada.server.services.UserManager
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import views.html.{layout, htmlSnippet => view}
@@ -29,12 +25,10 @@ import views.html.{layout, htmlSnippet => view}
 import scala.concurrent.Future
 
 class HtmlSnippetController @Inject() (
-    htmlSnippetRepo: HtmlSnippetRepo,
-    val userManager: UserManager
+    htmlSnippetRepo: HtmlSnippetRepo
   ) extends AdaCrudControllerImpl[HtmlSnippet, BSONObjectID](htmlSnippetRepo)
     with AdminRestrictedCrudController[BSONObjectID]
-    with HasBasicFormCrudViews[HtmlSnippet, BSONObjectID]
-    with AdaAuthConfig {
+    with HasBasicFormCrudViews[HtmlSnippet, BSONObjectID] {
 
   private implicit val htmlSnippedIdFormatter = EnumFormatter(HtmlSnippetId)
 
@@ -59,16 +53,14 @@ class HtmlSnippetController @Inject() (
   override protected def listView = { implicit ctx => (view.list(_, _)).tupled }
 
   override def saveCall(
-    htmlSnippet: HtmlSnippet
-  )
-    (
-      implicit request: Request[AnyContent]
-    ): Future[BSONObjectID] =
+    htmlSnippet: HtmlSnippet)(
+    implicit request: AuthenticatedRequest[AnyContent]
+  ): Future[BSONObjectID] =
     for {
-      user <- currentUser(request)
+      user <- currentUser()
       id <- {
         val htmlSnippetWithUser = user match {
-          case Some(user) => htmlSnippet.copy(createdById = user._id)
+          case Some(user) => htmlSnippet.copy(createdById = user.id)
           case None => throw new AdaException("No logged user found")
         }
         repo.save(htmlSnippetWithUser)
@@ -77,11 +69,9 @@ class HtmlSnippetController @Inject() (
       id
 
   override protected def updateCall(
-    htmlSnippet: HtmlSnippet
-  )
-    (
-      implicit request: Request[AnyContent]
-    ): Future[BSONObjectID] =
+    htmlSnippet: HtmlSnippet)(
+    implicit request: AuthenticatedRequest[AnyContent]
+  ): Future[BSONObjectID] =
     for {
       existingHtmlSnippetOption <- repo.get(htmlSnippet._id.get)
 

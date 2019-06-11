@@ -1,34 +1,28 @@
 package org.ada.web.controllers.dataset
 
-import be.objectify.deadbolt.scala.DeadboltHandler
 import javax.inject.Inject
 import org.ada.server.AdaException
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import org.incal.play.controllers.SecureControllerDispatcher
 import org.ada.server.models.Filter.FilterOrId
 import org.ada.server.models.{AggType, FieldTypeId, User}
-import org.ada.server.services.UserManager
 import org.ada.web.controllers.core.AdminOrOwnerControllerDispatcherExt
 import reactivemongo.bson.BSONObjectID
-import org.incal.play.security.{AuthAction, SecurityRole}
+import org.incal.play.security.SecurityRole
 import org.ada.web.models.security.DataSetPermission
-import org.ada.web.security.AdaAuthConfig
 import org.incal.core.FilterCondition
 import org.incal.spark_ml.models.VectorScalerType
 import org.incal.play.PageOrder
 import play.api.mvc.{Action, AnyContent, Request}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class DataSetDispatcher @Inject() (
   dscf: DataSetControllerFactory,
-  dsaf: DataSetAccessorFactory,
-  val userManager: UserManager
+  dsaf: DataSetAccessorFactory
 ) extends SecureControllerDispatcher[DataSetController]("dataSet")
     with AdminOrOwnerControllerDispatcherExt[DataSetController]
-    with DataSetController
-    with AdaAuthConfig {
+    with DataSetController {
 
   override protected def getController(id: String) =
     dscf(id).getOrElse(
@@ -287,37 +281,29 @@ class DataSetDispatcher @Inject() (
     skip: Option[Int]
   ) = dispatch(_.findCustom(filterOrId, orderBy, projection, limit, skip))
 
+
   // aux function for access control
 
   protected def dispatchIsAdminOrOwnerOrPublic(
     id: BSONObjectID,
     action: DataSetController => Action[AnyContent]
   ): Action[AnyContent] =
-    dispatchIsAdminOrOwnerOrPublicAux(id, action, None)
+    dispatchIsAdminOrOwnerOrPublicAux(dataViewOwnerOrPublicFun(id))(action)
 
   protected def dispatchIsAdminOrOwnerOrPublicAjax(
     id: BSONObjectID,
     action: DataSetController => Action[AnyContent]
   ): Action[AnyContent] =
-    dispatchIsAdminOrOwnerOrPublicAux(id, action, Some(unauthorizedDeadboltHandler))
+    dispatchIsAdminOrOwnerOrPublicAux(dataViewOwnerOrPublicFun(id), unauthorizedDeadboltHandler)(action)
 
-  protected def dispatchIsAdminOrOwnerOrPublicAux(
-    id: BSONObjectID,
-    action: DataSetController => Action[AnyContent],
-    outputDeadboltHandler: Option[DeadboltHandler]
-  ): Action[AnyContent] = {
-
-    val objectOwnerFun = {
-      request: Request[AnyContent] =>
-        val dataSetId = getControllerId(request)
-        val dsa = dsaf(dataSetId).getOrElse(throw new AdaException(s"Data set id $dataSetId not found."))
-        dsa.dataViewRepo.get(id).map {
-          _.flatMap(dataView =>
-            dataView.createdById.map((_, !dataView.isPrivate))
-          )
-        }
-    }
-
-    dispatchIsAdminOrOwnerOrPublicAux(objectOwnerFun, outputDeadboltHandler)(action)
+  private def dataViewOwnerOrPublicFun(id: BSONObjectID) = {
+    request: Request[AnyContent] =>
+      val dataSetId = getControllerId(request)
+      val dsa = dsaf(dataSetId).getOrElse(throw new AdaException(s"Data set id $dataSetId not found."))
+      dsa.dataViewRepo.get(id).map {
+        _.flatMap(dataView =>
+          dataView.createdById.map((_, !dataView.isPrivate))
+        )
+      }
   }
 }

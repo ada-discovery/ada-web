@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import be.objectify.deadbolt.scala.DeadboltHandler
 import javax.inject.Inject
 import org.ada.web.controllers.core.AdminOrOwnerControllerDispatcherExt
 import org.ada.server.AdaException
@@ -7,21 +8,17 @@ import org.ada.server.models.Filter
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import play.api.mvc.{Action, AnyContent, Request}
 import reactivemongo.bson.BSONObjectID
-import org.ada.web.security.AdaAuthConfig
 import org.incal.core.FilterCondition
-import org.ada.server.services.UserManager
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class FilterDispatcher @Inject()(
   val dscf: DataSetControllerFactory,
   factory: FilterControllerFactory,
-  dsaf: DataSetAccessorFactory,
-  val userManager: UserManager
+  dsaf: DataSetAccessorFactory
 ) extends DataSetLikeDispatcher[FilterController](ControllerName.filter)
    with AdminOrOwnerControllerDispatcherExt[FilterController]
-   with FilterController
-   with AdaAuthConfig {
+   with FilterController {
 
   override def controllerFactory = factory(_)
 
@@ -49,7 +46,8 @@ class FilterDispatcher @Inject()(
 
   protected def dispatchIsAdminOrOwner(
     id: BSONObjectID,
-    action: FilterController => Action[AnyContent]
+    action: FilterController => Action[AnyContent],
+    outputHandler: DeadboltHandler = handlerCache()
   ): Action[AnyContent] = {
 
     val objectOwnerFun = {
@@ -61,6 +59,6 @@ class FilterDispatcher @Inject()(
         }
     }
 
-    dispatchIsAdminOrOwnerAux(objectOwnerFun)(None, action)
+    dispatchIsAdminOrOwnerAux(objectOwnerFun, outputHandler)(action)
   }
 }

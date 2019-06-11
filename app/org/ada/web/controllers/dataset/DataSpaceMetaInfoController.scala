@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import org.ada.server.models.DataSetFormattersAndIds._
 import org.ada.server.models._
@@ -8,7 +9,7 @@ import org.ada.server.dataaccess.RepoTypes.{DataSetSettingRepo, DataSpaceMetaInf
 import org.incal.core.dataaccess.Criterion.Infix
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import play.api.data.Forms._
-import play.api.mvc.{Action, AnyContent, Request, RequestHeader}
+import play.api.mvc._
 import reactivemongo.bson.BSONObjectID
 import org.incal.play.security.SecurityUtil._
 import views.html.{dataspace => view}
@@ -20,6 +21,7 @@ import org.ada.server.AdaException
 import org.ada.server.dataaccess.DataSetMetaInfoRepoFactory
 import org.incal.play.controllers.{CrudControllerImpl, HasBasicFormCreateView, HasBasicListView, SubjectPresentRestrictedCrudController}
 import org.ada.web.services.DataSpaceService
+import org.incal.play.security.ActionSecurity.AuthActionTransformation
 
 class DataSpaceMetaInfoController @Inject() (
     repo: DataSpaceMetaInfoRepo,
@@ -27,7 +29,6 @@ class DataSpaceMetaInfoController @Inject() (
     dataSetSettingRepo: DataSetSettingRepo,
     dataSpaceService: DataSpaceService,
     dataSetMetaInfoRepoFactory: DataSetMetaInfoRepoFactory
-
   ) extends AdaCrudControllerImpl[DataSpaceMetaInfo, BSONObjectID](repo)
     with SubjectPresentRestrictedCrudController[BSONObjectID]
     with HasBasicFormCreateView[DataSpaceMetaInfo]
@@ -64,7 +65,7 @@ class DataSpaceMetaInfoController @Inject() (
   override protected def getFormShowViewData(
     id: BSONObjectID,
     form: Form[DataSpaceMetaInfo]
-  ) = { request =>
+  ) = { implicit request =>
     getFormEditViewData(id, form)(request).map { case (_, newForm, subDataSpaceCount, subDataSetCount, dataSetSizes, tree) =>
       newForm.value.map( dataSpace =>
         (dataSpace, subDataSpaceCount, subDataSetCount, dataSetSizes, tree)
@@ -92,8 +93,8 @@ class DataSpaceMetaInfoController @Inject() (
   override protected def getFormEditViewData(
     id: BSONObjectID,
     form: Form[DataSpaceMetaInfo]
-  ) = { request =>
-    val treeFuture = dataSpaceService.getTreeForCurrentUser(request)
+  ) = { implicit request =>
+    val treeFuture = dataSpaceService.getTreeForCurrentUser
 
     for {
       // get all the data spaces
@@ -123,7 +124,7 @@ class DataSpaceMetaInfoController @Inject() (
     (view.edit(_, _, _, _, _, _)).tupled
   }
 
-  override def edit(id: BSONObjectID) = restrictAdminAnyNoCaching(deadbolt) (
+  override def edit(id: BSONObjectID) = restrictAdminAny(noCaching = true) (
     toAuthenticatedAction(
       super.edit(id)
     )
@@ -135,7 +136,10 @@ class DataSpaceMetaInfoController @Inject() (
     (view.list(_, _)).tupled
   }
 
-  override protected def updateCall(item: DataSpaceMetaInfo)(implicit request: Request[AnyContent]) =
+  override protected def updateCall(
+    item: DataSpaceMetaInfo)(
+    implicit request: AuthenticatedRequest[AnyContent]
+  ) =
     for {
       Some(existingItem) <- repo.get(item._id.get)
       // copy existing data set meta infos
@@ -185,13 +189,13 @@ class DataSpaceMetaInfoController @Inject() (
       id
 
   // if update successful redirect to get/show instead of list
-  override def update(id: BSONObjectID) = restrictAdminAnyNoCaching(deadbolt) (
+  override def update(id: BSONObjectID) = restrictAdminAny(noCaching = true) (
     toAuthenticatedAction(
       update(id, _ => Redirect(routes.DataSpaceMetaInfoController.get(id)))
     )
   )
 
-  def deleteDataSet(id: BSONObjectID) = restrictAdminAnyNoCaching(deadbolt) {
+  def deleteDataSet(id: BSONObjectID) = restrictAdminAny(noCaching = true) {
     implicit request =>
       implicit val msg = messagesApi.preferred(request)
       repo.get(id).flatMap(_.fold(

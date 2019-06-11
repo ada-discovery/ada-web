@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import com.google.inject.assistedinject.Assisted
 import org.ada.web.controllers.core.AdaExceptionHandler
@@ -168,7 +169,10 @@ protected[controllers] class CategoryControllerImpl @Inject() (
 
   override protected def listView = { implicit ctx => (view.list(_, _, _, _)).tupled }
 
-  override protected def deleteCall(id: BSONObjectID)(implicit request: Request[AnyContent]): Future[Unit] = {
+  override protected def deleteCall(
+    id: BSONObjectID)(
+    implicit request: AuthenticatedRequest[AnyContent]
+  ) = {
     // relocate the children to a new parent
     val updateChildrenFutures =
       for {
@@ -200,7 +204,10 @@ protected[controllers] class CategoryControllerImpl @Inject() (
       repo.delete(id)
   }
 
-  override protected def updateCall(category: Category)(implicit request: Request[AnyContent]) =
+  override protected def updateCall(
+    category: Category)(
+    implicit request: AuthenticatedRequest[AnyContent]
+  ) =
     for {
       // collect the fields previously associated with a category
       oldFields <- fieldRepo.find(Seq("categoryId" #== category._id))
@@ -314,19 +321,6 @@ protected[controllers] class CategoryControllerImpl @Inject() (
         Ok("Done")
       )
     })
-  }
-
-  @Deprecated
-  private def jsRoutes = Action { implicit request =>
-    Ok(
-      JavaScriptReverseRouter("categoryJsRoutes")(
-        jsRouter.get,
-        jsRouter.relocateToParent,
-        jsRouter.saveForName,
-        jsRouter.addFields,
-        jsRouter.updateLabel
-      )
-    ).as("text/javascript")
   }
 
   protected def allCategoriesFuture =

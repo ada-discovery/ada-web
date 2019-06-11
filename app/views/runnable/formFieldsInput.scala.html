@@ -6,9 +6,11 @@
 @import views.html.layout
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
+@import be.objectify.deadbolt.scala.views.html.restrictOr
 @import org.ada.server.models.FieldTypeSpec
 @import org.ada.server.models.FieldTypeId
 @import org.ada.web.controllers.routes
+@import org.incal.play.security.SecurityRole
 
 @(
     title: String,
@@ -89,7 +91,11 @@
 
             <div class="actions pull-right">
                 <input type="submit" value="Submit" class="btn btn-primary">
-                <a href="@routes.AdminController.selectRunnable" class="btn btn-default">Cancel</a>
+                @restrictOr(roles = List(Array(SecurityRole.admin))) {
+                    <a href="@routes.RunnableController.selectRunnable" class="btn btn-default">Cancel</a>
+                } {
+                    <a href="@routes.AppController.index()" class="btn btn-default">Cancel</a>
+                }
             </div>
         }
         </div>

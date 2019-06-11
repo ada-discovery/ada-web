@@ -13,8 +13,8 @@
 @bottomResources = {
     @typeaheadJsImport()
 
-    @helper.javascriptRouter("adminRoutes")(
-        routes.javascript.AdminController.runScript
+    @helper.javascriptRouter("runnableRoutes")(
+        routes.javascript.RunnableController.runScript
     )
 
     <script type="text/javascript">
@@ -22,7 +22,7 @@
             populateFieldTypeahedFromUrl(
                 $('#classNameTypeahead'),
                 $('#className'),
-                '@Html(routes.AdminController.getRunnableNames().url)',
+                '@Html(routes.RunnableController.getRunnableNames().url)',
                 @FilterShowFieldStyle.LabelsOnly.id,
                 function(){setTimeout(function(){ $('#classNameTypeahead').focus();}, 250)}
             )
@@ -31,7 +31,7 @@
         $('#classNameTypeahead').on("keydown", function(e) {
             if(e.keyCode == 13) {
                 const className = $("#className").val()
-                submit('post', adminRoutes.org.ada.web.controllers.AdminController.runScript(className).url)
+                submit('post', runnableRoutes.org.ada.web.controllers.RunnableController.runScript(className).url)
             }
         });
     </script>

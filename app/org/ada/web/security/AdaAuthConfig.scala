@@ -71,13 +71,13 @@ trait AdaAuthConfig extends AuthConfig {
     * A function that returns a `User` object from an `Id`.
     * Retrieves user from Account class.
     */
-  def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] =
+  override def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] =
     userManager.findById(id)
 
   /**
     * Where to redirect the user after a successful login.
     */
-  def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
+  override def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
     val successfulLoginUrl = request.session.get("successfulLoginUrl")
     Future.successful(
       if (successfulLoginUrl.isDefined && successfulLoginUrl.get.nonEmpty)

@@ -2,6 +2,7 @@ package org.ada.web.controllers.dataset.datatrans
 
 import java.util.Date
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import org.ada.server.dataaccess.RepoTypes.{DataSetTransformationRepo, DataSpaceMetaInfoRepo, MessageRepo}
 import org.ada.server.models.DataSetFormattersAndIds.CategoryIdentity
@@ -105,13 +106,13 @@ class DataSetTransformationController @Inject()(
 
   override protected def saveCall(
     importInfo: DataSetTransformation)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ) =
     super.saveCall(importInfo).map { id => scheduleOrCancel(id, importInfo); id }
 
   override protected def updateCall(
     importInfo: DataSetTransformation)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ) =
     super.updateCall(importInfo).map { id => scheduleOrCancel(id, importInfo); id }
 
@@ -158,7 +159,7 @@ class DataSetTransformationController @Inject()(
 
   override protected def deleteCall(
     id: BSONObjectID)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ) =
     super.deleteCall(id).map { _ => dataSetTransformationScheduler.cancel(id); ()}
 

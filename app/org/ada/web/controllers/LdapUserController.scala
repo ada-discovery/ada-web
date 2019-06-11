@@ -1,8 +1,8 @@
 package org.ada.web.controllers
 
 import javax.inject.Inject
-
-import org.ada.server.services.ldap.{LdapSettings, LdapService}
+import org.ada.server.services.ldap.{LdapService, LdapSettings}
+import org.ada.web.controllers.core.AdaBaseController
 import org.incal.play.controllers.BaseController
 import views.html.ldapviews._
 import org.incal.play.security.SecurityUtil._
@@ -13,9 +13,9 @@ import scala.concurrent.Future
 class LdapUserController @Inject() (
   ldapUserService: LdapService,
   ldapSettings: LdapSettings
-) extends BaseController {
+) extends AdaBaseController {
 
-  def listAll = restrictAdminAnyNoCaching(deadbolt) {
+  def listAll = restrictAdminAny(noCaching = true) {
     implicit request => Future {
       implicit val msg = messagesApi.preferred(request)
 
@@ -24,7 +24,7 @@ class LdapUserController @Inject() (
     }
   }
 
-  def get(id: String) = restrictAdminAnyNoCaching(deadbolt) {
+  def get(id: String) = restrictAdminAny(noCaching = true) {
     implicit request => Future {
       implicit val msg = messagesApi.preferred(request)
 
@@ -37,7 +37,7 @@ class LdapUserController @Inject() (
     }
   }
 
-  def settings = restrictAdminAnyNoCaching(deadbolt) {
+  def settings = restrictAdminAny(noCaching = true) {
     implicit request => Future (
       Ok(views.html.ldapviews.viewSettings(ldapSettings))
     )

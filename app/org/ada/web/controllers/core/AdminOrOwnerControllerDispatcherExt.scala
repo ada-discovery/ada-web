@@ -1,10 +1,10 @@
 package org.ada.web.controllers.core
 
-import be.objectify.deadbolt.scala.{AuthenticatedRequest, DeadboltHandler}
-import org.ada.server.models.User
+import be.objectify.deadbolt.scala.DeadboltHandler
+import org.ada.web.models.security.DeadboltUser
 import org.incal.play.controllers.SecureControllerDispatcher
-import org.incal.play.security.SecurityRole
-import org.incal.play.security.SecurityUtil.{AuthenticatedAction, restrictChainFuture2, toActionAny}
+import org.incal.play.security.AuthAction
+import org.incal.play.security.SecurityUtil.toAuthenticatedAction
 import play.api.mvc.{Action, AnyContent, Request}
 import reactivemongo.bson.BSONObjectID
 
@@ -15,82 +15,46 @@ trait AdminOrOwnerControllerDispatcherExt[C] {
 
   this: SecureControllerDispatcher[C] =>
 
+  override type USER = DeadboltUser
+
   protected def dispatchIsAdminOrOwnerOrPublicAux(
     objectOwnerIdAndIsPublic: Request[AnyContent] => Future[Option[(BSONObjectID, Boolean)]],
-    outputDeadboltHandler: Option[DeadboltHandler])(
-    action: C => Action[AnyContent]
-  ) = Action.async { implicit request =>
-    val originalAction = dispatchAuthenticated(action)
+    outputHandler: DeadboltHandler = handlerCache()
+  ): DispatchActionTransformation = { cAction =>
+    AuthAction { implicit request =>
+      val checkOwner = restrictUserCustomAny(
+        { (user, request) =>
+          for {
+            objectOwnerIdIsPublicOption <- objectOwnerIdAndIsPublic(request)
+          } yield
+            objectOwnerIdIsPublicOption match {
+              case Some((createdById, isPublic)) =>
+                // is public or the user accessing the data view is the owner => all is ok
+                isPublic || user.id.get.equals(createdById)
 
-    val outputHandler = outputDeadboltHandler.getOrElse(deadboltHandlerCache())
-
-    // check if the view owner matches a currently logged user
-    def checkOwner = { action: AuthenticatedAction[AnyContent] =>
-      val unauthorizedAction: Action[AnyContent] =
-        toActionAny{ implicit req: AuthenticatedRequest[AnyContent] => outputHandler.onAuthFailure(req) }
-
-      val accessingUserFuture = currentUser(request)
-      val objectOwnerIdIsPublicFuture = objectOwnerIdAndIsPublic((request))
-
-      for {
-        objectOwnerIdIsPublicOption <- objectOwnerIdIsPublicFuture
-        accessingUser <- accessingUserFuture
-      } yield {
-          objectOwnerIdIsPublicOption match {
-
-            case Some((createdById, isPublic)) =>
-              if (isPublic) {
-                // is public, all is ok
-                toActionAny(action)
-              } else
-                accessingUser.map { accessingUser =>
-                  // if the user accessing the data view is the owner then proceed, otherwise "unauthorized"
-                  if (accessingUser._id.get.equals(createdById)) toActionAny(action) else unauthorizedAction
-                }.getOrElse(
-                  // if we cannot determine the currently logged user for some reason return "unauthorized"
-                  unauthorizedAction
-                )
-
-            // if the owner (and public flag) not specified return "unauthorized"
-            case None => unauthorizedAction
-          }
-      }
-    }
-
-    // is admin?
-    def isAdmin = { action: AuthenticatedAction[AnyContent] =>
-      Future(
-        deadbolt.Restrict[AnyContent](List(Array(SecurityRole.admin)), unauthorizedDeadboltHandler)()(action)
+              // if the owner (and public flag) not specified then non-authorized
+              case None => false
+            }
+        },
+        outputHandler
       )
-    }
 
-    val extraRestrictions = restrictChainFuture2(Seq(isAdmin, checkOwner))_
-    extraRestrictions(originalAction)(request)
+      val actionTransformation = restrictChainAny(Seq(restrictAdminAny(outputHandler = unauthorizedDeadboltHandler), checkOwner))
+      val autAction = toAuthenticatedAction(dispatch(cAction))
+      actionTransformation(autAction)(request)
+    }
   }
 
   protected def dispatchIsAdminOrOwnerAux(
-    objectOwnerId: Request[AnyContent] => Future[Option[BSONObjectID]]
-  ) = dispatchIsAdminOrOwnerOrPublicAux(request =>
-    objectOwnerId(request).map(_.map((_, false))),
-    _: Option[DeadboltHandler])(
-    _ :C => Action[AnyContent]
+    objectOwnerId: Request[AnyContent] => Future[Option[BSONObjectID]],
+    outputHandler: DeadboltHandler = handlerCache()
+  ) = dispatchIsAdminOrOwnerOrPublicAux(
+    request => objectOwnerId(request).map(_.map((_, false))),
+    outputHandler
   )
 
-  protected def dispatchIsAdmin(
-    action: C => Action[AnyContent]
-  ) = Action.async { implicit request =>
-    val originalAction = dispatchAuthenticated(action)
-
-    // is admin?
-    def isAdmin = { action: AuthenticatedAction[AnyContent] =>
-      Future(
-        deadbolt.Restrict[AnyContent](List(Array(SecurityRole.admin)), unauthorizedDeadboltHandler)()(action)
-      )
-    }
-
-    val extraRestrictions = restrictChainFuture2(Seq(isAdmin))_
-    extraRestrictions(originalAction)(request)
+  protected def dispatchIsAdmin: DispatchActionTransformation = { cAction =>
+    val autAction = toAuthenticatedAction(dispatch(cAction))
+    restrictAdminAny()(autAction)
   }
-
-  protected def currentUser(request: Request[_]): Future[Option[User]]
 }

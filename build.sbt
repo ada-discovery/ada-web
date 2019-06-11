@@ -30,8 +30,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 PlayKeys.devSettings := Seq("play.server.netty.maxInitialLineLength" -> "16384")
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.7.3.RC.9.SNAPSHOT.3",
-  "org.in-cal" %% "incal-play" % "0.1.8",
+  "org.adada" %% "ada-server" % "0.7.3.RC.9.SNAPSHOT.5",
+  "org.in-cal" %% "incal-play" % "0.1.9",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
   "jp.t2v" %% "play2-auth" % "0.14.1",
@@ -44,7 +44,8 @@ libraryDependencies ++= Seq(
   "org.webjars.bower" % "plotly.js" % "1.5.1",           // not used - can be removed
   "org.webjars.bower" % "d3" % "3.5.16",
   "org.webjars.bower" % "Autolinker.js" % "0.25.0",      // to convert links to a-href elements
-  "org.webjars" % "jquery-ui" % "1.11.1"
+  "org.webjars" % "jquery-ui" % "1.11.1",
+  "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 )
 
 packagedArtifacts in publishLocal := {

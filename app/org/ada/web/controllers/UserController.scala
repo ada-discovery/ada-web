@@ -1,5 +1,6 @@
 package org.ada.web.controllers
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.web.controllers.dataset._
@@ -14,8 +15,6 @@ import play.api.mvc.{Action, AnyContent, Request, RequestHeader}
 import org.incal.core.util.ReflectionUtil.getMethodNames
 import org.incal.play.Page
 import org.incal.play.controllers.{AdminRestrictedCrudController, CrudControllerImpl, HasBasicListView, HasFormShowEqualEditView}
-import org.incal.play.security.AuthAction
-import org.incal.play.security.SecurityUtil.restrictAdminAnyNoCaching
 import play.api.libs.mailer.{Email, MailerClient}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -107,7 +106,7 @@ class UserController @Inject() (
 
   override protected def saveCall(
     user: User)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ): Future[BSONObjectID] = {
 
     // send an email
@@ -133,7 +132,7 @@ class UserController @Inject() (
 
   override protected def updateCall(
     user: User)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ): Future[BSONObjectID] = {
     // remove repeated permissions
     val userToUpdate = user.copy(permissions = user.permissions.toSet.toSeq.sorted)
@@ -143,7 +142,7 @@ class UserController @Inject() (
 
   def listUsersForPermissionPrefix(
     permissionPrefix: Option[String]
-  ) = restrictAdminAnyNoCaching(deadbolt) { implicit request =>
+  ) = restrictAdminAny(noCaching = true) { implicit request =>
     for {
       allUsers <- repo.find(sort = Seq(AscSort("ldapDn")))
     } yield {
@@ -159,7 +158,7 @@ class UserController @Inject() (
   def copyPermissions(
     sourceUserId: BSONObjectID,
     targetUserId: BSONObjectID
-  ) = restrictAdminAnyNoCaching(deadbolt) { implicit request =>
+  ) = restrictAdminAny(noCaching = true) { implicit request =>
     for {
       sourceUser <- repo.get(sourceUserId)
       targetUser <- repo.get(targetUserId)

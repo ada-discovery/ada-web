@@ -4,7 +4,6 @@ import java.util.concurrent.TimeoutException
 import java.{util => ju}
 
 import javax.inject.Inject
-import org.ada.web.security.AdaAuthConfig
 import org.ada.server.field.FieldUtil.FieldOps
 import com.google.inject.assistedinject.Assisted
 import org.ada.server.dataaccess.RepoTypes.UserRepo
@@ -25,6 +24,7 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.BSONFormats._
 import java.util.Date
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.server.AdaException
 import org.ada.server.models.{DataView, WidgetGenerationMethod, WidgetSpec}
@@ -34,8 +34,7 @@ import org.incal.play.Page
 import org.incal.play.controllers.{CrudControllerImpl, HasFormShowEqualEditView, WebContext}
 import org.incal.play.formatters._
 import org.incal.play.security.AuthAction
-import org.incal.play.security.SecurityRole
-import org.ada.server.services.UserManager
+import org.ada.web.models.security.DeadboltUser
 import org.ada.web.services.DataSpaceService
 import views.html.{dataview => view}
 
@@ -50,12 +49,9 @@ protected[controllers] class DataViewControllerImpl @Inject() (
     @Assisted val dataSetId: String,
     dsaf: DataSetAccessorFactory,
     dataSpaceService: DataSpaceService,
-    userRepo: UserRepo,
-    val userManager: UserManager
+    userRepo: UserRepo
   ) extends AdaCrudControllerImpl[DataView, BSONObjectID](dsaf(dataSetId).get.dataViewRepo)
-
     with DataViewController
-    with AdaAuthConfig
     with HasFormShowEqualEditView[DataView, BSONObjectID] {
 
   protected val dsa: DataSetAccessor = dsaf(dataSetId).get
@@ -210,15 +206,17 @@ protected[controllers] class DataViewControllerImpl @Inject() (
 
   override def saveCall(
     dataView: DataView)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ): Future[BSONObjectID] =
     for {
-      user <- currentUser(request)
+      user <- currentUser()
+
       id <- {
         val dataViewWithUser = user match {
           case Some(user) =>
-            val filteredDataView = removeCustomWidgetSpecsForNonAdmins(dataView, user)
-            filteredDataView.copy(timeCreated = new Date(), createdById = user._id)
+            val filteredDataView = removeCustomWidgetSpecsForNonAdmins(dataView, user.isAdmin)
+            filteredDataView.copy(timeCreated = new Date(), createdById = user.id)
+
           case None => throw new AdaException("No logged user found")
         }
         repo.save(dataViewWithUser)
@@ -228,18 +226,18 @@ protected[controllers] class DataViewControllerImpl @Inject() (
 
   override protected def updateCall(
     dataView: DataView)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ): Future[BSONObjectID] =
     for {
       existingDataViewOption <- repo.get(dataView._id.get)
 
-      user <- currentUser(request)
+      user <- currentUser()
 
       id <- {
         user match {
           case Some(user) =>
             val mergedDataView = existingDataViewOption.fold(dataView) { existingDataView =>
-              val filteredDataView = removeCustomWidgetSpecsForNonAdmins(dataView, user)
+              val filteredDataView = removeCustomWidgetSpecsForNonAdmins(dataView, user.isAdmin)
               filteredDataView.copy(createdById = existingDataView.createdById, timeCreated = existingDataView.timeCreated)
             }
             repo.update(mergedDataView)
@@ -253,15 +251,12 @@ protected[controllers] class DataViewControllerImpl @Inject() (
   // if non-admin we remove Custom HTML widgets, which are security "exploitable"
   private def removeCustomWidgetSpecsForNonAdmins(
     dataView: DataView,
-    user: User
-  ) = {
-    val isAdmin = user.roles.contains(SecurityRole.admin)
-
+    isAdmin: Boolean
+  ) =
     if (!isAdmin)
       dataView.copy(widgetSpecs = dataView.widgetSpecs.filterNot(_.isInstanceOf[CustomHtmlWidgetSpec]))
     else
       dataView
-  }
 
   override def idAndNames = Action.async { implicit request =>
     for {
@@ -284,7 +279,7 @@ protected[controllers] class DataViewControllerImpl @Inject() (
     }
   }
 
-  override def idAndNamesAccessible = Action.async { implicit request =>
+  override def idAndNamesAccessible = AuthAction { implicit request =>
     // auxiliary function to find data views for given criteria
     def findAux(criteria: Seq[Criterion[Any]]) = repo.find(
       criteria = criteria,
@@ -292,21 +287,20 @@ protected[controllers] class DataViewControllerImpl @Inject() (
     )
 
     for {
-      user <- currentUser(request)
+      user <- currentUser()
 
-      dataViews <- {
+      dataViews <-
         user match {
           case None => Future(Nil)
 
           case Some(user) =>
-            val isAdmin = user.roles.contains(SecurityRole.admin)
             // admin     => get all; non-admin => not private or owner
-            if (isAdmin)
+            if (user.isAdmin)
               findAux(Nil)
             else
               findAux(Nil).map { views =>
                 views.filter { view =>
-                  !view.isPrivate || (view.createdById.isDefined && view.createdById.equals(user._id))
+                  !view.isPrivate || (view.createdById.isDefined && view.createdById.equals(user.id))
                 }
               }
               // TODO: fix Apache ignite to support boolean conditions
@@ -317,7 +311,6 @@ protected[controllers] class DataViewControllerImpl @Inject() (
 //                }
 //              }
         }
-      }
     } yield {
       val sorted = dataViews.toSeq.sortBy(dataView =>
         (!dataView.default, dataView.name)
@@ -371,7 +364,7 @@ protected[controllers] class DataViewControllerImpl @Inject() (
     }
 
   override def copy(id: BSONObjectID) =
-    Action.async { implicit request =>
+    AuthAction { implicit request =>
       for {
         // get the data view
         dataView <- repo.get(id)

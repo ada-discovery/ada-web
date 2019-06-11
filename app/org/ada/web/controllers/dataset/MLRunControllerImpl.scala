@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.web.util.toHumanReadableCamel
 import org.ada.server.models.{DistributionWidgetSpec, _}
 import org.ada.server.models.Filter.{FilterIdentity, FilterOrId}
@@ -256,9 +257,11 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
     JsArray(metricJsons)
   }
 
-  protected def getDataSetNameTreeAndSetting(request: Request[_]): Future[(String, Traversable[DataSpaceMetaInfo], DataSetSetting)] = {
+  protected def getDataSetNameTreeAndSetting(
+    implicit request: AuthenticatedRequest[_]
+  ): Future[(String, Traversable[DataSpaceMetaInfo], DataSetSetting)] = {
     val dataSetNameFuture = dsa.dataSetName
-    val treeFuture = dataSpaceService.getTreeForCurrentUser(request)
+    val treeFuture = dataSpaceService.getTreeForCurrentUser
     val settingFuture = dsa.setting
 
     for {

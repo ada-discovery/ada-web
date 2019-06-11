@@ -1,7 +1,7 @@
 package org.ada.web.controllers
 
 import javax.inject.Inject
-
+import org.ada.web.controllers.core.AdaBaseController
 import org.incal.play.controllers.{BaseController, WebContext}
 import org.incal.play.security.AuthAction
 import play.twirl.api.Html
@@ -11,7 +11,7 @@ import play.api.cache.Cached
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class DocumentationController @Inject() (cached: Cached) extends BaseController {
+class DocumentationController @Inject() (cached: Cached) extends AdaBaseController {
 
   def intro =
     showHtml("intro", documentation.intro()(_))

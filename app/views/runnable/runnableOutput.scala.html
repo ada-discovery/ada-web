@@ -1,12 +1,14 @@
 @import views.html.layout.main
 @import play.api.i18n.Messages
 @import org.ada.server.models.DataSpaceMetaInfo
+@import be.objectify.deadbolt.scala.views.html.restrictOr
 @import org.ada.web.util
 @import views.html.elements._
 @import views.html.layout
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
 @import org.ada.web.controllers.routes
+@import org.incal.play.security.SecurityRole
 
 @(
     scriptClazz: Class[_],
@@ -25,14 +27,18 @@
 
     <div class="row">
         <div class="col-md-12">
-            @helper.form(action = routes.AdminController.runScript(scriptClazz.getName)) {
+            @helper.form(action = routes.RunnableController.runScript(scriptClazz.getName)) {
                 @Html(output)
 
                 <hr/>
 
                 <div class="actions pull-right">
                     <input type="submit" value="Relaunch" autofocus class="btn btn-primary">
-                    <a href="@routes.AdminController.selectRunnable" class="btn btn-default">Back</a>
+                    @restrictOr(roles = List(Array(SecurityRole.admin))) {
+                        <a href="@routes.RunnableController.selectRunnable" class="btn btn-default">Back</a>
+                    } {
+                        <a href="@routes.AppController.index()" class="btn btn-default">Cancel</a>
+                    }
                 </div>
             }
         </div>

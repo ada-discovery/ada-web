@@ -18,6 +18,7 @@ import play.api.mvc.{Action, AnyContent, Request}
 import reactivemongo.bson.BSONObjectID
 import java.util.Date
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.server.AdaException
 import reactivemongo.play.json.BSONFormats._
@@ -27,8 +28,7 @@ import org.incal.core.dataaccess.{AscSort, Criterion, InCalDataAccessException}
 import org.incal.play.Page
 import org.incal.play.controllers.{CrudControllerImpl, HasFormShowEqualEditView, WebContext}
 import org.incal.play.formatters.JsonFormatter
-import org.incal.play.security.SecurityRole
-import org.ada.server.services.UserManager
+import org.incal.play.security.AuthAction
 import org.ada.web.services.DataSpaceService
 import views.html.{dataview, filters => view}
 
@@ -42,12 +42,9 @@ protected[controllers] class FilterControllerImpl @Inject() (
     @Assisted val dataSetId: String,
     dsaf: DataSetAccessorFactory,
     dataSpaceService: DataSpaceService,
-    userRepo: UserRepo,
-    val userManager: UserManager
-
+    userRepo: UserRepo
   ) extends AdaCrudControllerImpl[Filter, BSONObjectID](dsaf(dataSetId).get.filterRepo)
     with FilterController
-    with AdaAuthConfig
     with HasFormShowEqualEditView[Filter, BSONObjectID] {
 
   protected val dsa: DataSetAccessor = dsaf(dataSetId).get
@@ -168,13 +165,13 @@ protected[controllers] class FilterControllerImpl @Inject() (
 
   override def saveCall(
     filter: Filter)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ): Future[BSONObjectID] =
     for {
-      user <- currentUser(request)
+      user <- currentUser()
       id <- {
         val filterWithUser = user match {
-          case Some(user) => filter.copy(timeCreated = Some(new Date()), createdById = user._id)
+          case Some(user) => filter.copy(timeCreated = Some(new Date()), createdById = user.id)
           case None => throw new AdaException("No logged user found")
         }
         repo.save(filterWithUser)
@@ -182,7 +179,7 @@ protected[controllers] class FilterControllerImpl @Inject() (
     } yield
       id
 
-  override def saveAjax(filter: Filter) = Action.async { implicit request =>
+  override def saveAjax(filter: Filter) = AuthAction { implicit request =>
     saveCall(filter).map { id =>
       Ok(s"Item ${id} has been created")
     }.recover {
@@ -200,7 +197,7 @@ protected[controllers] class FilterControllerImpl @Inject() (
 
   override protected def updateCall(
     filter: Filter)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ): Future[BSONObjectID] =
     for {
       existingFilterOption <- repo.get(filter._id.get)
@@ -228,7 +225,7 @@ protected[controllers] class FilterControllerImpl @Inject() (
       Ok(Json.toJson(filters))
   }
 
-  override def idAndNamesAccessible = Action.async { implicit request =>
+  override def idAndNamesAccessible = AuthAction { implicit request =>
     // auxiliary function to find filter for given criteria
     def findAux(criteria: Seq[Criterion[Any]]) = repo.find(
       criteria = criteria,
@@ -237,25 +234,22 @@ protected[controllers] class FilterControllerImpl @Inject() (
     )
 
     for {
-      user <- currentUser(request)
+      user <- currentUser()
 
-      filters <- {
-        user match {
-          case None => Future(Nil)
-
-          case Some(user) =>
-            val isAdmin = user.roles.contains(SecurityRole.admin)
-            // admin     => get all; non-admin => not private or owner
-            if (isAdmin)
-              findAux(Nil)
-            else
-              findAux(Nil).map { filters =>
-                filters.filter { filter =>
-                  !filter.isPrivate || (filter.createdById.isDefined && filter.createdById.equals(user._id))
-                }
+      filters <- user match {
+        case Some(user) =>
+          // admin     => get all; non-admin => not private or owner
+          if (user.isAdmin)
+            findAux(Nil)
+          else
+            findAux(Nil).map { filters =>
+              filters.filter { filter =>
+                filter.isPrivate || (filter.createdById.isDefined && filter.createdById.equals(user.id))
               }
+            }
+
+          case None => Future(Nil)
         }
-      }
     } yield {
       val idAndNames = filters.toSeq.map( filter =>
         Json.obj("_id" -> filter._id, "name" -> filter.name)

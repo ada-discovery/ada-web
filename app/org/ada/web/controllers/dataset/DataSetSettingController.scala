@@ -1,12 +1,13 @@
 package org.ada.web.controllers.dataset
 
 import java.util.concurrent.TimeoutException
-import javax.inject.Inject
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
+import javax.inject.Inject
 import org.ada.web.controllers._
 import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.server.dataaccess.RepoTypes.{DataSetSettingRepo, DataSpaceMetaInfoRepo}
-import org.ada.server.models.{ChartType, DataSetFormattersAndIds, DataSetSetting, StorageType, WidgetSpec, FilterShowFieldStyle}
+import org.ada.server.models.{ChartType, DataSetFormattersAndIds, DataSetSetting, FilterShowFieldStyle, StorageType, WidgetSpec}
 import org.ada.server.models.DataSetFormattersAndIds.{DataSetSettingIdentity, serializableDataSetSettingFormat, widgetSpecFormat}
 import org.ada.server.models._
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
@@ -23,7 +24,6 @@ import org.ada.web.controllers.dataset.routes.{DataSetSettingController => dataS
 import org.incal.core.dataaccess.Criterion.Infix
 import org.incal.play.controllers._
 import org.incal.play.formatters._
-import org.incal.play.security.SecurityUtil.restrictAdminAnyNoCaching
 
 import scala.concurrent.Future
 
@@ -116,7 +116,7 @@ class DataSetSettingController @Inject() (
     (view.list(_, _)).tupled
   }
 
-  def editForDataSet(dataSet: String) = restrictAdminAnyNoCaching(deadbolt) { implicit request =>
+  def editForDataSet(dataSet: String) = restrictAdminAny(noCaching = true) { implicit request =>
     val foundSettingFuture = repo.find(Seq("dataSetId" #== dataSet)).map(_.headOption)
     foundSettingFuture.map { setting =>
       setting.fold(
@@ -147,7 +147,7 @@ class DataSetSettingController @Inject() (
     }
   }
 
-  def updateForDataSet(id: BSONObjectID) = restrictAdminAnyNoCaching(deadbolt) { implicit request =>
+  def updateForDataSet(id: BSONObjectID) = restrictAdminAny(noCaching = true) { implicit request =>
     val dataSetIdFuture = repo.get(id).map(_.get.dataSetId)
     dataSetIdFuture.flatMap { dataSetId =>
       update(
@@ -159,7 +159,7 @@ class DataSetSettingController @Inject() (
 
   override protected def updateCall(
     item: DataSetSetting)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ): Future[BSONObjectID] =
     repo.update(item).map { id =>
       // update data set repo since we change the setting, which could affect how the data set is accessed
@@ -167,5 +167,4 @@ class DataSetSettingController @Inject() (
       // return id
       id
     }
-
 }

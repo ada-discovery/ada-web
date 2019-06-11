@@ -13,4 +13,8 @@ case class DeadboltUser(user: User) extends Subject {
 
   override def permissions =
     user.permissions.map(SecurityPermission(_)).toList
+
+  val id = user._id
+
+  val isAdmin = user.roles.contains(SecurityRole.admin)
 }

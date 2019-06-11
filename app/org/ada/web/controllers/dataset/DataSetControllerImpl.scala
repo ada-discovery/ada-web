@@ -4,7 +4,6 @@ import java.util.UUID
 import java.{util => ju}
 
 import javax.inject.Inject
-import org.ada.web.security.AdaAuthConfig
 import org.ada.web.util.WebExportUtil._
 import org.ada.web.util.shorten
 
@@ -58,7 +57,6 @@ import org.incal.play.{Page, PageOrder}
 import org.incal.play.controllers._
 import org.incal.play.formatters._
 import org.incal.play.security.AuthAction
-import org.incal.play.security.SecurityRole
 import org.incal.spark_ml.models.VectorScalerType
 import org.ada.server.services.importers.TranSMARTService
 import org.ada.web.services.{DataSpaceService, WidgetGenerationService}
@@ -82,13 +80,10 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     regressionRepo: RegressorRepo,
     unsupervisedLearningRepo: UnsupervisedLearningRepo,
     dataSpaceService: DataSpaceService,
-    tranSMARTService: TranSMARTService,
-    val userManager: UserManager
+    tranSMARTService: TranSMARTService
   ) extends AdaReadonlyControllerImpl[JsObject, BSONObjectID]
-
     with DataSetController
     with ExportableAction[JsObject]
-    with AdaAuthConfig
     with DistributionWidgetGeneratorHelper {
 
   protected val dsa: DataSetAccessor = dsaf(dataSetId).get
@@ -485,7 +480,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         setting <- settingFuture
 
         // check if the user can edit the view
-        canEditView <- dataView.map(canEditView(_, request)).getOrElse(Future(false))
+        editPossible <- dataView.map(canEditView(_)).getOrElse(Future(false))
 
         // initialize filters
         filterOrIdsToUse: Seq[FilterOrId] =
@@ -577,7 +572,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
                 callbackId,
                 dataView.map(_.elementGridWidth).getOrElse(3),
                 setting.filterShowFieldStyle,
-                canEditView,
+                editPossible,
                 dataSpaceTree
               )
             )
@@ -633,26 +628,27 @@ protected[controllers] class DataSetControllerImpl @Inject() (
   }
 
   private def canEditView(
-    dataView: DataView,
-    request: Request[_]
-  ): Future[Boolean] =
-    for {
-      currentUser <- currentUser(request)
-    } yield {
-      currentUser.map { user =>
-        val isAdmin = user.roles.contains(SecurityRole.admin)
+    dataView: DataView)(
+    implicit request: AuthenticatedRequest[_]
+  ): Future[Boolean] = for {
+    user <- currentUser()
+  } yield
+    user.map { user =>
+      val isAdmin = user.isAdmin
 
-        val isOwner =
-          dataView.createdById match {
-            case Some(createdById) => user._id.get.equals(createdById)
-            case None => false
-          }
+      println(user)
+      println("Is Admin: " + isAdmin)
 
-        isAdmin || isOwner
-      }.getOrElse(
-        false
-      )
-    }
+      val isOwner =
+        dataView.createdById match {
+          case Some(createdById) => user.id.get.equals(createdById)
+          case None => false
+        }
+
+      isAdmin || isOwner
+    }.getOrElse(
+      false
+    )
 
   override def getWidgets = Action.async { implicit request =>
     val callbackId = request.body.asFormUrlEncoded.flatMap(_.get("callbackId").map(_.head))
@@ -2116,10 +2112,10 @@ protected[controllers] class DataSetControllerImpl @Inject() (
   }
 
   private def getDataSetNameTreeAndSetting(
-    implicit request: Request[_]
+    implicit request: AuthenticatedRequest[_]
   ): Future[(String, Traversable[DataSpaceMetaInfo], DataSetSetting)] = {
     val dataSetNameFuture = dsa.dataSetName
-    val treeFuture = dataSpaceService.getTreeForCurrentUser(request)
+    val treeFuture = dataSpaceService.getTreeForCurrentUser
     val settingFuture = dsa.setting
 
     for {
@@ -2137,7 +2133,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
   private def getFilterAndEssentials(
     filterOrId: FilterOrId)(
-    implicit request: Request[_]
+    implicit request: AuthenticatedRequest[_]
   ): Future[(Filter, String, Traversable[DataSpaceMetaInfo], DataSetSetting)] = {
     val dataSetNameTreeSettingFuture = getDataSetNameTreeAndSetting
     val filterFuture = filterRepo.resolve(filterOrId)

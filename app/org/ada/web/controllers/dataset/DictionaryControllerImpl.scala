@@ -35,6 +35,7 @@ import org.ada.server.field.FieldUtil.caseClassToFlatFieldTypes
 import org.ada.web.services.{DataSpaceService, WidgetGenerationService}
 import views.html.{dataview, dictionary => view}
 import org.ada.web.util.toHumanReadableCamel
+import org.incal.play.security.AuthAction
 
 import scala.concurrent.Future
 
@@ -279,7 +280,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
       if (tableColumnsOnly) listViewColumns.get else Nil
     )
 
-  override def updateLabel(id: String, label: String) = Action.async { implicit request =>
+  override def updateLabel(id: String, label: String) = AuthAction { implicit request =>
     repo.get(id).flatMap(_.fold(
       Future(NotFound(s"$entityName '${formatId(id)}' not found"))
     ){ field =>

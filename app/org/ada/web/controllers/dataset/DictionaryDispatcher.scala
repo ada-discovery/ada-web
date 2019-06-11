@@ -3,10 +3,6 @@ package org.ada.web.controllers.dataset
 import org.incal.core.FilterCondition
 import javax.inject.Inject
 
-import org.incal.play.controllers.SecureControllerDispatcher
-import org.incal.play.security.SecurityRole
-import org.ada.web.models.security.DataSetPermission
-
 class DictionaryDispatcher @Inject() (
   val dscf: DataSetControllerFactory,
   factory: DictionaryControllerFactory

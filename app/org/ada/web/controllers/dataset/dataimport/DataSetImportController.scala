@@ -4,6 +4,7 @@ import java.io.{File, FileInputStream, FileOutputStream}
 import java.nio.file.{Files, Paths}
 import java.util.Date
 
+import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import org.ada.server.dataaccess.RepoTypes.{DataSetImportRepo, MessageRepo}
 import org.ada.server.models.dataimport.DataSetImport.{DataSetImportExt, DataSetImportIdentity, dataSetImportFormat}
@@ -136,7 +137,7 @@ class DataSetImportController @Inject()(
 
   override protected def saveCall(
     importInfo: DataSetImport)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ) =
     super.saveCall(importInfo).map { id =>
       scheduleOrCancel(id, importInfo); id
@@ -144,7 +145,7 @@ class DataSetImportController @Inject()(
 
   override protected def updateCall(
     importInfo: DataSetImport)(
-    implicit request: Request[AnyContent]
+    implicit request: AuthenticatedRequest[AnyContent]
   ) =
     //TODO: remove the old files if any
     super.updateCall(importInfo).map { id =>
@@ -228,7 +229,10 @@ class DataSetImportController @Inject()(
     }
   }
 
-  override protected def deleteCall(id: BSONObjectID)(implicit request: Request[AnyContent]): Future[Unit] =
+  override protected def deleteCall(
+    id: BSONObjectID)(
+    implicit request: AuthenticatedRequest[AnyContent]
+  ) =
     super.deleteCall(id).map { _ =>
       dataSetImportScheduler.cancel(id); ()
     }

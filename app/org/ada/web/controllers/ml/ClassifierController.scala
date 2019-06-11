@@ -18,7 +18,6 @@ import reactivemongo.play.json.BSONFormats._
 import reactivemongo.bson.BSONObjectID
 import org.ada.web.services.DataSpaceService
 import org.ada.web.controllers.ml.{routes => routes}
-import org.incal.play.security.SecurityUtil.{restrictAdminAnyNoCaching, restrictSubjectPresentAnyNoCaching}
 import views.html.{layout, classification => view}
 import org.incal.spark_ml.models.ValueOrSeq.ValueOrSeq
 import org.incal.core.FilterCondition
@@ -263,7 +262,7 @@ class ClassifierController @Inject()(
 
   override protected def listView = { implicit ctx => (view.list(_, _, _)).tupled }
 
-  def idAndNames = restrictSubjectPresentAnyNoCaching(deadbolt) {
+  def idAndNames = restrictSubjectPresentAny(noCaching = true) {
     implicit request =>
       for {
         classifications <- repo.find(

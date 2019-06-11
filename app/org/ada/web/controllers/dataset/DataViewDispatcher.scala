@@ -1,14 +1,12 @@
 package org.ada.web.controllers.dataset
 
 import javax.inject.Inject
-import be.objectify.deadbolt.scala.DeadboltHandler
 import org.ada.web.controllers.core.AdminOrOwnerControllerDispatcherExt
 import org.ada.server.AdaException
 import org.ada.server.models.{AggType, CorrelationType}
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import play.api.mvc.{Action, AnyContent, Request}
 import reactivemongo.bson.BSONObjectID
-import org.ada.web.security.AdaAuthConfig
 import org.incal.core.FilterCondition
 import org.ada.server.services.UserManager
 
@@ -17,12 +15,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class DataViewDispatcher @Inject()(
   val dscf: DataSetControllerFactory,
   factory: DataViewControllerFactory,
-  dsaf: DataSetAccessorFactory,
-  val userManager: UserManager
+  dsaf: DataSetAccessorFactory
 ) extends DataSetLikeDispatcher[DataViewController](ControllerName.dataview)
   with AdminOrOwnerControllerDispatcherExt[DataViewController]
-  with DataViewController
-  with AdaAuthConfig {
+  with DataViewController {
 
   override def controllerFactory = factory(_)
 
@@ -131,33 +127,26 @@ class DataViewDispatcher @Inject()(
     filterOrIds: Seq[Either[Seq[FilterCondition], BSONObjectID]]
   ) = dispatchIsAdminOrOwnerAjax(dataViewId, _.saveFilter(dataViewId, filterOrIds))
 
+  // aux functions
+
   protected def dispatchIsAdminOrOwner(
     id: BSONObjectID,
     action: DataViewController => Action[AnyContent]
   ): Action[AnyContent] =
-    dispatchIsAdminOrOwnerAux(id, action, None)
+    dispatchIsAdminOrOwnerAux(dataViewOwner(id))(action)
 
   protected def dispatchIsAdminOrOwnerAjax(
     id: BSONObjectID,
     action: DataViewController => Action[AnyContent]
   ): Action[AnyContent] =
-    dispatchIsAdminOrOwnerAux(id, action, Some(unauthorizedDeadboltHandler))
+    dispatchIsAdminOrOwnerAux(dataViewOwner(id), unauthorizedDeadboltHandler)(action)
 
-  protected def dispatchIsAdminOrOwnerAux(
-    id: BSONObjectID,
-    action: DataViewController => Action[AnyContent],
-    outputDeadboltHandler: Option[DeadboltHandler]
-  ): Action[AnyContent] = {
-
-    val objectOwnerFun = {
-      request: Request[AnyContent] =>
-        val dataSetId = getControllerId(request)
-        val dsa = dsaf(dataSetId).getOrElse(throw new AdaException(s"Data set id $dataSetId not found."))
-        dsa.dataViewRepo.get(id).map { dataView =>
-          dataView.flatMap(_.createdById)
-        }
+  private def dataViewOwner(id: BSONObjectID) = {
+    request: Request[AnyContent] =>
+      val dataSetId = getControllerId(request)
+      val dsa = dsaf(dataSetId).getOrElse(throw new AdaException(s"Data set id $dataSetId not found."))
+      dsa.dataViewRepo.get(id).map { dataView =>
+        dataView.flatMap(_.createdById)
       }
-
-    dispatchIsAdminOrOwnerAux(objectOwnerFun)(outputDeadboltHandler, action)
   }
 }

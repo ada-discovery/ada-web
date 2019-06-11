@@ -1,15 +1,14 @@
 package org.ada.web.services
 
-import javax.inject.{Inject, Named, Singleton}
+import be.objectify.deadbolt.scala.AuthenticatedRequest
+import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
 import org.ada.server.dataaccess.DataSetMetaInfoRepoFactory
-import org.ada.server.dataaccess.RepoTypes.{DataSetMetaInfoRepo, DataSpaceMetaInfoRepo}
+import org.ada.server.dataaccess.RepoTypes.DataSpaceMetaInfoRepo
 import org.ada.server.models.{DataSpaceMetaInfo, User}
-import org.ada.server.services.UserManager
-import org.ada.web.security.AdaAuthConfig
-import play.api.mvc.Request
+import org.ada.web.models.security.DeadboltUser
 import org.incal.core.dataaccess.Criterion.Infix
-import org.incal.play.security.SecurityRole
+import org.incal.play.security.{ActionSecurity, SecurityRole}
 import reactivemongo.bson.BSONObjectID
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,17 +20,17 @@ trait DataSpaceService {
   def allAsTree: Future[Traversable[DataSpaceMetaInfo]]
 
   def getTreeForCurrentUser(
-    request: Request[_]
-  ): Future[Traversable[DataSpaceMetaInfo]]
-
-  def getTreeForUser(
-     user: User
+    implicit request: AuthenticatedRequest[_]
   ): Future[Traversable[DataSpaceMetaInfo]]
 
   def getDataSpaceForCurrentUser(
     dataSpace: DataSpaceMetaInfo)(
-    request: Request[_]
+    implicit request: AuthenticatedRequest[_]
   ): Future[Option[DataSpaceMetaInfo]]
+
+  def getTreeForUser(
+    user: User
+  ): Future[Traversable[DataSpaceMetaInfo]]
 
   def unregister(
     dataSpaceInfo: DataSpaceMetaInfo,
@@ -54,21 +53,26 @@ trait DataSpaceService {
 
 @Singleton
 class DataSpaceServiceImpl @Inject() (
-    val userManager: UserManager,
     dataSpaceMetaInfoRepo: DataSpaceMetaInfoRepo,
     dataSetMetaInfoRepoFactory: DataSetMetaInfoRepoFactory
-  ) extends DataSpaceService with AdaAuthConfig {
+  ) extends DataSpaceService with ActionSecurity {
 
   private val r1 = """^[DS:](.*[.].*)""".r
   private val r2 = """^[DS:](.*[.].*[.])""".r
   private val r3 = """^[DS:](.*[.].*[.].*[.])""".r
 
-  override def getTreeForCurrentUser(request: Request[_]) =
+  // TODO: move somewhere else
+  override type USER = DeadboltUser
+
+  override def getTreeForCurrentUser(implicit request: AuthenticatedRequest[_]) =
     for {
-      currentUser <- currentUser(request)
-      dataSpaces <- currentUser match {
-        case None => Future(Traversable[DataSpaceMetaInfo]())
-        case Some(user) => getTreeForUser(user)
+      user <- currentUser()
+
+      dataSpaces <- {
+        user match {
+          case None => Future(Traversable[DataSpaceMetaInfo]())
+          case Some(DeadboltUser(user)) => getTreeForUser(user)
+        }
       }
     } yield
       dataSpaces
@@ -92,20 +96,21 @@ class DataSpaceServiceImpl @Inject() (
 
   override def getDataSpaceForCurrentUser(
     dataSpace: DataSpaceMetaInfo)(
-    request: Request[_]
+    implicit request: AuthenticatedRequest[_]
   ): Future[Option[DataSpaceMetaInfo]] =
     for {
-      currentUser <- currentUser(request)
+      user <- currentUser()
+
       foundChildren <- dataSpaceMetaInfoRepo.find(Seq("parentId" #== dataSpace._id))
     } yield
-      currentUser.map { user =>
+      user.map { user =>
         dataSpace.children.clear()
         dataSpace.children.appendAll(foundChildren)
-        val isAdmin = user.roles.contains(SecurityRole.admin)
-        if (isAdmin)
+
+        if (user.isAdmin)
           Some(dataSpace)
         else {
-          val dataSetIds = getUsersDataSetIds(user)
+          val dataSetIds = getUsersDataSetIds(user.user)
           filterRecursively(dataSetIds)(dataSpace)
         }
       }.flatten

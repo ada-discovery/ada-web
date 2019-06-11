@@ -12,7 +12,6 @@ import play.api.i18n.Messages
 import play.twirl.api.Html
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.BSONFormats._
-import org.incal.play.security.SecurityUtil.{restrictAdminAnyNoCaching, restrictSubjectPresentAnyNoCaching}
 import views.html.{layout, regression => view}
 import org.ada.web.controllers.ml.routes.{RegressorController => regressorRoutes}
 import org.ada.server.models.DataSpaceMetaInfo
@@ -223,7 +222,7 @@ class RegressorController @Inject()(
 
   override protected def listView = { implicit ctx => (view.list(_, _, _)).tupled }
 
-  def idAndNames = restrictSubjectPresentAnyNoCaching(deadbolt) {
+  def idAndNames = restrictSubjectPresentAny(noCaching = true) {
     implicit request =>
       for {
         regressions <- repo.find(
