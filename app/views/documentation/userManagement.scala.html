@@ -171,9 +171,12 @@ export ADA_LDAP_BIND_PASSWORD="XXX"
     @section(id = Some("section_permissions"), caption = Some("Permissions"), withLine = false) {
         <p>
             Admins have access to all the data sets and can perform all the actions throughout the application.
-            On the other side, all non-admin users need to have explicitly assigned permissions to able to access specific data sets and perform specific actions.
-            Basic users can not execute or manipulate any data set import or transformation, or manage other users's permissions (obviously).
+            On the other side, all non-admin users need to have explicitly assigned permissions to able to access specific data sets, perform specific actions on those data sets, and execute runnables.
+            Note that <i>basic</i> users can not execute or manipulate any data set imports or transformations, or manage other users' permissions (obviously).
         </p>
+        <br/>
+
+        <h4><b>For Data Sets</b></h4>
 
         <p>
             All data set permissions start with <code>DS:</code> prefix and can be fine grained to the level of individual actions following the hierarchy: <code>DS:[data set id].[controller].[action]</code>.
@@ -244,6 +247,17 @@ export ADA_LDAP_BIND_PASSWORD="XXX"
                 User can perform all actions for a given data set.
             </li>
         </ul>
+        </p>
+        <br/>
+
+        <h4><b>For Runnables</b></h4>
+
+        <p>
+            All runnable permissions start with <code>RN:</code> followed by the full name of a selected runnable class: <code>RN:[runnable class name]</code>. Such permission allows a given user to execute the runnable.
+        </p>
+
+        <p>
+            Runnable permissions can by assigned by choosing <img src="@CustomDirAssets.versioned("images/documentation/new_rn_button.png")"/> and selecting a desired runnable name.<br/>
         </p>
     } {
         <div clas="row">

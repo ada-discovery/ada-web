@@ -2,21 +2,22 @@ package org.ada.web.runnables.core
 
 import javax.inject.Inject
 import org.ada.server.services.importers.{RedCapLockAction, RedCapServiceFactory}
-import org.incal.core.runnables.{InputRunnable, InputRunnableExt, RunnableHtmlOutput}
+import org.incal.core.runnables.{InputFutureRunnableExt, RunnableHtmlOutput}
 import play.api.libs.json.Json
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class RedCapLock @Inject()(factory: RedCapServiceFactory) extends InputRunnableExt[RedCapLockSpec] with RunnableHtmlOutput {
+class RedCapLock @Inject()(factory: RedCapServiceFactory) extends InputFutureRunnableExt[RedCapLockSpec] with RunnableHtmlOutput {
 
-  override def run(input: RedCapLockSpec) = {
+  override def runAsFuture(input: RedCapLockSpec) = {
     val redCapService = factory(input.host, input.token)
 
-    redCapService.lock(input.action, input.record, input.event, input.instrument).map {
-      _.foreach { response =>
-        addOutput(Json.prettyPrint(response))
+    for {
+      responses <- redCapService.lock(input.action, input.record, input.event, input.instrument)
+    } yield
+      responses.foreach { response =>
+        addParagraph(Json.prettyPrint(response))
       }
-    }
   }
 }
 

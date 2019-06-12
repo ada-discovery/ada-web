@@ -5,6 +5,9 @@
 @import org.ada.server.models.User
 @import org.ada.web.controllers.UserDataSetPermissions
 @import org.ada.web.controllers.DataSetControllerActionNames
+@import views.html.elements._
+@import org.ada.web.controllers.routes
+@import org.ada.server.models.FilterShowFieldStyle
 
 @(
     form: Form[User],
@@ -15,6 +18,8 @@
 )
 
 @dynamicTableJsImport()
+
+@typeaheadJsImport()
 
 @dataSetSelection = {
     @labelValue("dataSetPermission", "DS Id") {
@@ -68,6 +73,14 @@
     </div>
 }
 
+@addRunnableModalBody = {
+    <div class="row">
+        @labelValue("runnablePermission", "Runnable") {
+            @typeahead("classNameTypeahead", "className", placeholder = "Runnable Name")
+        }
+    </div>
+}
+
 @addCustomDataSetPermissionModalButtons = {
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
     <button type="button" class="btn btn-primary" id="addCustomDataSetPermissionSubmitButton" data-dismiss="modal">OK</button>
@@ -81,6 +94,11 @@
 @addStandardDataSetPermissionsModalButtons = {
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
     <button type="button" class="btn btn-primary" onclick="addStandardPermissions(); return false;" data-dismiss="modal">OK</button>
+}
+
+@addRunnablePermissionModalButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-primary" onclick="addRunnablePermission(); return false;" data-dismiss="modal">OK</button>
 }
 
 @extraButtons = {
@@ -107,9 +125,14 @@
                 </a>
             </li>
         </ul>
+        <a class="btn btn-info btn-sm" href="#" data-toggle="modal" data-target="#addRunnablePermissionModal" title="Add Runnable Permission">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            RN
+        </a>
         @modal("addViewOnlyDataSetPermissionsModal", "Add View-Only Data Set Permissions", addViewOnlyDataSetPermissionsModalBody, None, Some(addViewOnlyDataSetPermissionsModalButtons))
         @modal("addStandardDataSetPermissionsModal", "Add Standard Data Set Permissions", addStandardDataSetPermissionsModalBody, None, Some(addStandardDataSetPermissionsModalButtons))
         @modal("addCustomDataSetPermissionModal", "Add Custom Data Set Permission", addCustomDataSetPermissionModalBody, None, Some(addCustomDataSetPermissionModalButtons))
+        @modal("addRunnablePermissionModal", "Add Runnable Permission", addRunnableModalBody, None, Some(addRunnablePermissionModalButtons))
     </span>
 }
 
@@ -130,6 +153,20 @@
     $(function () {
         handleModalButtonEnterPressed("addCustomDataSetPermissionModal", "addCustomDataSetPermissionSubmitButton", addCustomDataSetPermission, true)
         $("#permission-controller").val("")
+
+        populateFieldTypeahedFromUrl(
+            $('#classNameTypeahead'),
+            $('#className'),
+            '@Html(routes.RunnableController.getRunnableNames().url)',
+            @FilterShowFieldStyle.LabelsOnly.id
+        )
+
+        $('#addRunnablePermissionModal #classNameTypeahead').on("keydown", function(e) {
+            if(e.keyCode == 13) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+        });
     })
 
     var dataSetActionNames = [@actionNamesAsString(controllerActionNames.dataSetActions)]
@@ -231,6 +268,11 @@
         var values = {};
         values["newItem"] = dsPermission;
         $('#permissionDiv').dynamicTable('addTableRow', values)
+    }
+
+    function addRunnablePermission() {
+        var className = $('#addRunnablePermissionModal #className').val()
+        $('#permissionDiv').dynamicTable('addTableRow', {"newItem": "RN:" + className})
     }
 
     function populateActions(values) {
