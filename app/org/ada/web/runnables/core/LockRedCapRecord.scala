@@ -35,7 +35,7 @@ class LockRedCapRecord @Inject()(factory: RedCapServiceFactory) extends InputFut
         addParagraph(s"<h4>${prefix.capitalize} records #: ${bold(responses.size.toString)}</h4>")
         addOutput("<br/>")
         responses.toSeq.sortBy(_.instrument).foreach { response =>
-          addParagraph(bold(s"record: ${response.record}"))
+          addParagraph(bold(s"instruments: ${response.record}"))
 
           val fieldValues = getCaseClassMemberNamesAndValues(response).filter(_._1 != "record").toSeq.sortBy(_._1)
 
