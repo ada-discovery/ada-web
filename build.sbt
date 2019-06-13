@@ -81,8 +81,8 @@ scmInfo := Some(ScmInfo(url("https://github.com/ada-discovery/ada-web"), "scm:gi
 developers := List(Developer("bnd", "Peter Banda", "peter.banda@protonmail.com", url("https://peterbanda.net")))
 
 licenses ++= Seq(
-  "Creative Commons Attribution-NonCommercial 3.0 License" -> url("http://creativecommons.org/licenses/by-nc/3.0"),
-  "Highcharts Licenses" -> url("https://www.highcharts.com/blog/products/highcharts")
+  "Creative Commons Attribution-NonCommercial 3.0" -> url("http://creativecommons.org/licenses/by-nc/3.0"),
+  "Highcharts" -> url("https://www.highcharts.com/blog/products/highcharts")
 )
 
 publishTo := Some(
