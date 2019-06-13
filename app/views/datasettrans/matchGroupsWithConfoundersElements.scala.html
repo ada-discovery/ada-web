@@ -1,0 +1,54 @@
+@import org.ada.server.models.datatrans.DropFieldsTransformation
+@import views.html.datasetimport.schedulePanel
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, sourceDataSetTypeahead, twoColumnTable}
+@import views.html.elements.{inputText, labelValue}
+@import views.html.table.{dynamicStringTable, dynamicTableJsImport}
+@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.ada.server.models.datatrans.MatchGroupsWithConfoundersTransformation
+
+@(form: Form[MatchGroupsWithConfoundersTransformation])(implicit webContext: WebContext)
+
+@dynamicTableJsImport()
+
+@sourceDataSetTypeahead("matchGroupsWithConfoundersTransformation", form)
+
+@inputText("matchGroupsWithConfoundersTransformation", "filterId", form)
+@inputText("matchGroupsWithConfoundersTransformation", "targetGroupFieldName", form)
+
+@labelValue("confoundingFieldNames", "confounding Field Names"){
+    @dynamicStringTable("confoundingFieldName", form.value.map(_.confoundingFieldNames).getOrElse(Nil))
+}
+
+@inputText("matchGroupsWithConfoundersTransformation", "numericDistTolerance", form)
+
+@updateRow = {
+    <script type="text/javascript">
+        function rowToModel(row) {
+            function value(x) { return getRowValue(row, x) }
+
+            function getIntValue(val) {
+                var intValue = null;
+                if (val && val.length > 0) {
+                    intValue = parseInt(val)
+                    if (isNaN(intValue)) {
+                        intValue = null
+                    }
+                }
+                return intValue;
+            }
+
+            return [value("field1"), getIntValue(value("field2"))]
+        }
+    </script>
+}
+
+@twoColumnTable(
+    "targetGroupDisplayStringRatio",
+    "Target Group Display String Ratios",
+    "Field Name",
+    "Ratio",
+    form.value.map(_.targetGroupDisplayStringRatios.map { case (fieldName, ratio) => (fieldName, ratio.map(_.toString).getOrElse("")) }).getOrElse(Nil),
+    Some(updateRow)
+)

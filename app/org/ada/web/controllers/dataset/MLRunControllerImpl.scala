@@ -334,7 +334,7 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
           val label = toHumanReadableCamel(name.replaceAllLiterally("-", " ").replaceAllLiterally("Stats", ""))
           Field(name, Some(label), roundedFieldSpec.fieldType, roundedFieldSpec.isArray, stringEnums, roundedFieldSpec.displayDecimalPlaces)
         }
-        dataSetService.updateDictionaryFields(newDataSetId, newFields, false, true)
+        dataSetService.updateFields(newDataSetId, newFields, false, true)
       }
 
       // delete the old results (if any)

@@ -14,7 +14,7 @@
 @import org.incal.core.FilterCondition
 
 @(
-    page: Page[DataSetTransformation],
+    page: Page[DataSetMetaTransformation],
     conditions: Seq[FilterCondition],
     classDisplayNameMap: Map[Class[_], String],
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
@@ -70,7 +70,7 @@
     @Html(formatTimeElement(scheduledTime.hour, true, "&nbsp;&nbsp;&nbsp;&nbsp;") + formatTimeElement(scheduledTime.minute, true, "&nbsp;&nbsp;&nbsp;&nbsp;") + formatTimeElement(scheduledTime.second, false, "&nbsp;&nbsp;&nbsp;&nbsp;"))
 }
 
-@scheduleCheckbox(dataSetImport: DataSetTransformation) = {
+@scheduleCheckbox(dataSetImport: DataSetMetaTransformation) = {
     <ul class="list-inline">
         <li>
             <input type="checkbox" class="no-rowClicked" @if(dataSetImport.scheduled) { checked="checked" } disabled="disabled"/>
@@ -83,7 +83,7 @@
     </ul>
 }
 
-@executeLink(dataSetTransformation: DataSetTransformation) = {
+@executeLink(dataSetTransformation: DataSetMetaTransformation) = {
     <a class="btn btn-default btn-xs btn-clean no-rowClicked" href="#" onclick="submit('post', '@dataSetTransformationRoutes.execute(dataSetTransformation._id.get)'); return false;">
         <span class="glyphicon glyphicon-play green" aria-hidden="true"></span>
     </a>
@@ -93,16 +93,16 @@
     paginatedTable(
         page,
         dataSetTransformationRoutes.find(_, _, conditions),
-        typeColumns[DataSetTransformation](
+        typeColumns[DataSetMetaTransformation](
             (Some("sourceDataSetIds"), "Source Data Set(s)", _.sourceDataSetIds.mkString(", ")),
-            (Some("dataSetName"), "Data Set Name", _.resultDataSetName),
+            // (Some("dataSetName"), "Data Set Name", _.resultDataSetName),
             (Some("concreteClass"), "Type", {info =>  classDisplayNameMap.get(info.getClass).getOrElse(toHumanReadableCamel(info.getClass.getSimpleName)) }),
             (Some("timeCreated"), "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
             (Some("timeLastExecuted"), "Time Last Executed", _.timeLastExecuted.map(_.format("yyyy-MM-dd HH:mm:ss")).getOrElse("")),
             (Some("scheduled"), "Scheduled?", scheduleCheckbox),
             (None, "Execute Now", executeLink)
         ),
-        Some({ item : Any => dataSetTransformationRoutes.get(item.asInstanceOf[DataSetTransformation]._id.get)})
+        Some({ item : Any => dataSetTransformationRoutes.get(item.asInstanceOf[DataSetMetaTransformation]._id.get)})
     )
 }
 

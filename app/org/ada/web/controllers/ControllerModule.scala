@@ -3,11 +3,11 @@ package org.ada.web.controllers
 import com.google.inject.assistedinject.FactoryModuleBuilder
 import net.codingwell.scalaguice.ScalaModule
 import org.ada.server.models.dataimport.DataSetImport
-import org.ada.server.models.datatrans.DataSetTransformation
+import org.ada.server.models.datatrans.{DataSetMetaTransformation, DataSetTransformation}
 import org.ada.server.services.{LookupCentralExec, StaticLookupCentral, StaticLookupCentralImpl}
 import org.ada.web.controllers.dataset._
 import org.ada.web.controllers.dataset.dataimport.DataSetImportFormViews
-import org.ada.web.controllers.dataset.datatrans.DataSetTransformationFormViews
+import org.ada.web.controllers.dataset.datatrans.{DataSetMetaTransformationFormViews, DataSetTransformationFormViews}
 
 class ControllerModule extends ScalaModule {
 
@@ -53,8 +53,8 @@ class ControllerModule extends ScalaModule {
       new StaticLookupCentralImpl[DataSetImportFormViews[DataSetImport]]("org.ada.web.controllers.dataset.dataimport")
     )
 
-    bind[StaticLookupCentral[DataSetTransformationFormViews[DataSetTransformation]]].toInstance(
-      new StaticLookupCentralImpl[DataSetTransformationFormViews[DataSetTransformation]]("org.ada.web.controllers.dataset.datatrans")
+    bind[StaticLookupCentral[DataSetMetaTransformationFormViews[DataSetMetaTransformation]]].toInstance(
+      new StaticLookupCentralImpl[DataSetMetaTransformationFormViews[DataSetMetaTransformation]]("org.ada.web.controllers.dataset.datatrans")
     )
   }
 }

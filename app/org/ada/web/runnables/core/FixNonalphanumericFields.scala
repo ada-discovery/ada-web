@@ -90,7 +90,7 @@ class FixNonalphanumericFields @Inject() (
 
       _ <- dsa.fieldRepo.deleteAll
 
-      _ <- dataSetService.updateDictionaryFields(dsa.fieldRepo, newFields, true, true)
+      _ <- dataSetService.updateFields(dsa.fieldRepo, newFields, true, true)
 
       // filters
 

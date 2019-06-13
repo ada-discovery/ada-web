@@ -5,11 +5,10 @@ import java.util.Date
 import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import org.ada.server.dataaccess.RepoTypes.{DataSetTransformationRepo, DataSpaceMetaInfoRepo, MessageRepo}
-import org.ada.server.models.DataSetFormattersAndIds.CategoryIdentity
 import org.ada.server.models.DataSpaceMetaInfo
-import org.ada.server.models.datatrans.DataSetTransformation.{DataSetTransformationExt, DataSetTransformationIdentity, dataSetTransformationFormat}
-import org.ada.server.models.datatrans.DataSetTransformation
-import org.ada.server.services.{DataSetService, LookupCentralExec, Scheduler, StaticLookupCentral}
+import org.ada.server.models.datatrans.DataSetTransformation.{DataSetMetaTransformationExt, DataSetMetaTransformationIdentity, dataSetMetaTransformationFormat}
+import org.ada.server.models.datatrans.{DataSetMetaTransformation, DataSetTransformation}
+import org.ada.server.services.{DataSetService, StaticLookupCentral}
 import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.web.services.DataSpaceService
 import org.incal.core.FilterCondition
@@ -34,14 +33,14 @@ class DataSetTransformationController @Inject()(
     dataSetService: DataSetService,
     dataSetCentralTransformer: DataSetCentralTransformer,
     dataSetTransformationScheduler: DataSetTransformationScheduler,
-    dataSetTransformationFormViewsCentral: StaticLookupCentral[DataSetTransformationFormViews[DataSetTransformation]],
+    dataSetTransformationFormViewsCentral: StaticLookupCentral[DataSetMetaTransformationFormViews[DataSetMetaTransformation]],
     dataSpaceService: DataSpaceService,
     dataSpaceMetaInfoRepo: DataSpaceMetaInfoRepo,
     messageRepo: MessageRepo
-  ) extends AdaCrudControllerImpl[DataSetTransformation, BSONObjectID](repo)
+  ) extends AdaCrudControllerImpl[DataSetMetaTransformation, BSONObjectID](repo)
     with AdminRestrictedCrudController[BSONObjectID]
-    with HasCreateEditSubTypeFormViews[DataSetTransformation, BSONObjectID]
-    with HasFormShowEqualEditView[DataSetTransformation, BSONObjectID] {
+    with HasCreateEditSubTypeFormViews[DataSetMetaTransformation, BSONObjectID]
+    with HasFormShowEqualEditView[DataSetMetaTransformation, BSONObjectID] {
 
   private val logger = Logger
   override protected val entityNameKey = "dataSetTransformation"
@@ -53,25 +52,25 @@ class DataSetTransformationController @Inject()(
   private val transformationClassNameMap: Map[Class[_], String] = createEditFormViews.map(x => (x.man.runtimeClass, x.displayName)).toMap
 
   // default form... unused
-  override protected val form = CopyFormViews.form.asInstanceOf[Form[DataSetTransformation]]
+  override protected val form = CopyFormViews.form.asInstanceOf[Form[DataSetMetaTransformation]]
 
   override protected val homeCall = routes.DataSetTransformationController.find()
 
   // List views
 
   override protected type ListViewData = (
-    Page[DataSetTransformation],
+    Page[DataSetMetaTransformation],
     Seq[FilterCondition],
     Map[Class[_], String],
     Traversable[DataSpaceMetaInfo]
   )
 
   override protected def getListViewData(
-    page: Page[DataSetTransformation],
+    page: Page[DataSetMetaTransformation],
     conditions: Seq[FilterCondition]
-  ) = { request =>
+  ) = { implicit request =>
     for {
-      tree <- dataSpaceService.getTreeForCurrentUser(request)
+      tree <- dataSpaceService.getTreeForCurrentUser
     } yield
       (page, conditions, transformationClassNameMap, tree)
   }
@@ -105,13 +104,13 @@ class DataSetTransformationController @Inject()(
   }
 
   override protected def saveCall(
-    importInfo: DataSetTransformation)(
+    importInfo: DataSetMetaTransformation)(
     implicit request: AuthenticatedRequest[AnyContent]
   ) =
     super.saveCall(importInfo).map { id => scheduleOrCancel(id, importInfo); id }
 
   override protected def updateCall(
-    importInfo: DataSetTransformation)(
+    importInfo: DataSetMetaTransformation)(
     implicit request: AuthenticatedRequest[AnyContent]
   ) =
     super.updateCall(importInfo).map { id => scheduleOrCancel(id, importInfo); id }
@@ -147,7 +146,7 @@ class DataSetTransformationController @Inject()(
       repo.get(id).flatMap(_.fold(
         Future(NotFound(s"Data set transformation #${id.stringify} not found"))
       ) { dataSetTransformation =>
-        val newDataSetTransformation = DataSetTransformationIdentity.clear(dataSetTransformation).copyWithTimestamps(new java.util.Date(), None)
+        val newDataSetTransformation = DataSetMetaTransformationIdentity.clear(dataSetTransformation).copyWithTimestamps(new java.util.Date(), None)
 
         super.saveCall(newDataSetTransformation).map { newId =>
           scheduleOrCancel(newId, newDataSetTransformation)
@@ -165,10 +164,10 @@ class DataSetTransformationController @Inject()(
 
   private def scheduleOrCancel(
     id: BSONObjectID,
-    importInfo: DataSetTransformation
+    transformationInfo: DataSetMetaTransformation
   ): Unit = {
-    if (importInfo.scheduled)
-      dataSetTransformationScheduler.schedule(importInfo.scheduledTime.get)(id)
+    if (transformationInfo.scheduled)
+      dataSetTransformationScheduler.schedule(transformationInfo.scheduledTime.get)(id)
     else
       dataSetTransformationScheduler.cancel(id)
   }

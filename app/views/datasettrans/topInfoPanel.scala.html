@@ -1,0 +1,38 @@
+@import views.html.datasetimport.schedulePanel
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel}
+@import views.html.elements._
+@import play.api.i18n.Messages
+@import org.ada.server.models.datatrans.DataSetMetaTransformation
+
+@(
+    form: Form[_ <: DataSetMetaTransformation])(
+    implicit msg: Messages
+)
+
+@timeCreatedDiv(mdWidth: Int, labelGridWidth: Int, addBorder: Boolean) = {
+    <div class="col-md-@mdWidth col-sm-12" @if(addBorder) { style="border-right: 3px solid #F2F7F9" }>
+        @if(form("timeCreated").value.isDefined) {
+            @inputTextReadonly("dataSetImport", "timeCreated", form, labelGridWidth = labelGridWidth)
+        }
+    </div>
+}
+
+@timeLastExecutedDiv = {
+    <div class="col-md-4 col-sm-12" style="border-right: 3px solid #F2F7F9">
+        @if(form("timeLastExecuted").value.isDefined) {
+            @inputTextReadonly("dataSetImport", "timeLastExecuted", form, labelGridWidth = 4)
+        }
+    </div>
+}
+
+<div class="row">
+    @if(form("timeLastExecuted").value.isDefined) {
+        @timeCreatedDiv(4, 4, false)
+        @timeLastExecutedDiv
+    } else {
+        @timeCreatedDiv(8, 3, true)
+    }
+
+    <div class="col-md-offset-1 col-md-3 col-sm-12">
+    </div>
+</div>

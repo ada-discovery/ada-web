@@ -8,7 +8,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import views.html.{datasettrans => view}
 
-object ChangeFieldEnumsFormViews extends DataSetTransformationFormViews[ChangeFieldEnumsTransformation] {
+object ChangeFieldEnumsFormViews extends DataSetMetaTransformationFormViews[ChangeFieldEnumsTransformation] {
 
   private implicit val tupleFormat = TupleFormat[String, String, String]
   private implicit val tupleFormatter = JsonFormatter[(String, String, String)]
