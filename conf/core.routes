@@ -81,6 +81,7 @@ POST        /users/:id/update                                                   
 POST        /users/:id/delete                                                       org.ada.web.controllers.UserController.delete(id: BSONObjectID)
 GET         /users/listUsersForPermissionPrefix                                     org.ada.web.controllers.UserController.listUsersForPermissionPrefix(permissionPrefix: Option[String] ?= None)
 POST        /users/copyPermissions                                                  org.ada.web.controllers.UserController.copyPermissions(sourceUserId: BSONObjectID, targetUserId: BSONObjectID)
+GET         /users/idAndNames                                                       org.ada.web.controllers.UserController.idAndNames
 
 # Translations
 GET         /translations                                                           org.ada.web.controllers.TranslationController.find(p: Int ?= 0, s: String ?= "original", filter: Seq[org.incal.core.FilterCondition] ?= Nil)

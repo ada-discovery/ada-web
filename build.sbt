@@ -30,7 +30,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 PlayKeys.devSettings := Seq("play.server.netty.maxInitialLineLength" -> "16384")
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.7.3.RC.9.SNAPSHOT.9",
+  "org.adada" %% "ada-server" % "0.7.3.RC.9",
   "org.in-cal" %% "incal-play" % "0.1.9",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
@@ -80,7 +80,10 @@ scmInfo := Some(ScmInfo(url("https://github.com/ada-discovery/ada-web"), "scm:gi
 
 developers := List(Developer("bnd", "Peter Banda", "peter.banda@protonmail.com", url("https://peterbanda.net")))
 
-licenses += "Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")
+licenses ++= Seq(
+  "Creative Commons Attribution-NonCommercial 3.0 License" -> url("http://creativecommons.org/licenses/by-nc/3.0"),
+  "Highcharts Licenses" -> url("https://www.highcharts.com/blog/products/highcharts")
+)
 
 publishTo := Some(
   if (isSnapshot.value)

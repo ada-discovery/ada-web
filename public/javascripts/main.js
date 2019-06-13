@@ -365,14 +365,14 @@ function populateFieldTypeahedsFromUrl(typeaheadElements, fieldNameElements, url
     });
 }
 
-function populateIdNameTypeahedFromUrl(typeaheadElement, idElement, url) {
+function populateIdNameTypeahedFromUrl(typeaheadElement, idElement, url, initSelectByNameElement) {
     $.ajax({
         url: url,
         success: function (data) {
             var typeaheadData = data.map(function (item, index) {
                 return {name: item._id.$oid, label: item.name};
             });
-            populateFieldTypeahed(typeaheadElement, idElement, typeaheadData, 1);
+            populateFieldTypeahed(typeaheadElement, idElement, typeaheadData, 1, initSelectByNameElement);
         },
         error: function(data){
             showErrorResponse(data)
