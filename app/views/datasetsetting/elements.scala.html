@@ -1,5 +1,5 @@
 @import views.html.elements.{inputText, inputTextReadonly, labelValue, checkbox, select, inputFieldTypeahead}
-@import views.html.elements.fieldTypeahead
+@import views.html.elements.{fieldTypeahead, inputTypeahead}
 @import views.html.attributeLabel
 @import org.ada.server.models.{DataSetSetting, StorageType, FilterShowFieldStyle}
 @import org.ada.web.util.toHumanReadableCamel
@@ -28,3 +28,11 @@
 )
 
 @checkbox("dataSetSetting", "filterShowNonNullCount", form)
+
+@inputTypeahead(
+    "dataSetSetting",
+    "ownerId",
+    "ownerTypeahead",
+    form,
+    "User"
+)

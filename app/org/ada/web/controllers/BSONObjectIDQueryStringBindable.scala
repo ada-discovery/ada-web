@@ -59,6 +59,7 @@ class EnumStringBindable[E <: Enumeration](enum: E) extends QueryStringBindable[
     stringBinder.unbind(key, value.toString)
 }
 
+// TODO: Move to core
 object BSONObjectIDStringFormatter extends Formatter[BSONObjectID] {
 
   override def bind(key: String, data: Map[String, String]) = {

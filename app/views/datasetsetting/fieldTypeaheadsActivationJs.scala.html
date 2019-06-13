@@ -1,6 +1,7 @@
 @import org.ada.server.models.{DataSetSetting, FilterShowFieldStyle, FieldTypeId}
 @import org.ada.web.controllers.dataset.DataSetWebContext
 @import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.routes
 
 @(
     form: Form[DataSetSetting]
@@ -13,6 +14,8 @@
 <script type="text/javascript">
     $(function () {
         var showOption = @form.value.flatMap(_.filterShowFieldStyle).getOrElse(FilterShowFieldStyle.NamesAndLabels).id
+
+        populateIdNameTypeahedFromUrl($('#ownerTypeahead'), $('#ownerId'), '@Html(routes.UserController.idAndNames.url)', true)
 
         $.ajax({
             url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',

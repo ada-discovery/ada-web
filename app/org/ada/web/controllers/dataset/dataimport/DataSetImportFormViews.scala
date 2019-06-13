@@ -63,7 +63,8 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
     "displayItemName" -> optional(text),
     "storageType" -> of[StorageType.Value],
     "mongoAutoCreateIndexForProjection" -> boolean,
-    "cacheDataSet" -> ignored(false)
+    "cacheDataSet" -> ignored(false),
+    "ownerId" -> ignored(Option.empty[BSONObjectID])
   )(DataSetSetting.apply)(DataSetSetting.unapply)
 
   protected val dataViewMapping: Mapping[DataView] = mapping(

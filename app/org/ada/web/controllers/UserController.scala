@@ -12,9 +12,11 @@ import org.incal.core.dataaccess.AscSort
 import reactivemongo.bson.BSONObjectID
 import views.html.{user => view}
 import play.api.mvc.{Action, AnyContent, Request, RequestHeader}
+import reactivemongo.play.json.BSONFormats._
 import org.incal.core.util.ReflectionUtil.getMethodNames
 import org.incal.play.Page
 import org.incal.play.controllers.{AdminRestrictedCrudController, CrudControllerImpl, HasBasicListView, HasFormShowEqualEditView}
+import play.api.libs.json.{JsArray, Json}
 import play.api.libs.mailer.{Email, MailerClient}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -177,6 +179,17 @@ class UserController @Inject() (
       }.getOrElse(
         BadRequest(s"User '${sourceUserId.stringify}' or '${targetUserId.stringify}' not found.")
       )
+  }
+
+  def idAndNames = restrictAdminAny(noCaching = true) { implicit request =>
+    for {
+      users <- userRepo.find()
+    } yield {
+      val idAndNames = users.toSeq.map( user =>
+        Json.obj("_id" -> user._id, "name" -> user.ldapDn)
+      )
+      Ok(JsArray(idAndNames))
+    }
   }
 }
 

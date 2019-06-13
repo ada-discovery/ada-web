@@ -45,6 +45,7 @@ class DataSetSettingController @Inject() (
   private implicit val filterShowFieldStyleFormatter = EnumFormatter(FilterShowFieldStyle)
   private implicit val storageTypeFormatter = EnumFormatter(StorageType)
   private implicit val widgetSpecFormatter = JsonFormatter[WidgetSpec]
+  private implicit val bsonObjectIdFormatter = BSONObjectIDStringFormatter
 
   override protected[controllers] val form = Form(
     mapping(
@@ -61,7 +62,8 @@ class DataSetSettingController @Inject() (
       "displayItemName" -> optional(text),
       "storageType" -> of[StorageType.Value],
       "mongoAutoCreateIndexForProjection" -> boolean,
-      "cacheDataSet" -> ignored(false)
+      "cacheDataSet" -> ignored(false),
+      "ownerId" -> optional(of[BSONObjectID])
     )(DataSetSetting.apply)(DataSetSetting.unapply)
   )
 
