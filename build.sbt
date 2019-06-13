@@ -48,8 +48,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 )
 
-packagedArtifacts in publishLocal := {
-  val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publishLocal).value
+packagedArtifacts in publish := {   // publishLocal
+  val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publish).value   // publishLocal
   val assets: java.io.File = (playPackageAssets in Compile).value
   artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
 }
