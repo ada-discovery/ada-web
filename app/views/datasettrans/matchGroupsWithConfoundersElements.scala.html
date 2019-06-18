@@ -7,12 +7,18 @@
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
 @import org.ada.server.models.datatrans.MatchGroupsWithConfoundersTransformation
+@import reactivemongo.bson.BSONObjectID
 
-@(form: Form[MatchGroupsWithConfoundersTransformation])(implicit webContext: WebContext)
+@(
+    id: Option[BSONObjectID],
+    form: Form[MatchGroupsWithConfoundersTransformation]
+)(
+    implicit webContext: WebContext
+)
 
 @dynamicTableJsImport()
 
-@sourceDataSetTypeahead("matchGroupsWithConfoundersTransformation", form)
+@sourceDataSetTypeahead("matchGroupsWithConfoundersTransformation", form, id, Some("Matched Groups"))
 
 @inputText("matchGroupsWithConfoundersTransformation", "filterId", form)
 @inputText("matchGroupsWithConfoundersTransformation", "targetGroupFieldName", form)

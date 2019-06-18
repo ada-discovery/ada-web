@@ -44,10 +44,16 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
     "second" -> optional(number(min = 0, max = 59))
   )(ScheduledTime.apply)(ScheduledTime.unapply)
 
+  private val upperCasePattern = "[A-Z]".r
+
   protected val dataSetIdMapping = nonEmptyText.verifying(
     "Data Set Id must not contain any non-alphanumeric characters (except underscore)",
     dataSetId => !hasNonAlphanumericUnderscore(dataSetId.replaceFirst("\\.",""))
+  ).verifying(
+    "Data Set Id must not contain any upper case letters",
+    dataSetId => upperCasePattern.findFirstIn(dataSetId).isDefined
   )
+
 
   protected val dataSetSettingMapping: Mapping[DataSetSetting] = mapping(
     "id" -> ignored(Option.empty[BSONObjectID]),

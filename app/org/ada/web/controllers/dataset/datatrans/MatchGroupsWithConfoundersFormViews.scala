@@ -21,6 +21,6 @@ object MatchGroupsWithConfoundersFormViews extends DataSetTransformationFormView
       "targetGroupDisplayStringRatios" -> seq(of[(String, Option[Int])])
     )
 
-  override protected val viewElements =
-    view.matchGroupsWithConfoundersElements(_: Form[MatchGroupsWithConfoundersTransformation])(_: WebContext)
+  override protected def viewElements(implicit webContext: WebContext) =
+    idForm => view.matchGroupsWithConfoundersElements(idForm.id, idForm.form)
 }

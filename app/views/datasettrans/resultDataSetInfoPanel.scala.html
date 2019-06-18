@@ -15,10 +15,10 @@
 </div>
 
 <script type="text/javascript">
-    $('#resultDataSetSpec\\.name').on('change keyup paste', updateDataSetId)
-
-    function updateDataSetId() {
-        var dataSetNamePart = $('#resultDataSetSpec\\.name').val().trim().replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()
-        $('#resultDataSetSpec\\.id').val("TODO." + dataSetNamePart)
-    }
+    $(function () {
+        if(@form("resultDataSetSpec.storageType").value.isEmpty) {
+            $("#resultDataSetSpec_storageType").val('@StorageType.ElasticSearch')
+        }
+    })
 </script>
+

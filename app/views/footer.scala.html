@@ -18,11 +18,19 @@
             </ul>
             <hr/>
         }
+
         <p class="text-muted" align="center">
-            Ada Discovery Analytics@configuration.getString("project.name").map(name => s": $name Project").getOrElse("") (Version @configuration.getString("app.version").get)
+            App Version: @configuration.getString("app.version").get @configuration.getString("project.name").map(", Project: " + _)
         </p>
         <p class="text-muted" align="center">
-            &copy; <a target="_blank" href="@configuration.getString("footer.url").getOrElse("http://wwwen.uni.lu")">@configuration.getString("footer.text").getOrElse("Université du Luxembourg")</a> 2016-@(new java.util.Date().format("yyyy")). All rights reserved.
+            @defining((configuration.getString("copyright.url"), configuration.getString("copyright.text"))) { urlAndText: (Option[String], Option[String]) =>
+                @if(urlAndText._1.isDefined && urlAndText._2.isDefined) {
+                    &copy; <a target="_blank" href="@urlAndText._1.get">@urlAndText._2.get</a> &
+                } else {
+                    &copy;
+                }
+            }
+            <a target="_blank" href="https://ada-discovery.org">Ada Discovery Analytics</a> 2016-@(new java.util.Date().format("yyyy")). All rights reserved.
         </p>
     </div>
 </footer>

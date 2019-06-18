@@ -13,7 +13,7 @@ import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.web.services.DataSpaceService
 import org.incal.core.FilterCondition
 import org.incal.core.dataaccess.AscSort
-import org.incal.core.util.retry
+import org.incal.core.util.{nonAlphanumericToUnderscore, retry}
 import org.incal.play.Page
 import org.incal.play.controllers._
 import org.ada.server.services.ServiceTypes._
@@ -27,6 +27,7 @@ import reactivemongo.play.json.BSONFormats._
 import views.html.{datasettrans => view}
 
 import scala.concurrent.Future
+import scala.util.Random
 
 class DataSetTransformationController @Inject()(
     repo: DataSetTransformationRepo,
@@ -45,6 +46,7 @@ class DataSetTransformationController @Inject()(
   private val logger = Logger
   override protected val entityNameKey = "dataSetTransformation"
   override protected def formatId(id: BSONObjectID) = id.stringify
+  private val random = new Random()
 
   private lazy val importRetryNum = configuration.getInt("datasetimport.retrynum").getOrElse(3)
 
@@ -120,17 +122,18 @@ class DataSetTransformationController @Inject()(
       for {
         transformations <- repo.find(sort = Seq(AscSort("name")))
       } yield {
-        val idAndNames = transformations.map(transformation =>
+        val idAndNames = transformations.map { transformation =>
+          val transformationName = transformation.sourceDataSetIds.mkString(", ") + " (" + transformationClassNameMap.get(transformation.getClass).get + ")"
           Json.obj(
             "_id" -> transformation._id,
-            "name" -> transformation.sourceDataSetIds.mkString(", ")
+            "name" -> transformationName
           )
-        )
+        }
         Ok(JsArray(idAndNames.toSeq))
       }
   }
 
-  def dataSetIds = Action.async { implicit request =>
+  def dataSetIds = restrictAny { implicit request =>
     for {
       dataSpaces <- dataSpaceMetaInfoRepo.find()
     } yield {
@@ -161,6 +164,58 @@ class DataSetTransformationController @Inject()(
     implicit request: AuthenticatedRequest[AnyContent]
   ) =
     super.deleteCall(id).map { _ => dataSetTransformationScheduler.cancel(id); ()}
+
+  def resultDataSetIdAndName(
+    sourceDataSetId: String,
+    resultNameSuffix: String,
+    transformationId: Option[BSONObjectID]
+  ) = restrictAny { implicit request =>
+
+    // aux function to get result data set id
+    def resultDataSetId(transformation: DataSetMetaTransformation): Option[String] =
+      transformation match {
+        case x: DataSetTransformation => Some(x.resultDataSetId)
+        case _ => None
+      }
+
+    for {
+      dataSpaces <- dataSpaceMetaInfoRepo.find()
+
+      transformations <- repo.find()
+
+      currentDataSetId <- transformationId.map(id =>
+          repo.get(id).map(_.flatMap(resultDataSetId))
+        ).getOrElse(Future(None))
+
+    } yield {
+      val dataSetIdNames = dataSpaces.flatMap(_.dataSetMetaInfos.map(info => (info.id, info.name))).toSeq
+      val resultDataSetIds = transformations.map(resultDataSetId)
+
+      val sourceDataSetName = dataSetIdNames.find(_._1 == sourceDataSetId).map(_._2).getOrElse(sourceDataSetId)
+
+      val allDataSetIds = dataSetIdNames.map(_._1) ++ resultDataSetIds
+
+      val newDataSetId = sourceDataSetId + "_" + nonAlphanumericToUnderscore(resultNameSuffix.trim()).toLowerCase()
+      val newDataSetName = sourceDataSetName + " " + resultNameSuffix
+
+      val (newDataSetIdFixed, newDataSetNameFixed) =
+        if (currentDataSetId.isDefined && currentDataSetId.get == newDataSetId) {
+          // all is good we used it before
+          (newDataSetId, newDataSetName)
+        } else {
+          if (allDataSetIds.exists(_ == newDataSetId)) {
+            // already exists => need to add a random suffix
+            val randomSuffix = (1 to 5).map { _ => random.nextInt(10).toString }.mkString
+            (newDataSetId + "_" + randomSuffix, newDataSetName + " [" + randomSuffix + "]")
+          } else
+            (newDataSetId, newDataSetName)
+        }
+
+      Ok(
+        Json.obj("id" -> newDataSetIdFixed , "name" -> newDataSetNameFixed)
+      )
+    }
+  }
 
   private def scheduleOrCancel(
     id: BSONObjectID,

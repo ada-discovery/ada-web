@@ -9,7 +9,11 @@
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
 
-@(form: Form[ChangeFieldEnumsTransformation])(implicit webContext: WebContext)
+@(
+    form: Form[ChangeFieldEnumsTransformation]
+)(
+    implicit webContext: WebContext
+)
 
 @sourceDataSetTypeahead("changeFieldEnumsTransformation", form)
 

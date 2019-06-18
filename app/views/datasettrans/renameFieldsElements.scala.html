@@ -9,10 +9,16 @@
 @import play.api.i18n.Messages
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
+@import reactivemongo.bson.BSONObjectID
 
-@(form: Form[RenameFieldsTransformation])(implicit webContext: WebContext)
+@(
+    id: Option[BSONObjectID],
+    form: Form[RenameFieldsTransformation]
+)(
+    implicit webContext: WebContext
+)
 
-@sourceDataSetTypeahead("renameFieldsTransformation", form)
+@sourceDataSetTypeahead("renameFieldsTransformation", form, id, Some("Renamed Fields"))
 
 @twoColumnTable(
     "fieldOldNewName",

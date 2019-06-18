@@ -4,7 +4,6 @@ import org.ada.server.json.TupleFormat
 import org.ada.server.models.datatrans.ChangeFieldEnumsTransformation
 import org.incal.play.controllers.{IdForm, WebContext}
 import org.incal.play.formatters.JsonFormatter
-import play.api.data.Form
 import play.api.data.Forms._
 import views.html.{datasettrans => view}
 
@@ -18,6 +17,6 @@ object ChangeFieldEnumsFormViews extends DataSetMetaTransformationFormViews[Chan
       "fieldNameOldNewEnums" -> seq(of[(String, String, String)])
     )
 
-  override protected val viewElements =
-    view.changeFieldEnumsElements(_ : Form[ChangeFieldEnumsTransformation])(_: WebContext)
+  override protected def viewElements(implicit webContext: WebContext) =
+    idForm => view.changeFieldEnumsElements(idForm.form)
 }

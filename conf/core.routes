@@ -69,6 +69,7 @@ POST        /admin/dataSetTransformation/:id/delete                             
 GET         /admin/dataSetTransformation/copy                                       org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.copy(dataSetTransformationId: BSONObjectID)
 GET         /admin/dataSetTransformation/idAndNames                                 org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.idAndNames
 GET         /admin/dataSetTransformation/dataSetIds                                 org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.dataSetIds
+GET         /admin/dataSetTransformation/resultDataSetIdAndName                     org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.resultDataSetIdAndName(sourceDataSetId: String, resultNameSuffix: String, transformationId: Option[BSONObjectID])
 
 # User Management
 GET         /users                                                                  org.ada.web.controllers.UserController.find(p: Int ?= 0, s: String ?= "ldapDn", filter: Seq[org.incal.core.FilterCondition] ?= Nil)

@@ -18,6 +18,6 @@ object RenameFieldsFormViews extends DataSetTransformationFormViews[RenameFields
       "fieldOldNewNames" -> seq(of[(String, String)])
     )
 
-  override protected val viewElements =
-    view.renameFieldsElements(_: Form[RenameFieldsTransformation])(_: WebContext)
+  override protected def viewElements(implicit webContext: WebContext) =
+    idForm => view.renameFieldsElements(idForm.id, idForm.form)
 }

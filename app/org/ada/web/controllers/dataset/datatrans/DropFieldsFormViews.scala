@@ -7,6 +7,6 @@ import views.html.{datasettrans => view}
 
 object DropFieldsFormViews extends DataSetTransformationFormViews[DropFieldsTransformation] {
 
-  override protected val viewElements =
-    view.dropFieldsElements(_: Form[DropFieldsTransformation])(_: WebContext)
+  override protected def viewElements(implicit webContext: WebContext) =
+    idForm => view.dropFieldsElements(idForm.id, idForm.form)
 }

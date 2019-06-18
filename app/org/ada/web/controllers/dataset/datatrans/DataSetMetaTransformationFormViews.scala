@@ -41,9 +41,14 @@ abstract protected[controllers] class DataSetMetaTransformationFormViews[E <: Da
     "second" -> optional(number(min = 0, max = 59))
   )(ScheduledTime.apply)(ScheduledTime.unapply)
 
+  private val upperCasePattern = "[A-Z]".r
+
   protected val dataSetIdMapping = nonEmptyText.verifying(
     "Data Set Id must not contain any non-alphanumeric characters (except underscore)",
     dataSetId => !hasNonAlphanumericUnderscore(dataSetId.replaceFirst("\\.",""))
+  ).verifying(
+    "Data Set Id must not contain any upper case letters",
+    dataSetId => !upperCasePattern.findFirstIn(dataSetId).isDefined
   )
 
   protected val extraMappings: Traversable[(String, Mapping[_])] = Nil
@@ -64,10 +69,15 @@ abstract protected[controllers] class DataSetMetaTransformationFormViews[E <: Da
     )
   )
 
-  protected val viewElements: (Form[E], WebContext) => Html
+  protected def viewElements(
+    implicit webContext: WebContext
+  ): OptionalIdForm[E] => Html
 
-  protected def editViews(form: Form[E])(implicit webContext: WebContext) =
-    view.editMeta(form, className)(viewElements(form, webContext))(webContext.msg)
+  protected def editViews(
+    idForm: OptionalIdForm[E])(
+    implicit webContext: WebContext
+  ) =
+    view.editMeta(idForm.form, className)(viewElements(webContext)(idForm))(webContext.msg)
 
   protected val defaultCreateInstance: Option[() => E] = None
 
@@ -82,7 +92,7 @@ abstract protected[controllers] class DataSetMetaTransformationFormViews[E <: Da
         displayName + " " + humanReadableSuffix,
         messagePrefix,
         filledForm,
-        editViews(filledForm),
+        editViews(OptionalIdForm(None, filledForm)),
         routes.DataSetTransformationController.save,
         routes.DataSetTransformationController.listAll()
       )
@@ -94,10 +104,12 @@ abstract protected[controllers] class DataSetMetaTransformationFormViews[E <: Da
         displayName + " " + humanReadableSuffix,
         messagePrefix,
         data.form.errors,
-        editViews(data.form),
+        editViews(OptionalIdForm(Some(data.id), data.form)),
         routes.DataSetTransformationController.update(data.id),
         routes.DataSetTransformationController.listAll(),
         Some(routes.DataSetTransformationController.delete(data.id))
       )
   }
 }
+
+case class OptionalIdForm[E](id: Option[BSONObjectID], form: Form[E])

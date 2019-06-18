@@ -51,6 +51,9 @@ abstract protected[controllers] class DataSetTransformationFormViews[E <: DataSe
     )
   )
 
-  override protected def editViews(form: Form[E])(implicit webContext: WebContext) =
-    view.edit(form, className)(viewElements(form, webContext))(webContext.msg)
+  override protected def editViews(
+    idForm: OptionalIdForm[E])(
+    implicit webContext: WebContext
+  ) =
+    view.edit(idForm.form, className)(viewElements(webContext)(idForm))(webContext.msg)
 }
