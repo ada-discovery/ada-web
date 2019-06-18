@@ -96,7 +96,7 @@
         typeColumns[DataSetMetaTransformation](
             (Some("sourceDataSetIds"), "Source Data Set(s)", _.sourceDataSetIds.mkString(", ")),
             (Some("resultDataSetSpec.id"), "Result Data Set", _ match {
-                case x: DataSetTransformation => shorten(x.resultDataSetId)
+                case x: DataSetTransformation => shorten(x.resultDataSetId, 35)
                 case _ => ""
             }),
             (Some("concreteClass"), "Type", {info =>  classDisplayNameMap.get(info.getClass).getOrElse(toHumanReadableCamel(info.getClass.getSimpleName)) }),
