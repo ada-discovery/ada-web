@@ -219,14 +219,19 @@ $.widget("custom.multiFilter", {
         this.jsonConditions = newModel;
     },
 
-    _rollbackModelAndSubmit: function () {
+    rollbackModelOnError: function () {
         if (this.modelHistory.length > 0) {
             this.jsonConditions = this.modelHistory.pop();
             this.filterId = null;
 
             if (this.modelHistory.length == 0)
                 this.rollbackFilterButtonElement.hide();
+        }
+    },
 
+    _rollbackModelAndSubmit: function () {
+        if (this.modelHistory.length > 0) {
+            this.rollbackModelOnError();
             this._submitFilter();
         }
     },

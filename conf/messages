@@ -72,6 +72,7 @@ dataSetImport.eol.label = Specific EOL
 dataSetImport.path.label = Server-side Path
 
 dataSetImport.scheduled.label = Schedule?
+dataSetImport.scheduledTime.weekDay.label = Day of Week
 dataSetImport.scheduledTime.hour.label = Hour
 dataSetImport.scheduledTime.minute.label = Minute
 dataSetImport.scheduledTime.second.label = Second
@@ -107,6 +108,32 @@ dataSetTranslation.timeLastExecuted.label = Time Last Executed
 dataSetTranslation.streamSpec.batchSize.label = Batch Size
 dataSetTranslation.streamSpec.backpressureBufferSize.label = Backpressure Buffer Size
 dataSetTranslation.streamSpec.parallelism.label = Parallelism
+changeFieldEnumsTransformation.sourceDataSetId.label = Source Data Set
+copyDataSetTransformation.sourceDataSetId.label = Source Data Set
+dropFieldsTransformation.sourceDataSetId.label = Source Data Set
+dropFieldsTransformation.fieldNamesToKeep.label = Fields To Keep
+dropFieldsTransformation.fieldNamesToDrop.label = Fields To Drop
+linkTwoDataSetsTransformation.leftSourceDataSetId.label = Left Source Data Set
+linkTwoDataSetsTransformation.rightSourceDataSetId.label = Right Source Data Set
+linkTwoDataSetsTransformation.leftFieldNamesToKeep.label = Left Fields To Keep
+linkTwoDataSetsTransformation.rightFieldNamesToKeep.label = Right Fields To Keep
+linkTwoDataSetsTransformation.addDataSetIdToRightFieldNames.label = Add Data Set Id To (Right) Fields
+matchGroupsWithConfoundersTransformation.sourceDataSetId.label = Source Data Set
+matchGroupsWithConfoundersTransformation.filterId.label = Filter Id
+matchGroupsWithConfoundersTransformation.targetGroupFieldName.label = Target Group Field
+renameFieldsTransformation.sourceDataSetId.label = Source Data Set
+
+dataSetSeriesProcessing.core.resultDataSetId.label = Result Data Set Id 
+dataSetSeriesProcessing.core.resultDataSetName.label = Result Data Set Name 
+dataSetSeriesProcessing.core.resultStorageType.label = Result Storage
+dataSetSeriesProcessing.core.processingBatchSize.label = Processing Batch Size
+dataSetSeriesProcessing.core.saveBatchSize.label = Save Batch Size 
+
+dataSetSeriesTransformation.core.resultDataSetId.label = Result Data Set Id 
+dataSetSeriesTransformation.core.resultDataSetName.label = Result Data Set Name 
+dataSetSeriesTransformation.core.resultStorageType.label = Result Storage
+dataSetSeriesTransformation.core.processingBatchSize.label = Processing Batch Size
+dataSetSeriesTransformation.core.saveBatchSize.label = Save Batch Size 
 
 filter.createdBy.label = Created By
 filter.timeCreated.label = Time Created

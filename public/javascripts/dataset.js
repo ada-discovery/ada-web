@@ -9,9 +9,7 @@ function activateDataSetFilter(filterElement, jsonConditions, filterId, submitAj
             success: function(data) {
                 showMessage("Filter '" + filter.name + "' successfully saved.");
             },
-            error: function(data) {
-                showErrorResponse(data)
-            }
+            error: showErrorResponse
         });
     }
 
@@ -43,9 +41,7 @@ function saveFilterToView(viewId) {
         success: function() {
             showMessage("Filter successfully added to the view.");
         },
-        error: function(data){
-            showError( data.responseText );
-        }
+        error: showErrorResponse
     });
 }
 
@@ -62,6 +58,8 @@ function refreshViewOnFilterUpdate(viewId, filterOrId, filterElement, widgetGrid
 
     dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getViewElementsAndWidgetsCallback(viewId, "", filterOrId, oldCountDiff).ajax( {
         success: function(data) {
+            hideErrors();
+
             // filter
             filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
 
@@ -86,6 +84,7 @@ function refreshViewOnFilterUpdate(viewId, filterOrId, filterElement, widgetGrid
         },
         error: function(data) {
             showErrorResponse(data)
+            filterElement.multiFilter("rollbackModelOnError");
         }
     });
 }
@@ -123,9 +122,7 @@ function addNewViewColumn(viewId, widgetGridElementWidth, enforceWidth, activate
 
             showMessage("New column/filter successfully added to the view.")
         },
-        error: function(data) {
-            showErrorResponse(data)
-        }
+        error: showErrorResponse
     });
 }
 
@@ -144,9 +141,7 @@ function addAllowedValuesUpdateForFilter(filterElement) {
             success: function (data) {
                 updateFilterValueElement($(filterElement), data)
             },
-            error: function (data) {
-                showError(data.responseText);
-            }
+            error: showErrorResponse
         });
     });
 }
@@ -244,9 +239,7 @@ function showJsonFieldValue(id, fieldName, fieldLabel, isArray) {
             $('#jsonModal .modal-title').html(title)
             $('#jsonModal').modal();
         },
-        error: function(data){
-            showError(data.responseText);
-        }
+        error: showErrorResponse
     });
 }
 
@@ -283,8 +276,6 @@ function showArrayFieldChart(id, fieldName, fieldLabel) {
                 lineChart(fieldLabel, "lineChartDiv", null, series, 'Point', 'Value', true, false, pointFormat, null, null, false, false,  false);
             })
         },
-        error: function(data){
-            showError(data.responseText);
-        }
+        error: showErrorResponse
     });
 }
