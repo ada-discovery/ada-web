@@ -72,7 +72,10 @@ packagedArtifacts in publishLocal := {
 signedArtifacts := {
   val artifacts: Map[sbt.Artifact, java.io.File] = signedArtifacts.value
   val assets: java.io.File = (playPackageAssets in Compile).value
-  artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
+  artifacts ++ Seq(
+    Artifact(moduleName.value, "jar", "jar",     "assets") -> assets,
+    Artifact(moduleName.value, "jar", "jar.asc", "assets") -> new java.io.File(assets.getAbsolutePath + ".asc")  // requires a manual signing of assets.jar
+  )
 }
 
 // remove custom conf form the jar
