@@ -4,10 +4,11 @@ This is a web part of Ada Discovery Analytics.
 
 #### Installation
 
-All you need is **Scala 2.11**. To pull the library you have to add the following dependency to *build.sbt*
+All you need is **Scala 2.11**. To pull the library you have to add the following dependencies to *build.sbt*
 
 ```
 "org.adada" %% "ada-web" % "0.7.3"
+"org.adada" %% "ada-web" % "0.7.3" classifier "assets",
 ```
 
 or to *pom.xml* (if you use maven)
@@ -17,5 +18,11 @@ or to *pom.xml* (if you use maven)
     <groupId>org.adada</groupId>
     <artifactId>ada-web_2.11</artifactId>
     <version>0.7.3</version>
+</dependency>
+<dependency>
+    <groupId>org.adada</groupId>
+    <artifactId>ada-web_2.11</artifactId>
+    <version>0.7.3</version>
+    <classifier>assets</classifier>
 </dependency>
 ```

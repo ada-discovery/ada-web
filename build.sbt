@@ -1,5 +1,6 @@
 import PlayKeys._
 import com.typesafe.config._
+import com.typesafe.sbt.pgp.PgpKeys._
 
 organization := "org.adada"
 
@@ -62,14 +63,14 @@ dependencyOverrides ++= Set(
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.7.6"
 )
 
-packagedArtifacts in publish := {
-  val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publish).value
+packagedArtifacts in publishLocal := {
+  val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publishLocal).value
   val assets: java.io.File = (playPackageAssets in Compile).value
   artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
 }
 
-packagedArtifacts in publishLocal := {
-  val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publishLocal).value
+signedArtifacts := {
+  val artifacts: Map[sbt.Artifact, java.io.File] = signedArtifacts.value
   val assets: java.io.File = (playPackageAssets in Compile).value
   artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
 }
