@@ -1,6 +1,6 @@
 @import org.ada.server.models.datatrans.DropFieldsTransformation
 @import views.html.datasetimport.schedulePanel
-@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, sourceDataSetTypeahead, twoColumnTable}
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead, twoColumnTable}
 @import views.html.elements.{inputText, labelValue}
 @import views.html.table.{dynamicStringTable, dynamicTableJsImport}
 @import play.api.i18n.Messages
@@ -18,12 +18,12 @@
 
 @dynamicTableJsImport()
 
-@sourceDataSetTypeahead("matchGroupsWithConfoundersTransformation", form, id, Some("Matched Groups"))
+@dataSetTypeahead("matchGroupsWithConfoundersTransformation", "sourceDataSetId", form, id, Some("Matched Groups"))
 
 @inputText("matchGroupsWithConfoundersTransformation", "filterId", form)
 @inputText("matchGroupsWithConfoundersTransformation", "targetGroupFieldName", form)
 
-@labelValue("confoundingFieldNames", "confounding Field Names"){
+@labelValue("confoundingFieldNames", "Confounding Fields"){
     @dynamicStringTable("confoundingFieldName", form.value.map(_.confoundingFieldNames).getOrElse(Nil))
 }
 

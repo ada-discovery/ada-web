@@ -21,9 +21,9 @@ class LockRedCapRecord @Inject()(factory: RedCapServiceFactory) extends InputFut
         addParagraph(s"<h4>${prefix.capitalize} records #: ${bold(responses.size.toString)}</h4>")
         addOutput("<br/>")
         responses.toSeq.sortBy(_.instrument).foreach { response =>
-          addParagraph(bold(s"instruments: ${response.record}"))
+          addParagraph(bold(s"instrument: ${response.instrument}"))
 
-          val fieldValues = getCaseClassMemberNamesAndValues(response).filter(_._1 != "record").toSeq.sortBy(_._1)
+          val fieldValues = getCaseClassMemberNamesAndValues(response).filter(_._1 != "instrument").toSeq.sortBy(_._1)
 
           fieldValues.foreach { case (fieldName, value) =>
             val stringValue = value match {
@@ -41,7 +41,8 @@ class LockRedCapRecord @Inject()(factory: RedCapServiceFactory) extends InputFut
 
       report("locked", responses.filter(_.locked == "1"))
       report("unlocked", responses.filter(_.locked == "0"))
-      report("lock-undefined", responses.filter(_.locked == ""))
+
+      addParagraph(s"<h4>Lock-undefined records #: ${bold(responses.filter(_.locked == "").size.toString)}</h4>")
     }
   }
 }

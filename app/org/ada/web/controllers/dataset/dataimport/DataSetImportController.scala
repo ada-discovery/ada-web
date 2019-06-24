@@ -7,9 +7,10 @@ import java.util.Date
 import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import org.ada.server.dataaccess.RepoTypes.{DataSetImportRepo, MessageRepo}
-import org.ada.server.models.dataimport.DataSetImport.{DataSetImportExt, DataSetImportIdentity, dataSetImportFormat}
+import org.ada.server.models.dataimport.DataSetImport.{DataSetImportIdentity, dataSetImportFormat}
 import org.ada.server.models.dataimport._
 import org.ada.server.models.DataSpaceMetaInfo
+import org.ada.server.models.ScheduledTime.fillZeroes
 import org.ada.server.services.{DataSetService, StaticLookupCentral}
 import org.ada.server.services.ServiceTypes._
 import org.ada.server.{AdaException, AdaParseException}
@@ -138,19 +139,29 @@ class DataSetImportController @Inject()(
   override protected def saveCall(
     importInfo: DataSetImport)(
     implicit request: AuthenticatedRequest[AnyContent]
-  ) =
-    super.saveCall(importInfo).map { id =>
-      scheduleOrCancel(id, importInfo); id
+  ) = {
+    val importWithFixedScheduledTime = importInfo.copyCore(
+      importInfo._id, importInfo.timeCreated, importInfo.timeLastExecuted, importInfo.scheduled, importInfo.scheduledTime.map(fillZeroes)
+    )
+
+    super.saveCall(importWithFixedScheduledTime).map { id =>
+      scheduleOrCancel(id, importWithFixedScheduledTime); id
     }
+  }
 
   override protected def updateCall(
     importInfo: DataSetImport)(
     implicit request: AuthenticatedRequest[AnyContent]
-  ) =
+  ) = {
+    val importWithFixedScheduledTime = importInfo.copyCore(
+      importInfo._id, importInfo.timeCreated, importInfo.timeLastExecuted, importInfo.scheduled, importInfo.scheduledTime.map(fillZeroes)
+    )
+
     //TODO: remove the old files if any
-    super.updateCall(importInfo).map { id =>
-      scheduleOrCancel(id, importInfo); id
+    super.updateCall(importWithFixedScheduledTime).map { id =>
+      scheduleOrCancel(id, importWithFixedScheduledTime); id
     }
+  }
 
   def idAndNames = restrictAny {
     implicit request =>
@@ -172,7 +183,9 @@ class DataSetImportController @Inject()(
       repo.get(id).flatMap(_.fold(
         Future(NotFound(s"Data set import #${id.stringify} not found"))
       ) { dataSetImport =>
-        val newDataSetImport = DataSetImportIdentity.clear(dataSetImport).copyWithTimestamps(new java.util.Date(), None)
+        val newDataSetImport = dataSetImport.copyCore(
+          None, new java.util.Date(), None, dataSetImport.scheduled, dataSetImport.scheduledTime
+        )
 
         super.saveCall(newDataSetImport).map { newId =>
           scheduleOrCancel(newId, newDataSetImport)

@@ -32,10 +32,12 @@ abstract protected[controllers] class DataSetMetaTransformationFormViews[E <: Da
   private implicit val mapFormatter = MapJsonFormatter.apply
   private implicit val filterShowFieldStyleFormatter = EnumFormatter(FilterShowFieldStyle)
   private implicit val widgetGenerationMethodFormatter = EnumFormatter(WidgetGenerationMethod)
+  private implicit val weekDayFormatter = EnumFormatter(WeekDay)
 
   // Basic Forms
 
   protected val scheduledTimeMapping: Mapping[ScheduledTime] = mapping(
+    "weekDay" -> optional(of[WeekDay.Value]),
     "hour" -> optional(number(min = 0, max = 23)),
     "minute" -> optional(number(min = 0, max = 59)),
     "second" -> optional(number(min = 0, max = 59))

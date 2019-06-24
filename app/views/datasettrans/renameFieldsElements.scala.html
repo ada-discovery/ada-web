@@ -1,7 +1,7 @@
 @import org.ada.server.models.datatrans.RenameFieldsTransformation
 @import org.ada.web.util.typeColumns
 @import views.html.datasetimport.schedulePanel
-@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, sourceDataSetTypeahead, twoColumnTable}
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead, twoColumnTable}
 @import views.html.table.{displayTable, dynamicTable}
 @import views.html.table.dynamicTableJsImport
 @import views.html.elements.labelValue
@@ -18,11 +18,11 @@
     implicit webContext: WebContext
 )
 
-@sourceDataSetTypeahead("renameFieldsTransformation", form, id, Some("Renamed Fields"))
+@dataSetTypeahead("renameFieldsTransformation", "sourceDataSetId", form, id, Some("Renamed Fields"))
 
 @twoColumnTable(
     "fieldOldNewName",
-    "Old->New Field Name Mappings",
+    "Old->New Field Mappings",
     "Old Field Name",
     "New Field Name",
     form.value.map(_.fieldOldNewNames).getOrElse(Nil)

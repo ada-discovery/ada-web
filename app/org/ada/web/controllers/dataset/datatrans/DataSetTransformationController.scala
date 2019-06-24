@@ -6,8 +6,9 @@ import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import org.ada.server.dataaccess.RepoTypes.{DataSetTransformationRepo, DataSpaceMetaInfoRepo, MessageRepo}
 import org.ada.server.models.DataSpaceMetaInfo
-import org.ada.server.models.datatrans.DataSetTransformation.{DataSetMetaTransformationExt, DataSetMetaTransformationIdentity, dataSetMetaTransformationFormat}
+import org.ada.server.models.datatrans.DataSetTransformation.{DataSetMetaTransformationIdentity, dataSetMetaTransformationFormat}
 import org.ada.server.models.datatrans.{DataSetMetaTransformation, DataSetTransformation}
+import org.ada.server.models.ScheduledTime.fillZeroes
 import org.ada.server.services.{DataSetService, StaticLookupCentral}
 import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.web.services.DataSpaceService
@@ -106,16 +107,30 @@ class DataSetTransformationController @Inject()(
   }
 
   override protected def saveCall(
-    importInfo: DataSetMetaTransformation)(
+    transformation: DataSetMetaTransformation)(
     implicit request: AuthenticatedRequest[AnyContent]
-  ) =
-    super.saveCall(importInfo).map { id => scheduleOrCancel(id, importInfo); id }
+  ) = {
+    val transformationWithFixedScheduledTime = transformation.copyCore(
+      transformation._id, transformation.timeCreated, transformation.timeLastExecuted, transformation.scheduled, transformation.scheduledTime.map(fillZeroes)
+    )
+
+    super.saveCall(transformationWithFixedScheduledTime).map { id =>
+      scheduleOrCancel(id, transformationWithFixedScheduledTime); id
+    }
+  }
 
   override protected def updateCall(
-    importInfo: DataSetMetaTransformation)(
+    transformation: DataSetMetaTransformation)(
     implicit request: AuthenticatedRequest[AnyContent]
-  ) =
-    super.updateCall(importInfo).map { id => scheduleOrCancel(id, importInfo); id }
+  ) = {
+    val transformationWithFixedScheduledTime = transformation.copyCore(
+      transformation._id, transformation.timeCreated, transformation.timeLastExecuted, transformation.scheduled, transformation.scheduledTime.map(fillZeroes)
+    )
+
+    super.updateCall(transformationWithFixedScheduledTime).map { id =>
+      scheduleOrCancel(id, transformationWithFixedScheduledTime); id
+    }
+  }
 
   def idAndNames = restrictAny {
     implicit request =>
@@ -148,12 +163,15 @@ class DataSetTransformationController @Inject()(
     implicit request =>
       repo.get(id).flatMap(_.fold(
         Future(NotFound(s"Data set transformation #${id.stringify} not found"))
-      ) { dataSetTransformation =>
-        val newDataSetTransformation = DataSetMetaTransformationIdentity.clear(dataSetTransformation).copyWithTimestamps(new java.util.Date(), None)
+      ) { transformation =>
+
+        val newDataSetTransformation = transformation.copyCore(
+          None, new java.util.Date(), None, transformation.scheduled, transformation.scheduledTime
+        )
 
         super.saveCall(newDataSetTransformation).map { newId =>
           scheduleOrCancel(newId, newDataSetTransformation)
-          Redirect(routes.DataSetTransformationController.get(newId)).flashing("success" -> s"Data set transformation '${dataSetTransformation.sourceDataSetIds.mkString(", ")}' has been copied.")
+          Redirect(routes.DataSetTransformationController.get(newId)).flashing("success" -> s"Data set transformation '${transformation.sourceDataSetIds.mkString(", ")}' has been copied.")
         }
       }
     )

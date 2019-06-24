@@ -16,7 +16,8 @@ isSnapshot := false
 scalaVersion := "2.11.12"
 
 resolvers ++= Seq(
-  Resolver.mavenLocal
+  Resolver.mavenLocal,
+  "bnd libs" at "https://peterbanda.net/maven2"
 )
 
 routesImport ++= Seq(
@@ -27,10 +28,13 @@ routesImport ++= Seq(
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 
-PlayKeys.devSettings := Seq("play.server.netty.maxInitialLineLength" -> "16384")
+PlayKeys.devSettings := Seq(
+  "play.server.netty.maxInitialLineLength" -> "16384"
+  //   "play.server.netty.transport" -> "jdk"
+)
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.7.3.RC.9",
+  "org.adada" %% "ada-server" % "0.7.3",
   "org.in-cal" %% "incal-play" % "0.1.9",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
@@ -48,8 +52,24 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 )
 
-packagedArtifacts in publish := {   // publishLocal
-  val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publish).value   // publishLocal
+// Because of Spark (turning janino logging to warn: https://github.com/janino-compiler/janino/issues/13)
+libraryDependencies ++= Seq(
+  "ch.qos.logback" % "logback-classic" % "1.2.3"
+)
+
+// Because of Spark
+dependencyOverrides ++= Set(
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.7.6"
+)
+
+packagedArtifacts in publish := {
+  val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publish).value
+  val assets: java.io.File = (playPackageAssets in Compile).value
+  artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
+}
+
+packagedArtifacts in publishLocal := {
+  val artifacts: Map[sbt.Artifact, java.io.File] = (packagedArtifacts in publishLocal).value
   val assets: java.io.File = (playPackageAssets in Compile).value
   artifacts + (Artifact(moduleName.value, "jar", "jar", "assets") -> assets)
 }

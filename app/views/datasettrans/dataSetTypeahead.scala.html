@@ -11,6 +11,7 @@
 
 @(
     domainName: String,
+    fieldName: String,
     form: Form[_],
     transformationId: Option[BSONObjectID] = None,
     dataSetNameSuffix: Option[String] = None
@@ -22,8 +23,8 @@
 
 @inputTypeahead(
     domainName,
-    "sourceDataSetId",
-    "sourceDataSetTypeahead",
+    fieldName,
+    fieldName + "Typeahead",
     form,
     "Data Set"
 )
@@ -37,13 +38,11 @@
         var addSelectedListener = function() {
             setTimeout(function(){
                 @dataSetNameSuffix.map { suffix =>
-                    $('#sourceDataSetTypeahead').on('typeahead:selected', function (evt, item) {   // typeahead:select
+                    $('#@{fieldName}Typeahead').on('typeahead:selected', function (evt, item) {
                         var sourceDataSetId = item.key
                         var dataSetId = item.key + "_" + '@{nonAlphanumericToUnderscore(suffix.trim()).toLowerCase()}'
                         var dataSetName = item.key + ' @suffix'
                         var transformationId = @if(transformationId.isDefined) { '@transformationId.get.stringify' } else { null }
-
-                        console.log(transformationId)
 
                         dataSetTransformationJsRoutes.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.resultDataSetIdAndName(sourceDataSetId, '@suffix', transformationId).ajax({
                             success: function (data) {
@@ -62,8 +61,8 @@
         }
 
         populateFieldTypeahedFromUrl(
-            $('#sourceDataSetTypeahead'),
-            $('#sourceDataSetId'),
+            $('#@{fieldName}Typeahead'),
+            $('#@{fieldName}'),
             '@Html(routes.DataSetTransformationController.dataSetIds().url)',
             @FilterShowFieldStyle.LabelsOnly.id,
             addSelectedListener,

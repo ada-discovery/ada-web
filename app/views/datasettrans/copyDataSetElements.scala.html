@@ -1,6 +1,6 @@
 @import org.ada.server.models.datatrans.CopyDataSetTransformation
 @import views.html.elements.{inputText, labelValue}
-@import views.html.datasettrans.sourceDataSetTypeahead
+@import views.html.datasettrans.dataSetTypeahead
 @import play.api.i18n.Messages
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
@@ -14,4 +14,4 @@
     implicit webContext: WebContext
 )
 
-@sourceDataSetTypeahead("copyDataSetTransformation", form, id, Some("Copy"))
+@dataSetTypeahead("copyDataSetTransformation", "sourceDataSetId", form, id, Some("Copy"))

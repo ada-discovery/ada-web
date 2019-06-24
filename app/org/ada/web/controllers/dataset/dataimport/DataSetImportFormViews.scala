@@ -37,8 +37,10 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
   private implicit val filterShowFieldStyleFormatter = EnumFormatter(FilterShowFieldStyle)
   private implicit val storageTypeFormatter = EnumFormatter(StorageType)
   private implicit val widgetGenerationMethodFormatter = EnumFormatter(WidgetGenerationMethod)
+  private implicit val weekDayFormatter = EnumFormatter(WeekDay)
 
   protected val scheduledTimeMapping: Mapping[ScheduledTime] = mapping(
+    "weekDay" -> optional(of[WeekDay.Value]),
     "hour" -> optional(number(min = 0, max = 23)),
     "minute" -> optional(number(min = 0, max = 59)),
     "second" -> optional(number(min = 0, max = 59))
@@ -51,9 +53,8 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
     dataSetId => !hasNonAlphanumericUnderscore(dataSetId.replaceFirst("\\.",""))
   ).verifying(
     "Data Set Id must not contain any upper case letters",
-    dataSetId => upperCasePattern.findFirstIn(dataSetId).isDefined
+    dataSetId => !upperCasePattern.findFirstIn(dataSetId).isDefined
   )
-
 
   protected val dataSetSettingMapping: Mapping[DataSetSetting] = mapping(
     "id" -> ignored(Option.empty[BSONObjectID]),

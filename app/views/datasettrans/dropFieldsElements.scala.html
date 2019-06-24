@@ -1,6 +1,6 @@
 @import org.ada.server.models.datatrans.DropFieldsTransformation
 @import views.html.datasetimport.schedulePanel
-@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, sourceDataSetTypeahead}
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead}
 @import views.html.elements.inputText
 @import play.api.i18n.Messages
 @import org.incal.play.controllers.WebContext
@@ -15,6 +15,6 @@
     implicit webContext: WebContext
 )
 
-@sourceDataSetTypeahead("dropFieldsTransformation", form, id, Some("Dropped Fields"))
+@dataSetTypeahead("dropFieldsTransformation", "sourceDataSetId", form, id, Some("Dropped Fields"))
 @inputText("dropFieldsTransformation", "fieldNamesToKeep", form)
 @inputText("dropFieldsTransformation", "fieldNamesToDrop", form)

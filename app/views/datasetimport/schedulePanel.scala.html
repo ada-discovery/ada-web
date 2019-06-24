@@ -1,4 +1,6 @@
-@import views.html.elements.{inputText, yesNoRadio}
+@import views.html.elements.{inputText, yesNoRadio, select}
+@import org.ada.web.util.enumToValueString
+@import org.ada.server.models.WeekDay
 
 @(form: Form[_])(implicit msg: Messages)
 
@@ -6,6 +8,7 @@
     <div class="panel-heading">Schedule</div>
     <div class="panel-body">
         @yesNoRadio("dataSetImport", "scheduled", form, Some("Do you want to schedule the import execution?"))
+        @select("dataSetImport", "scheduledTime.weekDay", form, enumToValueString(WeekDay), true)
         @inputText("dataSetImport", "scheduledTime.hour", form)
         @inputText("dataSetImport", "scheduledTime.minute", form)
         @inputText("dataSetImport", "scheduledTime.second", form)

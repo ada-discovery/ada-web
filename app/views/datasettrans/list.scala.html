@@ -3,7 +3,7 @@
 @import views.html.dataset.{datasetMenu}
 @import views.html.filter.filterWithJs
 @import org.ada.web.controllers.dataset.datatrans.routes.{DataSetTransformationController => dataSetTransformationRoutes}
-@import org.ada.web.util.{formatTimeElement, toHumanReadableCamel, typeColumns, shorten}
+@import org.ada.web.util.{formatScheduleTime, toHumanReadableCamel, typeColumns, shorten}
 @import org.ada.server.models.{DataSpaceMetaInfo, Field, Filter, FilterShowFieldStyle}
 @import org.ada.server.models.datatrans._
 @import org.ada.server.models.ScheduledTime
@@ -66,18 +66,14 @@
     </div>
 }
 
-@scheduleTime(scheduledTime: ScheduledTime) = {
-    @Html(formatTimeElement(scheduledTime.hour, true, "&nbsp;&nbsp;&nbsp;&nbsp;") + formatTimeElement(scheduledTime.minute, true, "&nbsp;&nbsp;&nbsp;&nbsp;") + formatTimeElement(scheduledTime.second, false, "&nbsp;&nbsp;&nbsp;&nbsp;"))
-}
-
-@scheduleCheckbox(dataSetImport: DataSetMetaTransformation) = {
+@scheduleCheckbox(dataSetTransformation: DataSetMetaTransformation) = {
     <ul class="list-inline">
         <li>
-            <input type="checkbox" class="no-rowClicked" @if(dataSetImport.scheduled) { checked="checked" } disabled="disabled"/>
+            <input type="checkbox" class="no-rowClicked" @if(dataSetTransformation.scheduled) { checked="checked" } disabled="disabled"/>
         </li>
-        @if(dataSetImport.scheduled) {
+        @if(dataSetTransformation.scheduled) {
             <li class="topVerticalAlign">
-                @scheduleTime(dataSetImport.scheduledTime.get)
+                @Html(formatScheduleTime(dataSetTransformation.scheduledTime.get))
             </li>
         }
     </ul>

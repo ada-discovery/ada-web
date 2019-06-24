@@ -59,16 +59,20 @@ package object util {
   def typeColumns[T](columns: (Option[String], String, T => Any)*): Traversable[(Option[String], String, Any => Html)] =
     columns.map(typeColumn[T])
 
-  def formatTimeElement(i: Option[Int], addDelimiter: Boolean, noneValue: String) =
-    i.map( value => (
-      if (value < 10)
-        "0" + value
-      else
-        value.toString) + (
-      if(addDelimiter)
-        ":"
-      else "")
-    ).getOrElse(noneValue)
+  def formatScheduleTime(scheduledTime: ScheduledTime) = {
+    val wildcard = "&nbsp;*&nbsp;"
+
+    val formatTimeElement = { i: Option[Int] =>
+      i.map { value =>
+        if (value < 10) "0" + value else value.toString
+      }.getOrElse(
+        wildcard
+      )
+    }
+
+    val weekDay = scheduledTime.weekDay.map(_.toString.take(3) + "&nbsp;").getOrElse("&nbsp;&nbsp;&nbsp;&nbsp;")
+    weekDay + Seq(scheduledTime.hour, scheduledTime.minute, scheduledTime.second).map(formatTimeElement).mkString(":")
+  }
 
   def enumToValueString(enum: Enumeration): Seq[(String, String)] =
     enum.values.toSeq.sortBy(_.id).map(value => (value.toString, toHumanReadableCamel(value.toString)))

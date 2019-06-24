@@ -27,7 +27,7 @@
 @inputTextAux(fieldName: String, defaultValue: Option[Any] = None) = @{
     defining(form(fieldName)) { field =>
         inputFieldText(
-            "dataSetSeriesTransformationSpec",
+            "dataSetSeriesTransformation",
             if (field.value.isEmpty && defaultValue.isDefined)
                 field.copy(value = Some(defaultValue.get.toString))
             else
@@ -39,7 +39,7 @@
 }
 
 @selectAux(fieldName: String, values: Seq[(String, String)]) = {
-    @select("dataSetSeriesTransformationSpec", fieldName, form, values, true, Nil, 3)
+    @select("dataSetSeriesTransformation", fieldName, form, values, true, Nil, 3)
 }
 
 @extraFieldButtons = {

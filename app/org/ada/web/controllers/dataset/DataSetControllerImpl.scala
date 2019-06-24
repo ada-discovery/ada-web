@@ -634,18 +634,13 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     user <- currentUser()
   } yield
     user.map { user =>
-      val isAdmin = user.isAdmin
-
-      println(user)
-      println("Is Admin: " + isAdmin)
-
       val isOwner =
         dataView.createdById match {
           case Some(createdById) => user.id.get.equals(createdById)
           case None => false
         }
 
-      isAdmin || isOwner
+      user.isAdmin || isOwner
     }.getOrElse(
       false
     )

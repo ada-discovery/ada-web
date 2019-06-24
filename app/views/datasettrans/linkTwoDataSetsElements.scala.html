@@ -1,0 +1,34 @@
+@import org.ada.server.models.datatrans.LinkTwoDataSetsTransformation
+@import org.ada.web.util.typeColumns
+@import views.html.datasetimport.schedulePanel
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead, twoColumnTable}
+@import views.html.table.{displayTable, dynamicTable}
+@import views.html.table.dynamicTableJsImport
+@import views.html.elements.{labelValue, checkbox}
+@import views.html.elements._
+@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import reactivemongo.bson.BSONObjectID
+
+@(
+    id: Option[BSONObjectID],
+    form: Form[LinkTwoDataSetsTransformation]
+)(
+    implicit webContext: WebContext
+)
+
+@dataSetTypeahead("linkTwoDataSetsTransformation", "leftSourceDataSetId", form, id, Some("Linked"))
+@dataSetTypeahead("linkTwoDataSetsTransformation", "rightSourceDataSetId", form)
+
+@twoColumnTable(
+    "linkFieldName",
+    "Link Fields",
+    "Left",
+    "Right",
+    form.value.map(_.linkFieldNames).getOrElse(Nil)
+)
+
+@inputText("linkTwoDataSetsTransformation", "leftFieldNamesToKeep", form)
+@inputText("linkTwoDataSetsTransformation", "rightFieldNamesToKeep", form)
+@checkbox("linkTwoDataSetsTransformation", "addDataSetIdToRightFieldNames", form)
