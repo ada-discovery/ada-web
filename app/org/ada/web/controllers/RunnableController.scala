@@ -15,7 +15,8 @@ import java.{util => ju}
 
 import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.server.field.FieldUtil
-import org.ada.web.runnables.InputView
+import org.ada.web.runnables.{InputView, RunnableFileOutput}
+import org.ada.web.util.WebExportUtil
 import org.incal.core.runnables._
 import org.incal.core.util.ReflectionUtil.currentThreadClassLoader
 import org.incal.play.security.SecurityRole
@@ -202,13 +203,20 @@ class RunnableController @Inject() (
   ) = {
     messageLogger.info(message)
 
-    // has output
-    if (runnable.isInstanceOf[RunnableHtmlOutput]) {
-      val output = runnable.asInstanceOf[RunnableHtmlOutput].output.mkString
+    runnable match {
+      // has a file output
+      case fileOutput: RunnableFileOutput =>
+        WebExportUtil.stringToFile(fileOutput.output.toString(), fileOutput.fileName)
 
-      Ok(runnableViews.runnableOutput(runnable.getClass, output)).flashing("success" -> message)
-    } else {
-      runnablesHomeRedirect.flashing("success" -> message)
+      // has a HTML output
+      case htmlOutput: RunnableHtmlOutput =>
+
+        val output = htmlOutput.output.mkString
+        Ok(runnableViews.runnableOutput(runnable.getClass, output)).flashing("success" -> message)
+
+      // no output
+      case _ =>
+        runnablesHomeRedirect.flashing("success" -> message)
     }
   }
 

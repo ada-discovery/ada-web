@@ -1,12 +1,12 @@
 package org.ada.web.runnables.core
 
-import java.io.{File, PrintWriter}
-
+import org.ada.web.runnables.RunnableFileOutput
 import org.apache.commons.lang3.StringEscapeUtils
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import runnables.DsaInputFutureRunnable
 
-class ExportDictionaryWithCategories extends DsaInputFutureRunnable[ExportDictionaryWithCategoriesSpec] {
+class ExportDictionaryWithCategories extends DsaInputFutureRunnable[ExportDictionaryWithCategoriesSpec] with RunnableFileOutput {
 
   override def runAsFuture(input: ExportDictionaryWithCategoriesSpec) = {
     val dsa = createDsa(input.dataSetId)
@@ -44,10 +44,8 @@ class ExportDictionaryWithCategories extends DsaInputFutureRunnable[ExportDictio
       val header = Seq("category_name", "category_label" ,"field_name", "field_label", "field_type").mkString(unescapedDelimiter)
 
       // write to file
-      val pw = new PrintWriter(new File(input.dataSetId + "_dictionary.tsv"))
-      pw.write(header + "\n")
-      pw.write(lines.mkString("\n"))
-      pw.close
+      (header +: lines).foreach(addOutputLine)
+      setOutputFileName(s"${timestamp}_${input.dataSetId}_dictionary.csv")
     }
   }
 }

@@ -7,11 +7,8 @@ import org.incal.core.runnables.{InputRunnable, InputRunnableExt}
 import org.incal.play.controllers.WebContext
 import play.api.Configuration
 import play.api.libs.mailer.{Email, MailerClient}
-import play.api.data.Form
-import views.html.runnable.sendEmailInput
 import views.html.elements._
 import org.incal.play.controllers.WebContext._
-import play.twirl.api.{Html, HtmlFormat}
 
 class SendEmail @Inject()(mailerClient: MailerClient, configuration: Configuration) extends InputRunnableExt[SendEmailSpec] with InputView[SendEmailSpec] {
 
