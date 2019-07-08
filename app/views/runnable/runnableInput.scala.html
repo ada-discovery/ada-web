@@ -1,0 +1,63 @@
+@import views.html.layout.main
+@import play.api.i18n.Messages
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.web.util
+@import views.html.elements._
+@import views.html.layout
+@import views.html.layout.formErrors
+@import views.html.runnable.genericFields
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import be.objectify.deadbolt.scala.views.html.restrictOr
+@import org.ada.server.models.FieldTypeSpec
+@import org.ada.server.models.FieldTypeId
+@import org.ada.web.controllers.routes
+@import org.incal.play.security.SecurityRole
+
+@(
+    title: String,
+    call: Call,
+    inputFields: Html,
+    errors : Seq[FormError] = Nil
+)(
+    implicit context: WebContext
+)
+
+@bottomResources = {
+    <script type="text/javascript">
+        $(function () {
+            const firstElement = $('fieldset :input').first()
+            if (firstElement)
+                firstElement.focus();
+        });
+    </script>
+}
+
+@main(util.toHumanReadableCamel(title), bottomResources = Some(bottomResources), extraMessages = Some(formErrors("runnable", errors))) {
+    <div class="page-header">
+        <h3>
+        @util.toHumanReadableCamel(title)
+        </h3>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+        @helper.form(action = call) {
+            <fieldset>
+                @inputFields
+            </fieldset>
+
+            <hr/>
+
+            <div class="actions pull-right">
+                <input type="submit" value="Submit" class="btn btn-primary">
+                @restrictOr(roles = List(Array(SecurityRole.admin))) {
+                    <a href="@routes.RunnableController.selectRunnable" class="btn btn-default">Cancel</a>
+                } {
+                    <a href="@routes.AppController.index()" class="btn btn-default">Cancel</a>
+                }
+            </div>
+        }
+        </div>
+    </div>
+}

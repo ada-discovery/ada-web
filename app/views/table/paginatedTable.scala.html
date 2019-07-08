@@ -8,7 +8,8 @@
     rowClickCall : Option[Any => Call] = None,
     hiddenRowId: Option[(String, Any => String)] = None,
     tableId: Option[String] = None,
-    isAjaxRefresh: Boolean = false
+    isAjaxRefresh: Boolean = false,
+    tableSelection: Boolean = false
 )
 
 @refreshCallAux(newPage : Int, newOrderBy : Option[String]) = @{
@@ -28,7 +29,8 @@
         Some(header(page.orderBy, refreshCallAux, isAjaxRefresh)),
         rowClickCall,
         hiddenRowId,
-        tableId
+        tableId,
+        tableSelection
     )
     <hr/>
     @pagination(page, refreshCallAux, isAjaxRefresh)

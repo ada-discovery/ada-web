@@ -35,11 +35,11 @@
     @displayTable(
         form.value.map(_.fieldNameOldNewEnums).getOrElse(Nil),
         typeColumns[(String, String, String)](
-            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
             (None, "Field Name", fieldNameElement),
             (None, "Enum Old", enumOldElement),
             (None, "Enum New", enumNewElement)
-        )
+        ),
+        tableSelection = true
     )
 }
 

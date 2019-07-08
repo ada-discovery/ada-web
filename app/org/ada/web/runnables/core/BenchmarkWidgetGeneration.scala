@@ -19,13 +19,14 @@ class BenchmarkWidgetGenerationForMultiDataSets @Inject()(
 
   override def runAsFuture(input: BenchmarkWidgetGenerationForMultiDataSetsSpec) =
     seqFutures(input.dataSetIds)(dataSetId =>
-      genForDataSet(dataSetId, None, input.repetitions)
+      genForDataSet(dataSetId, None, input.repetitions, input.warmUp)
     ).map(_ => ())
 }
 
 case class BenchmarkWidgetGenerationForMultiDataSetsSpec(
   dataSetIds: Seq[String],
-  repetitions: Int
+  repetitions: Int,
+  warmUp: Boolean
 )
 
 class BenchmarkWidgetGeneration @Inject()(
@@ -34,13 +35,14 @@ class BenchmarkWidgetGeneration @Inject()(
 ) extends InputFutureRunnableExt[BenchmarkWidgetGenerationSpec] with BenchmarkWidgetGenerationHelper {
 
   override def runAsFuture(input: BenchmarkWidgetGenerationSpec) =
-    genForDataSet(input.dataSetId, input.viewId, input.repetitions)
+    genForDataSet(input.dataSetId, input.viewId, input.repetitions, input.warmUp)
 }
 
 case class BenchmarkWidgetGenerationSpec(
   dataSetId: String,
   viewId: Option[BSONObjectID],
-  repetitions: Int
+  repetitions: Int,
+  warmUp: Boolean
 )
 
 trait BenchmarkWidgetGenerationHelper extends RunnableHtmlOutput {
@@ -53,7 +55,8 @@ trait BenchmarkWidgetGenerationHelper extends RunnableHtmlOutput {
   def genForDataSet(
     dataSetId: String,
     viewId: Option[BSONObjectID],
-    repetitions: Int
+    repetitions: Int,
+    warmUp: Boolean
   ): Future[Unit] = {
     val dsa = dsaf(dataSetId).get
     val dataSetRepo = dsa.dataSetRepo
@@ -71,7 +74,7 @@ trait BenchmarkWidgetGenerationHelper extends RunnableHtmlOutput {
       fields <- dsa.fieldRepo.find()
 
       // warm-up
-      _ <- dataSetRepo.find()
+      _ <- if (warmUp) dataSetRepo.find() else Future(())
 
       viewMethodTimes <-
         seqFutures( for { view <- views; method <- methods } yield (view, method) ) { case (view, method) =>

@@ -108,7 +108,7 @@ class WidgetGenerationServiceImpl @Inject() (
     // TODO: if auto decide which method to use intelligently
     val initGenMethod =
       if (genMethod == WidgetGenerationMethod.Auto)
-        WidgetGenerationMethod.FullData
+        WidgetGenerationMethod.RepoAndFullData
       else
         genMethod
 

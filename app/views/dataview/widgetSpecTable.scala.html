@@ -204,7 +204,6 @@
     @displayTable(
         items,
         typeColumns[WidgetSpec](
-            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
             (None, "", dataHiddenElement),
             (None, "Type", {x => concreteClassName(x.getClass)}),
             (None, "Content", spec),
@@ -218,7 +217,9 @@
                     editableChartType(x.displayOptions.asInstanceOf[MultiChartDisplayOptions].chartType)
                 } else ""
             })
-        )
+        ),
+        tableSelection = true
+
     )
 }
 

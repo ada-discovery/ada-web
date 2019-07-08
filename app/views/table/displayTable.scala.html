@@ -4,7 +4,8 @@
     header: Option[(Option[String], String) => Html] = None,
     rowClickCall: Option[Any => Call] = None,
     hiddenRowId: Option[(String, Any => String)] = None,
-	tableId: Option[String] = None
+	tableId: Option[String] = None,
+    tableSelection: Boolean = false
 )
 
 @defaultHeader(fieldName: Option[String], fieldLabel: String) = {
@@ -16,6 +17,9 @@
 <table @if(tableId.isDefined) {id="@tableId.get"} class="table table-striped">
 	<thead>
 		<tr>
+            @if(tableSelection) {
+                @header.getOrElse(defaultHeader(_, _))(None, "")
+            }
             @columns.map { case (fieldName, fieldLabel, _) =>
                 @header.getOrElse(defaultHeader(_, _))(fieldName, fieldLabel)
             }
@@ -27,7 +31,12 @@
                 @if(hiddenRowId.isDefined) {
                     <input type="hidden" id="@hiddenRowId.get._1" name="@hiddenRowId.get._1" value="@hiddenRowId.get._2(item)"/>
                 }
-		    	@columns.map { case (fieldName, _, content) =>
+                @if(tableSelection) {
+                    <td>
+                        <input type="checkbox" class="table-selection"/>
+                    </td>
+                }
+                @columns.map { case (fieldName, _, content) =>
                     <td @if(fieldName.isDefined) {id="@fieldName.get"}>
                         @content(item)
                     </td>

@@ -149,7 +149,8 @@
         ),
         Some({ item : Any => dictionaryRouter.get(item.asInstanceOf[Field].name)}),
         Some("id", {any:Any => any.asInstanceOf[Field].name}),
-        Some("dictionaryTable")
+        Some("dictionaryTable"),
+        tableSelection = true
     )
 }
 

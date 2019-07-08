@@ -5,7 +5,7 @@ import org.ada.web.controllers.core.{AdaBaseController, GenericMapping}
 import org.ada.server.dataaccess.RepoTypes.MessageRepo
 import org.ada.server.util.MessageLogger
 import org.ada.server.util.ClassFinderUtil.findClasses
-import org.incal.play.controllers.{BaseController, WithNoCaching}
+import org.incal.play.controllers.{BaseController, WebContext, WithNoCaching}
 import play.api.{Configuration, Logger}
 import play.api.data.Form
 import play.api.mvc.AnyContent
@@ -15,6 +15,7 @@ import java.{util => ju}
 
 import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.server.field.FieldUtil
+import org.ada.web.runnables.InputView
 import org.incal.core.runnables._
 import org.incal.core.util.ReflectionUtil.currentThreadClassLoader
 import org.incal.play.security.SecurityRole
@@ -104,22 +105,19 @@ class RunnableController @Inject() (
 
   def getScriptInputForm(className: String) = scriptActionAux(className) { implicit request =>
     instance =>
-      if (instance.isInstanceOf[InputRunnable[_]]) {
+
+      instance match {
         // input runnable
+        case inputRunnable: InputRunnable[_] =>
+          val (_, inputFields) = genericInputFormAndFields(inputRunnable)
+          Ok(runnableViews.runnableInput(
+            className.split('.').last, routes.RunnableController.runInputScript(className), inputFields
+          ))
 
-        val inputRunnable = instance.asInstanceOf[InputRunnable[_]]
-
-        val mapping = GenericMapping[Any](inputRunnable.inputType)
-        val nameFieldTypeMap = FieldUtil.caseClassTypeToFlatFieldTypes(inputRunnable.inputType).toMap
-
-        Ok(runnableViews.formFieldsInput(
-          className.split('.').last, Form(mapping), routes.RunnableController.runInputScript(className), nameFieldTypeMap
-        ))
-      } else {
         // plain runnable - no form
-
-        runnablesHomeRedirect.flashing("errors" -> s"No form available for the script/runnable ${className}.")
-      }
+        case _ =>
+          runnablesHomeRedirect.flashing("errors" -> s"No form available for the script/runnable ${className}.")
+    }
   }
 
   def runInputScript(className: String) = scriptActionAux(className) { implicit request =>
@@ -127,13 +125,12 @@ class RunnableController @Inject() (
       val start = new ju.Date()
 
       val inputRunnable = instance.asInstanceOf[InputRunnable[Any]]
-      val mapping = GenericMapping[Any](inputRunnable.inputType)
-      val nameFieldTypeMap = FieldUtil.caseClassTypeToFlatFieldTypes(inputRunnable.inputType).toMap
+      val (form, inputFields) = genericInputFormAndFields(inputRunnable)
 
-      Form(mapping).bindFromRequest().fold(
+      form.bindFromRequest().fold(
         { formWithErrors =>
-          BadRequest(runnableViews.formFieldsInput(
-            instance.getClass.getSimpleName, formWithErrors, routes.RunnableController.runInputScript(className), nameFieldTypeMap
+          BadRequest(runnableViews.runnableInput(
+            instance.getClass.getSimpleName, routes.RunnableController.runInputScript(className), inputFields, formWithErrors.errors
           ))
         },
         input => {
@@ -145,6 +142,35 @@ class RunnableController @Inject() (
           handleRunnableOutput(inputRunnable, message)
         }
       )
+  }
+
+  private def genericInputFormAndFields[T](
+    inputRunnable: InputRunnable[T])(
+    implicit webContext: WebContext
+  ) =
+    inputRunnable match {
+      // input runnable with a custom fields view
+      case inputView: InputView[T] =>
+
+        val form = genericForm(inputRunnable)
+        val inputFieldsView = inputView.inputFields(implicitly[WebContext])(form.asInstanceOf[Form[T]])
+
+        (form, inputFieldsView)
+
+      // input runnable with a generic fields view
+      case _ =>
+
+        val form = genericForm(inputRunnable)
+
+        val nameFieldTypeMap = FieldUtil.caseClassTypeToFlatFieldTypes(inputRunnable.inputType).toMap
+        val inputFieldsView = runnableViews.genericFields(form, nameFieldTypeMap)
+
+        (form, inputFieldsView)
+    }
+
+  private def genericForm(inputRunnable: InputRunnable[_]): Form[Any] = {
+    val mapping = GenericMapping[Any](inputRunnable.inputType)
+    Form(mapping)
   }
 
   private def scriptActionAux(

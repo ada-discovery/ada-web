@@ -35,7 +35,7 @@ PlayKeys.devSettings := Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.7.3",
+  "org.adada" %% "ada-server" % "0.7.3", // "0.8.0.RC.3.SNAPSHOT.18", // "0.7.3",
   "org.in-cal" %% "incal-play" % "0.1.9",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
@@ -58,9 +58,15 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3"
 )
 
+val jacksonVersion = "2.8.8"
+
 // Because of Spark
 dependencyOverrides ++= Set(
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.7.6"
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,    // "2.7.6"
+  "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,               // newly introduced
+  "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,           // newly introduced
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVersion,  // newly introduced
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVersion // newly introduced
 )
 
 packagedArtifacts in publishLocal := {

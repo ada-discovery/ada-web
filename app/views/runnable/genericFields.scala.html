@@ -1,0 +1,63 @@
+@import views.html.layout.main
+@import play.api.i18n.Messages
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.web.util
+@import views.html.elements._
+@import views.html.layout
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import be.objectify.deadbolt.scala.views.html.restrictOr
+@import org.ada.server.models.FieldTypeSpec
+@import org.ada.server.models.FieldTypeId
+@import org.ada.web.controllers.routes
+@import org.incal.play.security.SecurityRole
+
+@(
+    form: Form[_],
+    nameFieldTypeMap: Map[String, FieldTypeSpec]
+)(
+    implicit context: WebContext
+)
+
+@inputTextAux(fieldName: String, defaultValue: Option[Any] = None) = @{
+    defining(form(fieldName)) { field =>
+        inputFieldText(
+            "genericForm",
+            if (field.value.isEmpty && defaultValue.isDefined)
+                field.copy(value = Some(defaultValue.get.toString))
+            else
+                field,
+            Nil,
+            3
+        )
+    }
+}
+
+@selectAux(fieldName: String, enumValues: Seq[String]) = {
+    @select("genericForm", fieldName, form, enumValues.map(x => (x, x)), true, Nil, 3)
+}
+
+@checkboxAux(fieldName: String) = {
+    @checkbox("genericForm", fieldName, form, Nil, 3)
+}
+
+@if(form.mapping.mappings.nonEmpty) {
+    @form.mapping.mappings.filter(mapping => !mapping.key.isEmpty).map { mapping =>
+        @{
+            nameFieldTypeMap.get(mapping.key).map { fieldTypeSpec: FieldTypeSpec =>
+                defining(fieldTypeSpec.enumValues.map(_._2).toSeq.sorted){ enumValues: Seq[String] =>
+                    if(fieldTypeSpec.fieldType == FieldTypeId.Boolean) {
+                        checkboxAux(mapping.key)
+                    } else if(fieldTypeSpec.fieldType == FieldTypeId.Enum) {
+                        selectAux(mapping.key, enumValues)
+                    } else
+                        inputTextAux(mapping.key)
+                }
+            }.getOrElse(
+                inputTextAux(mapping.key)
+            )
+        }
+    }
+} else {
+    @inputTextAux("")
+}

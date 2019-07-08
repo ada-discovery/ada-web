@@ -19,9 +19,9 @@
     @displayTable(
         items,
         typeColumns[String](
-            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
             (Some("name"), "Name", identity)
-        )
+        ),
+        tableSelection = true
     )
 }
 

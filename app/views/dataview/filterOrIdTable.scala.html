@@ -19,7 +19,6 @@
     @displayTable(
         items,
         typeColumns[Either[Seq[FilterCondition], BSONObjectID]](
-            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
             (None, "", { filterOrId =>
                 filterOrId match {
                     case Left(conditions) => filterOrIdHiddenElement(conditions)
@@ -32,7 +31,8 @@
                     case Right(id) => "Filter id: " + id.stringify
                 }
             })
-        )
+        ),
+        tableSelection = true
     )
 }
 
