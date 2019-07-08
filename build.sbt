@@ -58,11 +58,11 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3"
 )
 
-val jacksonVersion = "2.8.8"
+val jacksonVersion = "2.7.6" //  "2.8.8"
 
 // Because of Spark
 dependencyOverrides ++= Set(
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,    // "2.7.6"
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,    //
   "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,               // newly introduced
   "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,           // newly introduced
   "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVersion,  // newly introduced
