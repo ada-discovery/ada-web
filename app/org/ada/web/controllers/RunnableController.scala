@@ -51,6 +51,7 @@ class RunnableController @Inject() (
   private val searchRunnableSubpackages = configuration.getBoolean("runnables.subpackages.enabled").getOrElse(false)
 
   private val runnablesHomeRedirect = Redirect(routes.RunnableController.selectRunnable())
+  private val appHomeRedirect = Redirect(routes.AppController.index())
 
   /**
     * Creates view showing all runnables.
@@ -180,17 +181,22 @@ class RunnableController @Inject() (
   ) = WithNoCaching {
     restrictAdminOrPermissionAny(s"RN:$className") {
       implicit request =>
-        Future {
+        for {
+          user <- currentUser()
+        } yield {
+          val isAdmin = user.map(_.isAdmin).getOrElse(false)
+          val errorRedirect = if (isAdmin) runnablesHomeRedirect else appHomeRedirect
+
           try {
             val instance = getInjectedInstance(className)
             action(request)(instance)
           } catch {
             case _: ClassNotFoundException =>
-              runnablesHomeRedirect.flashing("errors" -> s"Script ${className} does not exist.")
+              errorRedirect.flashing("errors" -> s"Script ${className} does not exist.")
 
             case e: Exception =>
               logger.error(s"Script ${className} failed", e)
-              runnablesHomeRedirect.flashing("errors" -> s"Script ${className} failed due to: ${e.getMessage}")
+              errorRedirect.flashing("errors" -> s"Script ${className} failed due to: ${e.getMessage}")
           }
         }
     }
