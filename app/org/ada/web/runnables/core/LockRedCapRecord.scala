@@ -18,7 +18,7 @@ class LockRedCapRecord @Inject()(factory: RedCapServiceFactory) extends InputFut
     } yield {
 
       def report(prefix: String, responses: Traversable[LockRecordResponse]) = {
-        addParagraph(s"<h4>${prefix.capitalize} records #: ${bold(responses.size.toString)}</h4>")
+        addParagraph(s"<h4>${prefix.capitalize} instruments #: ${bold(responses.size.toString)}</h4>")
         addOutput("<br/>")
         responses.toSeq.sortBy(_.instrument).foreach { response =>
           addParagraph(bold(s"instrument: ${response.instrument}"))
@@ -42,7 +42,7 @@ class LockRedCapRecord @Inject()(factory: RedCapServiceFactory) extends InputFut
       report("locked", responses.filter(_.locked == "1"))
       report("unlocked", responses.filter(_.locked == "0"))
 
-      addParagraph(s"<h4>Lock-undefined records #: ${bold(responses.filter(_.locked == "").size.toString)}</h4>")
+      addParagraph(s"<h4>Lock-undefined instruments #: ${bold(responses.filter(_.locked == "").size.toString)}</h4>")
     }
   }
 }
