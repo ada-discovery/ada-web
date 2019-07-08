@@ -212,7 +212,7 @@ class RunnableController @Inject() (
       case htmlOutput: RunnableHtmlOutput =>
 
         val output = htmlOutput.output.mkString
-        Ok(runnableViews.runnableOutput(runnable.getClass, output)).flashing("success" -> message)
+        Ok(runnableViews.runnableOutput(runnable.getClass, output, message))
 
       // no output
       case _ =>

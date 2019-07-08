@@ -8,9 +8,9 @@ import org.incal.core.util.ReflectionUtil.getCaseClassMemberNamesAndValues
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class LockRedCapRecord @Inject()(factory: RedCapServiceFactory) extends InputFutureRunnableExt[LockRedCapRecordSpec] with RunnableHtmlOutput {
+class LockRedCapRecordAtCustomHost @Inject()(factory: RedCapServiceFactory) extends InputFutureRunnableExt[LockRedCapRecordAtCustomHostSpec] with RunnableHtmlOutput {
 
-  override def runAsFuture(input: LockRedCapRecordSpec) = {
+  override def runAsFuture(input: LockRedCapRecordAtCustomHostSpec) = {
     val redCapService = factory(input.url, input.token)
 
     for {
@@ -47,7 +47,7 @@ class LockRedCapRecord @Inject()(factory: RedCapServiceFactory) extends InputFut
   }
 }
 
-case class LockRedCapRecordSpec(
+case class LockRedCapRecordAtCustomHostSpec(
   url: String,
   token: String,
   action: RedCapLockAction.Value,

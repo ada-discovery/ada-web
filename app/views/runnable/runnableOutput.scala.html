@@ -12,12 +12,21 @@
 
 @(
     scriptClazz: Class[_],
-    output: String
+    output: String,
+    message: String
 )(
     implicit context: WebContext
 )
 
-@main(util.toHumanReadableCamel(scriptClazz.getSimpleName)) {
+@bottomResources = {
+    <script type="text/javascript">
+        $(function () {
+            showMessage('@message')
+        });
+    </script>
+}
+
+@main(util.toHumanReadableCamel(scriptClazz.getSimpleName), bottomResources = Some(bottomResources)) {
 
     <div class="page-header">
         <h3>
