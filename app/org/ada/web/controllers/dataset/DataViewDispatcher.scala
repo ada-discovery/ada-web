@@ -20,6 +20,8 @@ class DataViewDispatcher @Inject()(
   with AdminOrOwnerControllerDispatcherExt[DataViewController]
   with DataViewController {
 
+  override protected val noCaching = true
+
   override def controllerFactory = factory(_)
 
   override def get(id: BSONObjectID) = dispatchIsAdminOrOwner(id, _.get(id))

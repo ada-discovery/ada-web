@@ -32,7 +32,7 @@
     <script type="text/javascript">
         $(function () {
             $.ajax({
-                url: '@Html(routes.UnsupervisedLearningController.idAndNames.url)',
+                url: '@Html(routes.ClusteringController.idAndNames.url)',
                 success: function (data) {
                     var typeaheadData = data.map(function (item, index) {
                         return {name: item._id.$oid, label: item.name};

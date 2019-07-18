@@ -9,6 +9,8 @@ class DictionaryDispatcher @Inject() (
 ) extends DataSetLikeDispatcher[DictionaryController](ControllerName.field)
     with DictionaryController {
 
+  override protected val noCaching = true
+
   override def controllerFactory = factory(_)
 
   override def get(id: String) = dispatch(_.get(id))

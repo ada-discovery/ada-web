@@ -15,6 +15,7 @@ class UpdateItems extends DsaInputFutureRunnable[UpdateItemsSpec] with RunnableH
 
     for {
       jsons <- dsa.dataSetRepo.find(Seq(criterion(input.ids, input.negate)))
+
       newJsons = jsons.map(json => json.+((input.stringFieldName, JsString(input.value))))
       _ <- if (newJsons.size == 1) dsa.dataSetRepo.update(newJsons.head) else dsa.dataSetRepo.update(newJsons)
     } yield

@@ -35,8 +35,8 @@ PlayKeys.devSettings := Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.7.3", // "0.8.0.RC.3.SNAPSHOT.18", // "0.7.3",
-  "org.in-cal" %% "incal-play" % "0.1.9",
+  "org.adada" %% "ada-server" % "0.8.0.RC.4",
+  "org.in-cal" %% "incal-play" % "0.2.1",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
   "jp.t2v" %% "play2-auth" % "0.14.1",
@@ -58,15 +58,15 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.2.3"
 )
 
-val jacksonVersion = "2.7.6" //  "2.8.8"
+val jacksonVersion = "2.8.8"
 
 // Because of Spark
 dependencyOverrides ++= Set(
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,    //
-  "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,               // newly introduced
-  "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,           // newly introduced
-  "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVersion,  // newly introduced
-  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVersion // newly introduced
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % jacksonVersion,
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % jacksonVersion
 )
 
 packagedArtifacts in publishLocal := {

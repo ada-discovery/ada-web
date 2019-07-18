@@ -1,7 +1,7 @@
 @import views.html.elements.{inputText, checkbox, select}
 @import play.api.i18n.Messages
-@import org.ada.server.models.ml.unsupervised.KMeans
-@import org.ada.server.models.ml.unsupervised.KMeansInitMode
+@import org.incal.spark_ml.models.clustering.KMeans
+@import org.incal.spark_ml.models.clustering.KMeansInitMode
 @import org.ada.web.util.enumToValueString
 
 @(form: Form[KMeans])(implicit msg: Messages)

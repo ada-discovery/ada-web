@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import akka.stream.Materializer
 import org.ada.web.models.{LineWidget, Widget}
 import org.ada.web.models.Widget.WidgetWrites
 import org.ada.server.models._
@@ -14,7 +15,7 @@ import views.html.{classificationrun => view}
 
 import scala.reflect.runtime.universe.TypeTag
 
-abstract class ClassificationRunControllerImpl[R <: ClassificationResult : Format : TypeTag] extends MLRunControllerImpl[R, Classifier] {
+abstract class ClassificationRunControllerImpl[R <: ClassificationResult: Format : TypeTag](implicit materializer: Materializer) extends MLRunControllerImpl[R, Classifier] {
 
   protected def statsService: StatsService
 

@@ -60,7 +60,7 @@ protected[controllers] class CategoryControllerImpl @Inject() (
       "label" -> optional(nonEmptyText),
       "parentId" -> optional(nonEmptyText)
     ) { (id, name, label, parentId) =>
-      Category(id, name, label, parentId.map(BSONObjectID(_)))
+      Category(id, name, label, parentId.map(BSONObjectID.parse(_).get))
     }
     ((category: Category) => Some(category._id, category.name, category.label, category.parentId.map(_.stringify)))
   )

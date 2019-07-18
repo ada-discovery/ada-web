@@ -57,7 +57,10 @@ object PathBindables {
   implicit object BSONObjectIDPathBindable extends PathBindable[BSONObjectID] {
     val b = implicitly[PathBindable[String]]
     def bind(key: String, value: String): Either[String, BSONObjectID] =
-      b.bind(key, value).right.map(BSONObjectID(_))
+      b.bind(key, value) match {
+        case Left(error) => Left(error)
+        case Right(id) => BSONObjectID.parse(id).map(Right(_)).getOrElse(Left(s"Id '$id' cannot be parsed to BSONObjectID."))
+      }
     def unbind(key: String, value: BSONObjectID): String =
       b.unbind(key, value.stringify)
   }

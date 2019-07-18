@@ -20,7 +20,7 @@
         }
 
         <p class="text-muted" align="center">
-            App Version: @configuration.getString("app.version").get @configuration.getString("project.name").map(", Project: " + _)
+            App Version: @configuration.getString("app.version").get@configuration.getString("project.name").map(", Project: " + _)
         </p>
         <p class="text-muted" align="center">
             @defining((configuration.getString("copyright.url"), configuration.getString("copyright.text"))) { urlAndText: (Option[String], Option[String]) =>

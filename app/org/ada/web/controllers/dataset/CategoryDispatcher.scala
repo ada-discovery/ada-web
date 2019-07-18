@@ -11,6 +11,8 @@ class CategoryDispatcher @Inject()(
 ) extends DataSetLikeDispatcher[CategoryController](ControllerName.category)
     with CategoryController {
 
+  override protected val noCaching = true
+
   override def controllerFactory = factory(_)
 
   override def get(id: BSONObjectID) = dispatch(_.get(id))

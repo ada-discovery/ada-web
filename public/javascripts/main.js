@@ -445,6 +445,26 @@ function prependTrollboxMessage(author, timeCreated, text, isAdmin, fadeIn) {
   }
 }
 
+function showHideMessageBox() {
+    if ($("#contentDiv").hasClass("col-md-8-5")) {
+        $("#contentDiv").removeClass("col-md-8-5").addClass("col-md-10-25")
+        $("#messageBoxDiv").hide();
+        $("#showHideMessageBoxSpan").html("&#8612;")
+
+        if (Highcharts) {
+            refreshHighcharts();
+        }
+    } else {
+        $("#contentDiv").removeClass("col-md-10-25").addClass("col-md-8-5")
+        $("#messageBoxDiv").show();
+        $("#showHideMessageBoxSpan").html("&#8614;")
+
+        if (Highcharts) {
+            refreshHighcharts();
+        }
+    }
+}
+
 function showMessage(text) {
   $('#messageDiv').hide();
 

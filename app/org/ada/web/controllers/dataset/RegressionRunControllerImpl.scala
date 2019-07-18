@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import akka.stream.Materializer
 import org.ada.server.models.ml.regression.Regressor.RegressorIdentity
 import org.incal.spark_ml.models.regression.{RegressionEvalMetric, Regressor}
 import org.incal.spark_ml.models.result._
@@ -8,7 +9,7 @@ import views.html.{regressionrun => view}
 
 import scala.reflect.runtime.universe.TypeTag
 
-abstract class RegressionRunControllerImpl[E <: RegressionResult : Format : TypeTag] extends MLRunControllerImpl[E, Regressor] {
+abstract class RegressionRunControllerImpl[E <: RegressionResult : Format : TypeTag](implicit materializer: Materializer) extends MLRunControllerImpl[E, Regressor] {
 
   override protected val mlMethodName = (x: Regressor) => x.name.getOrElse("N/A")
 

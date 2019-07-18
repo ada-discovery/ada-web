@@ -20,6 +20,8 @@ class FilterDispatcher @Inject()(
    with AdminOrOwnerControllerDispatcherExt[FilterController]
    with FilterController {
 
+  override protected val noCaching = true
+
   override def controllerFactory = factory(_)
 
   override def get(id: BSONObjectID) = dispatchIsAdminOrOwner(id, _.get(id))

@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import akka.stream.Materializer
 import com.google.inject.assistedinject.Assisted
 import javax.inject.Inject
 import org.ada.server.AdaException
@@ -34,7 +35,8 @@ protected[controllers] class TemporalRegressionRunControllerImpl @Inject()(
   val mlService: MachineLearningService,
   val dataSetService: DataSetService,
   val dataSpaceService: DataSpaceService,
-  val wgs: WidgetGenerationService
+  val wgs: WidgetGenerationService)(
+  implicit materializer: Materializer
 ) extends RegressionRunControllerImpl[TemporalRegressionResult]
   with TemporalRegressionRunController {
 

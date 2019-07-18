@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import akka.stream.Materializer
 import javax.inject.Inject
 import com.google.inject.assistedinject.Assisted
 import org.ada.server.models.{DistributionWidgetSpec, _}
@@ -37,7 +38,8 @@ protected[controllers] class StandardRegressionRunControllerImpl @Inject()(
   val mlService: MachineLearningService,
   val dataSetService: DataSetService,
   val dataSpaceService: DataSpaceService,
-  val wgs: WidgetGenerationService
+  val wgs: WidgetGenerationService)(
+  implicit materializer: Materializer
 ) extends RegressionRunControllerImpl[StandardRegressionResult]
   with StandardRegressionRunController {
 

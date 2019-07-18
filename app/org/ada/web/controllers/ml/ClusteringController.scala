@@ -4,8 +4,8 @@ import java.util.Date
 
 import javax.inject.Inject
 import org.ada.web.controllers.core.AdaCrudControllerImpl
-import org.ada.server.models._
-import org.ada.server.models.ml.unsupervised._
+import org.ada.server.models.ml.clustering.Clustering._
+import org.incal.spark_ml.models.clustering._
 import org.ada.server.dataaccess.RepoTypes._
 import play.api.data.Forms.{mapping, optional, _}
 import play.api.data.format.Formats._
@@ -17,7 +17,7 @@ import play.twirl.api.Html
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.BSONFormats._
 import org.ada.web.services.DataSpaceService
-import org.ada.web.controllers.ml.routes.{UnsupervisedLearningController => unsupervisedRoutes}
+import org.ada.web.controllers.ml.routes.{ClusteringController => clusteringRoutes}
 import org.ada.server.models.DataSpaceMetaInfo
 import org.incal.core.FilterCondition
 import org.incal.core.dataaccess.AscSort
@@ -25,19 +25,18 @@ import org.incal.core.util.firstCharToLowerCase
 import org.incal.play.Page
 import org.incal.play.controllers._
 import org.incal.play.formatters._
-import views.html.{layout, unsupervisedlearning => view}
+import views.html.{layout, clustering => view}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UnsupervisedLearningController @Inject()(
-    repo: UnsupervisedLearningRepo,
+class ClusteringController @Inject()(
+    repo: ClusteringRepo,
     dataSpaceService: DataSpaceService
-
-  ) extends AdaCrudControllerImpl[UnsupervisedLearning, BSONObjectID](repo)
+  ) extends AdaCrudControllerImpl[Clustering, BSONObjectID](repo)
     with AdminRestrictedCrudController[BSONObjectID]
-    with HasCreateEditSubTypeFormViews[UnsupervisedLearning, BSONObjectID]
-    with HasFormShowEqualEditView[UnsupervisedLearning, BSONObjectID] {
+    with HasCreateEditSubTypeFormViews[Clustering, BSONObjectID]
+    with HasFormShowEqualEditView[Clustering, BSONObjectID] {
 
   private implicit val kMeansInitModeFormatter = EnumFormatter(KMeansInitMode)
   private implicit val ldaptimizerFormatter = EnumFormatter(LDAOptimizer)
@@ -101,7 +100,7 @@ class UnsupervisedLearningController @Inject()(
       "timeCreated" -> ignored(new Date())
     )(GaussianMixture.apply)(GaussianMixture.unapply))
 
-  protected case class UnsupervisedLearningCreateEditViews[E <: UnsupervisedLearning](
+  protected case class UnsupervisedLearningCreateEditViews[E <: Clustering](
     displayName: String,
     val form: Form[E],
     viewElements: (Form[E], Messages) => Html)(
@@ -118,8 +117,8 @@ class UnsupervisedLearningController @Inject()(
           messagePrefix,
           form,
           viewElements(form, ctx.msg),
-          unsupervisedRoutes.save,
-          unsupervisedRoutes.listAll(),
+          clusteringRoutes.save,
+          clusteringRoutes.listAll(),
           'enctype -> "multipart/form-data"
         )
     }
@@ -131,9 +130,9 @@ class UnsupervisedLearningController @Inject()(
           messagePrefix,
           data.form.errors,
           viewElements(data.form, ctx.msg),
-          unsupervisedRoutes.update(data.id),
-          unsupervisedRoutes.listAll(),
-          Some(unsupervisedRoutes.delete(data.id))
+          clusteringRoutes.update(data.id),
+          clusteringRoutes.listAll(),
+          Some(clusteringRoutes.delete(data.id))
         )
     }
   }
@@ -165,21 +164,21 @@ class UnsupervisedLearningController @Inject()(
       )
     )
 
-  override protected val homeCall = routes.UnsupervisedLearningController.find()
+  override protected val homeCall = routes.ClusteringController.find()
 
   // default form... unused
-  override protected[controllers] val form = kMeansForm.asInstanceOf[Form[UnsupervisedLearning]]
+  override protected[controllers] val form = kMeansForm.asInstanceOf[Form[Clustering]]
 
   override def create(concreteClassName: String) = restrictAny(super.create(concreteClassName))
 
   override protected type ListViewData = (
-    Page[UnsupervisedLearning],
+    Page[Clustering],
     Seq[FilterCondition],
     Traversable[DataSpaceMetaInfo]
   )
 
   override protected def getListViewData(
-    page: Page[UnsupervisedLearning],
+    page: Page[Clustering],
     conditions: Seq[FilterCondition]
   ) = { request =>
     for {

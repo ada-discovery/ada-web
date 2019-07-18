@@ -27,7 +27,8 @@ trait ExportableAction[E] {
     fieldNames: Traversable[String],
     orderBy: Option[String] = None,
     filter: Seq[FilterCondition] = Nil,
-    nameFieldTypeMap: Map[String, FieldType[_]] = Map()
+    nameFieldTypeMap: Map[String, FieldType[_]] = Map())(
+    implicit materializer: Materializer
   ) = Action.async { implicit request =>
     for {
       jsonStream <- getJsonsStream(filter, orderBy, fieldNames)
@@ -47,9 +48,8 @@ trait ExportableAction[E] {
     orderBy: Option[String],
     filter: Seq[FilterCondition] = Nil,
     fieldNames: Traversable[String] = Nil,
-    nameFieldTypeMap: Map[String, FieldType[_]] = Map()
-  )(
-    implicit ev: Format[E]
+    nameFieldTypeMap: Map[String, FieldType[_]] = Map())(
+    implicit ev: Format[E], materializer: Materializer
   ) = Action.async { implicit request =>
     for {
       jsonStream <- getJsonsStream(filter, orderBy, fieldNames)
@@ -88,7 +88,8 @@ trait ExportableAction[E] {
   private def getJsonsStream(
     filter: Seq[FilterCondition],
     orderBy: Option[String],
-    projection: Traversable[String] = Nil
+    projection: Traversable[String] = Nil)(
+    implicit materializer: Materializer
   ): Future[Source[JsObject, _]] =
     for {
       criteria <- toCriteria(filter)

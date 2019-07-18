@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import akka.stream.Materializer
 import com.google.inject.assistedinject.Assisted
 import javax.inject.Inject
 import org.ada.server.AdaException
@@ -36,7 +37,8 @@ class TemporalClassificationRunControllerImpl @Inject()(
   val statsService: StatsService,
   val dataSetService: DataSetService,
   val dataSpaceService: DataSpaceService,
-  val wgs: WidgetGenerationService
+  val wgs: WidgetGenerationService)(
+  implicit materializer: Materializer
 ) extends ClassificationRunControllerImpl[TemporalClassificationResult]
     with TemporalClassificationRunController {
 

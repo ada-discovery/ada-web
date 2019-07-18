@@ -253,8 +253,6 @@
 
                             const scatterData = data[0][0]
 
-                            console.log(scatterData)
-
                             const values = scatterData.data.map(function (item, index) {
                                 return item[1].map(function (value, i) {
                                     return [value[0], value[1], index];
@@ -266,9 +264,6 @@
                             });
 
                             const valuesArray = [].concat.apply([], values)
-
-                            console.log(categories)
-                            console.log(valuesArray)
 
                             var fullData = {
                                 values: valuesArray,

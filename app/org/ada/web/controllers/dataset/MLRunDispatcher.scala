@@ -7,6 +7,8 @@ abstract class MLRunDispatcher[C <: MLRunController](
   controllerName: ControllerName.Value
 ) extends DataSetLikeDispatcher[C](controllerName) with MLRunController {
 
+  override protected val noCaching = true
+
   override def get(id: BSONObjectID) = dispatch(_.get(id))
 
   override def find(page: Int, orderBy: String, filter: Seq[FilterCondition]) = dispatch(_.find(page, orderBy, filter))

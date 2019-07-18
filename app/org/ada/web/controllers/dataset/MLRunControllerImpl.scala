@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import akka.stream.Materializer
 import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.web.util.toHumanReadableCamel
 import org.ada.server.models.{DistributionWidgetSpec, _}
@@ -40,7 +41,7 @@ import scala.reflect.runtime.universe.TypeTag
 import scala.concurrent.Future
 
 protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format, ML](
-  implicit override val typeTag: TypeTag[R], identity: Identity[ML, BSONObjectID]
+  implicit override val typeTag: TypeTag[R], identity: Identity[ML, BSONObjectID], materializer: Materializer
 ) extends AdaReadonlyControllerImpl[R, BSONObjectID]
     with MLRunController
     with WidgetRepoController[R]

@@ -24,6 +24,8 @@ class DataSetDispatcher @Inject() (
     with AdminOrOwnerControllerDispatcherExt[DataSetController]
     with DataSetController {
 
+  override protected val noCaching = true
+
   override protected def getController(id: String) =
     dscf(id).getOrElse(
       throw new IllegalArgumentException(s"Controller id '${id}' not recognized.")

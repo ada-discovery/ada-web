@@ -1,5 +1,6 @@
 package org.ada.web.controllers.dataset
 
+import akka.stream.Materializer
 import javax.inject.Inject
 import org.ada.server.models.DistributionWidgetSpec
 
@@ -49,8 +50,8 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
     dataSetService: DataSetService,
     statsService: StatsService,
     dataSpaceService: DataSpaceService,
-    val wgs: WidgetGenerationService
-
+    val wgs: WidgetGenerationService)(
+    implicit materializer: Materializer
   ) extends AdaCrudControllerImpl[Field, String](dsaf(dataSetId).get.fieldRepo)
     with DictionaryController
     with WidgetRepoController[Field]
@@ -104,7 +105,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
       "categoryId" -> optional(nonEmptyText)
       // TODO: make it prettier perhaps by moving the category stuff to proxy/subclass of Field
     ) { (name, label, fieldType, isArray, numValues, displayDecimalPlaces, displayTrueValue, displayFalseValue, aliases, categoryId) =>
-      Field(name, label, fieldType, isArray, numValues, displayDecimalPlaces, displayTrueValue, displayFalseValue, aliases, categoryId.map(BSONObjectID(_)))
+      Field(name, label, fieldType, isArray, numValues, displayDecimalPlaces, displayTrueValue, displayFalseValue, aliases, categoryId.map(BSONObjectID.parse(_).get))
     }
     ((field: Field) => Some(
       field.name,

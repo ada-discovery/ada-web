@@ -3,6 +3,7 @@ package org.ada.web.controllers.dataset
 import java.util.UUID
 import java.{util => ju}
 
+import akka.stream.Materializer
 import javax.inject.Inject
 import org.ada.web.util.WebExportUtil._
 import org.ada.web.util.shorten
@@ -23,7 +24,7 @@ import org.ada.web.models.Widget.WidgetWrites
 import org.ada.server.json.{ManifestedFormat, OptionFormat, SubTypeFormat, TupleFormat}
 import org.ada.server.models.ml._
 import org.ada.web.controllers.dataset.IndependenceTestResult._
-import org.ada.server.dataaccess.RepoTypes.{ClassifierRepo, RegressorRepo, UnsupervisedLearningRepo}
+import org.ada.server.dataaccess.RepoTypes.{ClassifierRepo, RegressorRepo, ClusteringRepo}
 import org.ada.server.dataaccess.dataset.{DataSetAccessor, DataSetAccessorFactory}
 import play.api.Logger
 import play.api.data.{Form, Mapping}
@@ -78,9 +79,10 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     widgetService: WidgetGenerationService,
     classificationRepo: ClassifierRepo,
     regressionRepo: RegressorRepo,
-    unsupervisedLearningRepo: UnsupervisedLearningRepo,
+    clusteringRepo: ClusteringRepo,
     dataSpaceService: DataSpaceService,
-    tranSMARTService: TranSMARTService
+    tranSMARTService: TranSMARTService)(
+    implicit materializer: Materializer
   ) extends AdaReadonlyControllerImpl[JsObject, BSONObjectID]
     with DataSetController
     with ExportableAction[JsObject]
@@ -342,7 +344,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           setting.exportOrderByFieldName,
           filter,
           nameFieldTypeMap
-        )(request)
+        ).apply(request)
       }
     } yield
       result
@@ -2162,7 +2164,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       else
         Nil
 
-    val mlModelFuture = unsupervisedLearningRepo.get(mlModelId)
+    val mlModelFuture = clusteringRepo.get(mlModelId)
     val criteriaFuture = loadCriteria(filterId)
 
     for {

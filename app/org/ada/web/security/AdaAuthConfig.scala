@@ -9,7 +9,6 @@ import play.api.mvc.{Request, RequestHeader, Result}
 import org.ada.server.services.UserManager
 
 import scala.concurrent.ExecutionContext.Implicits._
-import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect._
 

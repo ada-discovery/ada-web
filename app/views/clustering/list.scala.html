@@ -2,18 +2,18 @@
 @import views.html.table.paginatedTable
 @import views.html.dataset.datasetMenu
 @import views.html.filter.filterWithJs
-@import org.ada.web.controllers.ml.routes.{UnsupervisedLearningController => route}
+@import org.ada.web.controllers.ml.routes.{ClusteringController => route}
 @import org.ada.web.util.{toHumanReadableCamel, typeColumns}
 @import org.ada.server.models.{DataSpaceMetaInfo, Field, FilterShowFieldStyle}
 @import org.ada.server.models.Filter
 @import org.incal.play.controllers.WebContext._
 @import org.incal.play.controllers.WebContext
-@import org.ada.server.models.ml.unsupervised._
+@import org.incal.spark_ml.models.clustering._
 @import org.incal.play.Page
 @import org.incal.core.FilterCondition
 
 @(
-    page: Page[UnsupervisedLearning],
+    page: Page[Clustering],
     conditions: Seq[FilterCondition],
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
@@ -60,17 +60,17 @@
     paginatedTable(
         page,
         route.find(_, _, conditions),
-        typeColumns[UnsupervisedLearning](
+        typeColumns[Clustering](
             (Some("concreteClass"), "Type", {x => toHumanReadableCamel(x.getClass.getSimpleName)}),
             (Some("name"), "Name", _.name.getOrElse("")),
             (Some("timeCreated"), "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss"))
         ),
-        Some({ item : Any => route.get(item.asInstanceOf[UnsupervisedLearning]._id.get)})
+        Some({ item : Any => route.get(item.asInstanceOf[Clustering]._id.get)})
     )
 }
 
 @layout.list(
-    "Unsupervised Learning",
+    "Clustering",
     None,
     page.total,
     Some(actions),

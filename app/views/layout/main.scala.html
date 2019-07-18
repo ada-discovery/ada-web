@@ -48,13 +48,18 @@
                 <div class="menu col-md-1-75 col-sm-12">
                     @sideBar.getOrElse("")
                 </div>
-                <div class="col-md-8-5 col-sm-12">
+                <div id="contentDiv" class="col-md-8-5 col-sm-12">
                     @if(topContentBar.isDefined) {
                         <div class="row-fluid">
                             @topContentBar.get
                         </div>
                     }
                     <div class="content">
+                        @if(showMessageBox) {
+                            <div class="hidden-sm hidden-xs showHideMessageBoxDiv">
+                                <a href="#" onclick="showHideMessageBox();"><span id="showHideMessageBoxSpan">&#8614;</span></a>
+                            </div>
+                        }
                         <div id="messageContainer">
                             @flashMessages()
                             @if(extraMessages.isDefined) {
@@ -67,9 +72,9 @@
                     </div>
                     @footer()
                 </div>
-                <div class="col-md-1-75 hidden-sm hidden-xs">
-                    @subjectPresent() {
-                        @if(showMessageBox) {
+                <div id="messageBoxDiv" class="col-md-1-75 hidden-sm hidden-xs">
+                    @if(showMessageBox) {
+                        @subjectPresent() {
                             @trollbox()
                         }
                     }

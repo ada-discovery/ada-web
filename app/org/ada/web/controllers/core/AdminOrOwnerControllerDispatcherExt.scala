@@ -2,7 +2,7 @@ package org.ada.web.controllers.core
 
 import be.objectify.deadbolt.scala.DeadboltHandler
 import org.ada.web.models.security.DeadboltUser
-import org.incal.play.controllers.SecureControllerDispatcher
+import org.incal.play.controllers.{SecureControllerDispatcher, WithNoCaching}
 import org.incal.play.security.AuthAction
 import org.incal.play.security.SecurityUtil.toAuthenticatedAction
 import play.api.mvc.{Action, AnyContent, Request}
@@ -36,6 +36,7 @@ trait AdminOrOwnerControllerDispatcherExt[C] {
               case None => false
             }
         },
+        noCaching,
         outputHandler
       )
 
@@ -55,6 +56,6 @@ trait AdminOrOwnerControllerDispatcherExt[C] {
 
   protected def dispatchIsAdmin: DispatchActionTransformation = { cAction =>
     val autAction = toAuthenticatedAction(dispatch(cAction))
-    restrictAdminAny()(autAction)
+    restrictAdminAny(noCaching)(autAction)
   }
 }

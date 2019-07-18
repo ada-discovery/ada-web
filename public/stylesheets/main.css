@@ -131,6 +131,20 @@ code {
     top: 70px;
 }
 
+.showHideMessageBoxDiv {
+    position: absolute;
+    right: 15px;
+    top: 5px;
+    border-left: 2px solid #979797;
+    border-top: 2px solid #979797;
+    border-bottom: 2px solid #979797;
+}
+
+.showHideMessageBoxDiv > a {
+    color: #979797;
+    font-size:20px;
+}
+
 tr.clickable-row {
   cursor: pointer;
 }
@@ -388,7 +402,7 @@ a.carousel-control.right{
     color: #626262;
 }
 
-.col-md-8-5, .col-md-1-75 {
+.col-md-10-25, .col-md-8-5, .col-md-1-75 {
     position: relative;
     min-height: 1px;
     padding-right: 15px;
@@ -396,8 +410,11 @@ a.carousel-control.right{
 }
 
 @media (min-width: 992px) {
-    .col-md-8-5, .col-md-1-75 {
+    .col-md-10-25, .col-md-8-5, .col-md-1-75 {
         float: left;
+    }
+    .col-md-10-25 {
+        width: 85.416%
     }
     .col-md-8-5 {
         width: 70.833%

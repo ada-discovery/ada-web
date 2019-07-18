@@ -10,6 +10,7 @@ import org.incal.core.dataaccess.{AsyncCrudRepo, Criterion}
 import org.incal.spark_ml.MLResultUtil
 import org.incal.spark_ml.models.setting.ClassificationRunSpec
 import Criterion.Infix
+import akka.stream.Materializer
 import org.ada.server.json.OrdinalEnumFormat
 import org.incal.spark_ml.models.VectorScalerType
 import org.incal.spark_ml.models.classification.ClassificationEvalMetric
@@ -35,7 +36,8 @@ class StandardClassificationRunControllerImpl @Inject()(
   val statsService: StatsService,
   val dataSetService: DataSetService,
   val dataSpaceService: DataSpaceService,
-  val wgs: WidgetGenerationService
+  val wgs: WidgetGenerationService)(
+  implicit materializer: Materializer
 ) extends ClassificationRunControllerImpl[StandardClassificationResult]
     with StandardClassificationRunController {
 
