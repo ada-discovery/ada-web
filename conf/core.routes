@@ -292,14 +292,14 @@ POST        /ml/regressors/:id/delete                                           
 GET         /ml/regressors/idAndNames                                               org.ada.web.controllers.ml.RegressorController.idAndNames
 
 # ML Clusterization
-GET         /ml/clustering                                                          org.ada.web.controllers.ml.UnsupervisedLearningController.find(p: Int ?= 0, s: String ?= "concreteClass", filter: Seq[org.incal.core.FilterCondition] ?= Nil)
-GET         /ml/clustering/all                                                      org.ada.web.controllers.ml.UnsupervisedLearningController.listAll(s: String ?= "concreteClass")
-GET         /ml/clustering/new                                                      org.ada.web.controllers.ml.UnsupervisedLearningController.create(concreteClassName: String)
-POST        /ml/clustering/save                                                     org.ada.web.controllers.ml.UnsupervisedLearningController.save
-GET         /ml/clustering/get/:id                                                  org.ada.web.controllers.ml.UnsupervisedLearningController.get(id: BSONObjectID)
-POST        /ml/clustering/:id                                                      org.ada.web.controllers.ml.UnsupervisedLearningController.update(id: BSONObjectID)
-POST        /ml/clustering/:id/delete                                               org.ada.web.controllers.ml.UnsupervisedLearningController.delete(id: BSONObjectID)
-GET         /ml/clustering/idAndNames                                               org.ada.web.controllers.ml.UnsupervisedLearningController.idAndNames
+GET         /ml/clustering                                                          org.ada.web.controllers.ml.ClusteringController.find(p: Int ?= 0, s: String ?= "concreteClass", filter: Seq[org.incal.core.FilterCondition] ?= Nil)
+GET         /ml/clustering/all                                                      org.ada.web.controllers.ml.ClusteringController.listAll(s: String ?= "concreteClass")
+GET         /ml/clustering/new                                                      org.ada.web.controllers.ml.ClusteringController.create(concreteClassName: String)
+POST        /ml/clustering/save                                                     org.ada.web.controllers.ml.ClusteringController.save
+GET         /ml/clustering/get/:id                                                  org.ada.web.controllers.ml.ClusteringController.get(id: BSONObjectID)
+POST        /ml/clustering/:id                                                      org.ada.web.controllers.ml.ClusteringController.update(id: BSONObjectID)
+POST        /ml/clustering/:id/delete                                               org.ada.web.controllers.ml.ClusteringController.delete(id: BSONObjectID)
+GET         /ml/clustering/idAndNames                                               org.ada.web.controllers.ml.ClusteringController.idAndNames
 
 # Message
 GET         /messages/eventStream                                                   org.ada.web.controllers.MessageController.eventStream
