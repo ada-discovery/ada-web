@@ -1,0 +1,37 @@
+@import views.html.elements.labelValue
+@import org.incal.core.FilterCondition
+@import views.html.export.exportModal
+
+@(
+    modalName: String,
+    title: String,
+    exportCall: Call,
+    extraElements: Html = Html("")
+)
+
+@csvBody(defaultDelimiter: String) = {
+    <fieldset>
+        @labelValue("delimiter", "Delimiter", labelGridWidth = 3) {
+            <input id="delimiter" name="delimiter" value="@defaultDelimiter">
+        }
+        @labelValue("replaceEolWithSpace", "Remove \'\\r\'&\'\\n\'?", false, Some("Replace \'\\r\' and \'\\n\' with white space"), labelGridWidth = 3) {
+            <input type="checkbox" class="replaceEolWithSpaceCheckbox" checked="checked">
+            <input type="hidden" id="replaceEolWithSpace" name="replaceEolWithSpace" value="true">
+        }
+        @labelValue("eol", "EOL", false, Some("If not specified standard '\\n' character will be used"), labelGridWidth = 3) {
+            <input id="eol" name="eol" value="">
+        }
+        @extraElements
+    </fieldset>
+}
+
+@exportModal(modalName, title, exportCall, csvBody(","))
+
+<script type="text/javascript">
+    $(function () {
+        $('.replaceEolWithSpaceCheckbox').change( function(e) {
+            var checked = $(this).is(":checked");
+            $(this).parent().find('#replaceEolWithSpace').val(checked)
+        });
+    })
+</script>

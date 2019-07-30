@@ -393,6 +393,7 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
       jsonFileName)(
       Some(exportOrderByFieldName),
       filter,
+      Nil,
       if (tableColumnsOnly) listViewColumns.get else Nil
     )
 }

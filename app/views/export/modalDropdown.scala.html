@@ -1,0 +1,25 @@
+@import org.incal.core.FilterCondition
+@import views.html.export.exportModal
+@import views.html.elements.labelValue
+@import scala.collection.immutable
+@import views.html.export.menuItem
+
+@(
+    label: String,
+    menuItemModals: Seq[Either[(String, String, Html), Html]]
+)
+
+<div class="dropdown">
+    <button class="btn btn-info btn-sm dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Export
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+        @{menuItemModals.map { _ match {
+            case Left((name, caption, _)) => menuItem(name, caption)
+            case Right(html) => html
+        }}}
+    </ul>
+
+    @menuItemModals.flatMap(_.left.toOption).map(_._3)
+</div>

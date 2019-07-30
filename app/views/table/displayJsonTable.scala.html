@@ -4,6 +4,7 @@
 @import reactivemongo.bson.BSONObjectID
 @import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
 @import org.ada.web.util.FieldTypeFullRenderer.FieldTypeFullRenderer
+@import org.ada.server.models.DataSetFormattersAndIds.JsObjectIdentity
 
 @(
     items : Traversable[JsObject],
@@ -12,13 +13,23 @@
     fieldsToShow : Option[Seq[String]] = None,
     rowClickCall : Option[JsObject => Call] = None,
     fieldNameRenderMap: Option[Map[String, FieldTypeFullRenderer]] = None,
-    tableId: Option[String] = None
+    tableId: Option[String] = None,
+    tableSelection: Boolean = false
 )
+
+@idValue(id: BSONObjectID) = {
+    <input type="hidden" id="@JsObjectIdentity.name" value="@id.stringify">
+}
 
 <div class="horizontal-scroll">
 <table @if(tableId.isDefined) {id="@tableId.get"} class="table table-striped">
 	<thead>
 		<tr>
+            @if(tableSelection) {
+                <th class="col header">
+                    <input type="checkbox" class="table-selection-all" title="Check/Uncheck All"/>
+                </th>
+            }
             @if(fieldsToShow.isDefined) {
                 @fieldsToShow.get.map { field =>
                     @headerFun(Some(field), fieldLabel(field, fieldLabelMap))
@@ -35,12 +46,18 @@
 	<tbody>
     	@items.map { item =>
 	    	<tr class='@if(rowClickCall.isDefined) {clickable-row}' data-href='@if(rowClickCall.isDefined){@rowClickCall.get(item)}'>
+                @if(tableSelection) {
+                    <td>
+                        <input type="checkbox" class="table-selection"/>
+                        @{(item \ JsObjectIdentity.name).asOpt[BSONObjectID].map(idValue)}
+                    </td>
+                }
                 @if(fieldsToShow.isDefined) {
                     @fieldsToShow.get.map { fieldName =>
                         <td>
                             @if(fieldNameRenderMap.isDefined && fieldNameRenderMap.get.contains(fieldName)) {
                                 @fieldNameRenderMap.get.get(fieldName).get.apply(
-                                    (item \ "_id").as[BSONObjectID],
+                                    (item \ JsObjectIdentity.name).as[BSONObjectID],
                                     fieldName,
                                     (item \ fieldName).toOption
                                 )
@@ -61,3 +78,9 @@
 	</tbody>
 </table>
 </div>
+
+@if(tableSelection) {
+    <script type="text/javascript">
+        activateTableAllSelection();
+    </script>
+}

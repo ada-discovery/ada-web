@@ -278,6 +278,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
       jsonFileName)(
       Some(exportOrderByFieldName),
       filter,
+      Nil,
       if (tableColumnsOnly) listViewColumns.get else Nil
     )
 

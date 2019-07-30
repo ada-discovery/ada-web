@@ -8,7 +8,7 @@
 @import views.html.chart.highcharts.highchartsJsImport
 @import views.html.widget.widgetPanelJs
 @import views.html.modal
-@import views.html.exportDropdown
+@import views.html.export.exportDropdown
 @import views.html.dataview.dataViewSelectionModal
 @import views.html.category.categorySelectionModal
 @import views.html.filter.{filter, filterWithJs}
@@ -49,7 +49,7 @@
                         dictionaryRouter.exportCsv(_, true, None, _, _),
                         dictionaryRouter.exportJson,
                         conditions
-                    )()
+                    )
                 </li>
                 <li>
                     <div class="dropdown">
@@ -140,7 +140,6 @@
         page,
         dictionaryRouter.list(_, _, conditions),
         typeColumns[Field](
-            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
             (Some("name"), "Name", {field => JsonUtil.unescapeKey(field.name)}),
             (Some("label"), "Label", editableFieldLabelInput),
             (Some("fieldType"), "Type", _.fieldType),

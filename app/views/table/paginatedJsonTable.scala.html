@@ -2,8 +2,8 @@
 @import views.html.table.{header, displayJsonTable, pagination}
 @import reactivemongo.bson.BSONObjectID
 @import org.ada.web.util.FieldTypeFullRenderer.FieldTypeFullRenderer
-
 @import org.incal.play.Page
+
 @(
     page: Page[JsObject],
     refreshCall : (Int, String) => Call,
@@ -11,7 +11,8 @@
     fieldsToShow : Option[Seq[String]] = None,
     rowClickCall : Option[JsObject => Call] = None,
     fieldNameRenderMap: Option[Map[String, FieldTypeFullRenderer]] = None,
-    isAjaxRefresh: Boolean = false
+    isAjaxRefresh: Boolean = false,
+    tableSelection: Boolean = false
 )
 
 @refreshCallAux(newPage : Int, newOrderBy : Option[String]) = @{
@@ -31,7 +32,9 @@
         fieldLabelMap,
         fieldsToShow,
         rowClickCall,
-        fieldNameRenderMap
+        fieldNameRenderMap,
+        None,
+        tableSelection
     )
     <hr/>
     @pagination(page, refreshCallAux, isAjaxRefresh)

@@ -8,7 +8,8 @@
     page: Page[JsObject],
     filter: Option[Filter],
     tableFields: Traversable[Field],
-    withRowClickableJs: Boolean = false
+    withRowClickableJs: Boolean = false,
+    tableSelection: Boolean = false
 )(
     implicit request: Request[_], dataSetRouter: DataSetRouter
 )
@@ -23,6 +24,7 @@
         ),
         Some(dataSetRouter.get),
         withRowClickableJs,
-        true
+        true,
+        tableSelection
     )
 }

@@ -4,6 +4,7 @@
 @import org.ada.server.models.DataSpaceMetaInfo
 @import views.html.dataset.{widgetsScreen, dynamicFieldTable, dataSetExportDropdown}
 @import views.html.table.dynamicTableJsImport
+@import views.html.elements.labelValue
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
 
@@ -16,6 +17,13 @@
     implicit context: DataSetWebContext
 )
 
+@selectedOnlyElement = {
+    @labelValue("selectedOnly", "Selected Only?", labelGridWidth = 3, helpText = Some("If the selected (checked) rows are only to be exported.")) {
+        <input type="checkbox" class="selectedOnlyCheckbox">
+        <input type="hidden" id="selectedOnly" name="selectedOnly" value="false">
+    }
+}
+
 @extraActions = {
     <div class="pull-right">
         <ul class="list-inline">
@@ -27,11 +35,14 @@
             <li>
                 @dataSetExportDropdown(
                     dataSetName,
-                    dataSetRouter.exportTableAsCsv(Nil, _, true, None, _, _, true, true),
-                    dataSetRouter.exportTableAsJson(Nil, _, _, true),
-                    filterShowFieldStyle
+                    dataSetRouter.exportTableAsCsv(Nil, _, true, None, _, _, true, true, false, Nil),
+                    dataSetRouter.exportTableAsJson(Nil, _, _, true, false, Nil),
+                    filterShowFieldStyle,
+                    None,
+                    Some(selectedOnlyElement)
                 )
             </li>
+        </ul>
     </div>
 }
 
@@ -67,19 +78,22 @@
             addFilterModelBeforeModalSubmit("exportFilteredTableJsonModal", filterElement, "filter");
 
             // add table columns
-            addTableColumnsBeforeModalSubmit("exportFilteredTableCsvModal")
-            addTableColumnsBeforeModalSubmit("exportFilteredTableJsonModal")
+            addTableColumnsAndSelectedBeforeModalSubmit("exportFilteredTableCsvModal")
+            addTableColumnsAndSelectedBeforeModalSubmit("exportFilteredTableJsonModal")
         });
 
-        function addTableColumnsBeforeModalSubmit(modalId) {
+        function addTableColumnsAndSelectedBeforeModalSubmit(modalId) {
             $('#' + modalId + ' form').submit(function(event) {
                 event.preventDefault();
 
                 $(this).find("input[name='tableColumnNames']").remove()
+                $(this).find("input[name='selectedIds']").remove()
 
                 var params = {}
 
                 params["tableColumnNames"] = getFieldNames()
+                params["selectedIds"] = getSelectedRowIds()
+
                 addParams($(this), params)
 
                 // submit
@@ -147,6 +161,21 @@
         function getFieldNames() {
             $('#fieldNameDiv').dynamicTable('updateModelFromTable');
             return $('#fieldNameDiv').dynamicTable('getModel');
+        }
+
+        function getSelectedRowIds() {
+            var ids = []
+
+            $('#widgetsDiv .table-div tbody').find('tr').each(function() {
+                var checked = $(this).find("td input.table-selection[type=checkbox]").is(':checked');
+                var id = $(this).find("#_id").val()
+
+                if (checked) {
+                    ids.push(id);
+                }
+            });
+
+            return ids;
         }
 
         function addAllFields() {

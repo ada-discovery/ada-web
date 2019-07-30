@@ -244,8 +244,10 @@ class DataSetDispatcher @Inject() (
     filter: Seq[FilterCondition],
     tableColumnsOnly: Boolean,
     useDisplayValues: Boolean,
-    escapeStringValues: Boolean
-  ) = dispatch(_.exportTableRecordsAsCsv(tableColumnNames, delimiter, replaceEolWithSpace, eol, filter, tableColumnsOnly, useDisplayValues, escapeStringValues))
+    escapeStringValues: Boolean,
+    selectedOnly: Boolean,
+    selectedIds: Seq[BSONObjectID]
+  ) = dispatch(_.exportTableRecordsAsCsv(tableColumnNames, delimiter, replaceEolWithSpace, eol, filter, tableColumnsOnly, useDisplayValues, escapeStringValues, selectedOnly, selectedIds))
 
   override def exportViewRecordsAsJson(
     dataViewId: BSONObjectID,
@@ -258,8 +260,10 @@ class DataSetDispatcher @Inject() (
     tableColumnNames: Seq[String],
     filter: Seq[FilterCondition],
     tableColumnsOnly: Boolean,
-    useDisplayValues: Boolean
-  ) = dispatch(_.exportTableRecordsAsJson(tableColumnNames, filter, tableColumnsOnly, useDisplayValues))
+    useDisplayValues: Boolean,
+    selectedOnly: Boolean,
+    selectedIds: Seq[BSONObjectID]
+  ) = dispatch(_.exportTableRecordsAsJson(tableColumnNames, filter, tableColumnsOnly, useDisplayValues, selectedOnly, selectedIds))
 
   override def exportTranSMARTDataFile(
     delimiter: String,

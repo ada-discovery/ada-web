@@ -1,0 +1,18 @@
+@import org.incal.core.FilterCondition
+@import views.html.export.exportModal
+
+@(
+    exportCall: (Seq[FilterCondition], Boolean) => Call,
+    conditions: Seq[FilterCondition],
+    elements: Option[Html] = None
+)
+
+@jsonBody = {
+    <fieldset>
+        @elements.getOrElse {
+            <p>Do you want to proceed?</p>
+        }
+    </fieldset>
+}
+
+@exportModal("exportFilteredJsonModal", "Filtered Json Export", exportCall(conditions, false), jsonBody)

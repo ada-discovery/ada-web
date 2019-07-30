@@ -18,7 +18,9 @@
 	<thead>
 		<tr>
             @if(tableSelection) {
-                @header.getOrElse(defaultHeader(_, _))(None, "")
+                <th class="col header">
+                    <input type="checkbox" class="table-selection-all" title="Check/Uncheck All"/>
+                </th>
             }
             @columns.map { case (fieldName, fieldLabel, _) =>
                 @header.getOrElse(defaultHeader(_, _))(fieldName, fieldLabel)
@@ -45,3 +47,9 @@
 	    }
 	</tbody>
 </table>
+
+@if(tableSelection) {
+    <script type="text/javascript">
+        activateTableAllSelection();
+    </script>
+}

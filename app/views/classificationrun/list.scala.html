@@ -5,6 +5,7 @@
 @import views.html.filter.{filter, filterWithJs}
 @import views.html.widget.widgetPanelJs
 @import views.html.elements.labelValue
+@import views.html.export.exportDropdown
 @import org.ada.web.util.typeColumns
 @import org.ada.server.models.{DataSpaceMetaInfo,Field,Filter,FilterShowFieldStyle}
 @import org.ada.web.controllers.dataset.DataSetWebContext._
@@ -78,7 +79,7 @@
                         router.exportCsv(_, true, None, _, _),
                         router.exportJson,
                         conditions
-                    )()
+                    )
                 </li>
             </ul>
         </div>

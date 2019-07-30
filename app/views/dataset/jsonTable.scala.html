@@ -3,18 +3,19 @@
 @import play.api.libs.json.{JsValue, JsObject}
 @import org.ada.web.controllers.dataset.DataSetRouter
 @import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
+@import org.incal.play.Page
 @import org.ada.server.models.DataSetFormattersAndIds.JsObjectIdentity
 @import org.ada.server.models.Field
 @import org.ada.web.util.FieldTypeFullRenderer
 
-@import org.incal.play.Page
 @(
     page: Page[JsObject],
     tableFields: Traversable[Field],
     refreshCall: (Int, String) => Call,
     rowClickCall: Option[BSONObjectID => Call] = None,
     withRowClickableJs: Boolean = false,
-    isAjaxRefresh: Boolean = false
+    isAjaxRefresh: Boolean = false,
+    tableSelection: Boolean = false
 )(
     implicit request: Request[_]
 )
@@ -30,7 +31,8 @@
     Some(tableFields.map(_.name).toSeq),
     rowClickCall.map( rowClick => { item : JsObject => rowClick((item \ JsObjectIdentity.name).as[BSONObjectID]) }),
     Some(tableFields.map(field => (field.name, FieldTypeFullRenderer(field))).toMap),
-    isAjaxRefresh
+    isAjaxRefresh,
+    tableSelection
 )
 
 @if(withRowClickableJs) {

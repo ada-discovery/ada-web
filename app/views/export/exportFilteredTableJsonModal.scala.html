@@ -1,0 +1,20 @@
+@import org.incal.core.FilterCondition
+@import views.html.elements.labelValue
+@import scala.collection.immutable
+@import views.html.export.exportModal
+
+@(
+    exportCall: (Seq[FilterCondition], Boolean) => Call,
+    conditions: Seq[FilterCondition],
+    elements: Option[Html] = None
+)
+
+@jsonBody = {
+    <fieldset>
+        @elements.getOrElse {
+            <p>Do you want to proceed?</p>
+        }
+    </fieldset>
+}
+
+@exportModal("exportFilteredTableJsonModal", "Filtered Table Json Export", exportCall(conditions, true), jsonBody)

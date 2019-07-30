@@ -276,11 +276,12 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     useDisplayValues: Boolean,
     escapeStringValues: Boolean
   ) = Action.async { implicit request =>
+
     for {
       tableFieldNames <- if (tableColumnsOnly) dataViewTableColumnNames(dataViewId) else Future(Nil)
 
       result <- exportTableRecordsAsCsvAux(
-        tableFieldNames, delimiter, replaceEolWithSpace, eol, filter, useDisplayValues, escapeStringValues
+        tableFieldNames, delimiter, replaceEolWithSpace, eol, filter, Nil, useDisplayValues, escapeStringValues
       )
     } yield
       result
@@ -294,12 +295,20 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     filter: Seq[FilterCondition],
     tableColumnsOnly: Boolean,
     useDisplayValues: Boolean,
-    escapeStringValues: Boolean
+    escapeStringValues: Boolean,
+    selectedOnly: Boolean,
+    selectedIds: Seq[BSONObjectID]
   ) = Action.async { implicit request =>
+
     val exportFieldNames = if (tableColumnsOnly) tableColumnNames else Nil
 
+    val extraCriteria = if (selectedOnly)
+        Seq(JsObjectIdentity.name #-> selectedIds)
+      else
+        Nil
+
     exportTableRecordsAsCsvAux(
-      exportFieldNames, delimiter, replaceEolWithSpace, eol, filter, useDisplayValues, escapeStringValues
+      exportFieldNames, delimiter, replaceEolWithSpace, eol, filter, extraCriteria, useDisplayValues, escapeStringValues
     )
   }
 
@@ -309,6 +318,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     replaceEolWithSpace: Boolean,
     eol: Option[String],
     filter: Seq[FilterCondition],
+    extraCriteria: Seq[Criterion[Any]] = Nil,
     useDisplayValues: Boolean = false,
     escapeStringValues: Boolean = false)(
     implicit request: Request[AnyContent]
@@ -343,6 +353,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           headerFieldNames,
           setting.exportOrderByFieldName,
           filter,
+          extraCriteria,
           nameFieldTypeMap
         ).apply(request)
       }
@@ -365,7 +376,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       tableFieldNames <- if (tableColumnsOnly) dataViewTableColumnNames(dataViewId) else Future(Nil)
 
       result <- exportTableRecordsAsJsonAux(
-        tableFieldNames, filter, useDisplayValues
+        tableFieldNames, filter, Nil, useDisplayValues
       )
     } yield
       result
@@ -375,19 +386,28 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     tableColumnNames: Seq[String],
     filter: Seq[FilterCondition],
     tableColumnsOnly: Boolean,
-    useDisplayValues: Boolean
+    useDisplayValues: Boolean,
+    selectedOnly: Boolean,
+    selectedIds: Seq[BSONObjectID]
   ) = Action.async { implicit request =>
+
+    val extraCriteria = if (selectedOnly)
+      Seq(JsObjectIdentity.name #-> selectedIds)
+    else
+      Nil
+
     val exportFieldNames = if (tableColumnsOnly) tableColumnNames else Nil
 
     exportTableRecordsAsJsonAux(
-      exportFieldNames, filter, useDisplayValues
+      exportFieldNames, filter, extraCriteria, useDisplayValues
     )
   }
 
   private def exportTableRecordsAsJsonAux(
     tableFieldNames: Seq[String],
     filter: Seq[FilterCondition],
-    useDisplayValues: Boolean)(
+    extraCriteria: Seq[Criterion[Any]] = Nil,
+    useDisplayValues: Boolean = false)(
     implicit request: Request[AnyContent]
   ): Future[Result] = {
     for {
@@ -409,6 +429,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           jsonFileName)(
           setting.exportOrderByFieldName,
           filter,
+          extraCriteria,
           headerFieldNames,
           nameFieldTypeMap
         ).apply(request)
@@ -1832,7 +1853,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         val tablePage = Page(tableItems, page, page * pageLimit, count, orderBy)
         val fieldsInOrder = fieldNames.map(nameFieldMap.get).flatten
 
-        Ok(dataset.view.viewTable(tablePage, Some(resolvedFilter), fieldsInOrder, true)(request, router))
+        Ok(dataset.view.viewTable(tablePage, Some(resolvedFilter), fieldsInOrder, true, true)(request, router))
       }
     }.recover(handleExceptionsWithErrorCodes("a generateTable"))
   }
@@ -1863,7 +1884,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         // table
         val tablePage = Page(tableItems, page, page * pageLimit, count, orderBy)
         val fieldsInOrder = fieldNames.map(nameFieldMap.get).flatten
-        val table = dataset.view.viewTable(tablePage, Some(resolvedFilter), fieldsInOrder, true)(request, router)
+        val table = dataset.view.viewTable(tablePage, Some(resolvedFilter), fieldsInOrder, true, true)(request, router)
 
         // filter model / condition panel
         val newFilter = setFilterLabels(resolvedFilter, nameFieldMap)

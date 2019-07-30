@@ -40,8 +40,8 @@ class DataSetRouter(dataSetId: String) extends GenericRouter(routes.DataSetDispa
   val exportViewAsCsv = (dataViewId:BSONObjectID, delimiter:String, replaceEolWithSpace:Boolean, eol:Option[String], filter:Seq[org.incal.core.FilterCondition], tableColumnsOnly: Boolean, useDisplayValues: Boolean, escapeStringValues: Boolean) =>
     route(routes.exportViewRecordsAsCsv(dataViewId, delimiter, replaceEolWithSpace, eol, filter, tableColumnsOnly, useDisplayValues, escapeStringValues))
   // scalaz package does work here (too many params probably) hence we need to name all params explicitly and forward
-  val exportTableAsCsv  = (tableColumnNames: Seq[String], delimiter:String, replaceEolWithSpace:Boolean, eol:Option[String], filter:Seq[org.incal.core.FilterCondition], tableColumnsOnly: Boolean, useDisplayValues: Boolean, escapeStringValues: Boolean) =>
-    route(routes.exportTableRecordsAsCsv(tableColumnNames, delimiter, replaceEolWithSpace, eol, filter, tableColumnsOnly, useDisplayValues, escapeStringValues))
+  val exportTableAsCsv  = (tableColumnNames: Seq[String], delimiter: String, replaceEolWithSpace: Boolean, eol: Option[String], filter: Seq[org.incal.core.FilterCondition], tableColumnsOnly: Boolean, useDisplayValues: Boolean, escapeStringValues: Boolean, selectedOnly: Boolean, selectedIds: Seq[BSONObjectID]) =>
+    route(routes.exportTableRecordsAsCsv(tableColumnNames, delimiter, replaceEolWithSpace, eol, filter, tableColumnsOnly, useDisplayValues, escapeStringValues, selectedOnly, selectedIds))
 
   val exportViewAsJson  = routes.exportViewRecordsAsJson _ map route
   val exportTableAsJson  = routes.exportTableRecordsAsJson _ map route

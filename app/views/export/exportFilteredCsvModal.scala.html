@@ -1,0 +1,12 @@
+@import org.incal.core.FilterCondition
+@import views.html.elements.labelValue
+@import scala.collection.immutable
+@import views.html.export.exportCsvModal
+
+@(
+    exportCall: (String, Seq[FilterCondition], Boolean) => Call,
+    conditions: Seq[FilterCondition],
+    extraElements: Html = Html("")
+)
+
+@exportCsvModal("exportFilteredCsvModal", "Filtered CSV Export", exportCall(",", conditions, false), extraElements)

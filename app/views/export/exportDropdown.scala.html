@@ -1,0 +1,42 @@
+@import org.incal.core.FilterCondition
+@import views.html.export.exportModal
+@import views.html.elements.labelValue
+@import scala.collection.immutable
+@import views.html.export._
+
+@(
+    exportCsvCall: (String, Seq[FilterCondition], Boolean) => Call,
+    exportJsonCall: (Seq[FilterCondition], Boolean) => Call,
+    conditions: Seq[FilterCondition]
+)
+
+@modalDropdown(
+    "Export",
+    Seq(
+        Left((
+            "exportAllConfirmationCsvModal", "Export All as CSV",
+            exportAllCsvModal(exportCsvCall)
+        )),
+        Left((
+            "exportFilteredCsvModal", "Export Filtered as CSV",
+            exportFilteredCsvModal(exportCsvCall, conditions)
+        )),
+        Left((
+            "exportFilteredTableCsvModal", "Export Filtered Table as CSV",
+            exportFilteredTableCsvModal(exportCsvCall, conditions)
+        )),
+        Right(Html("<li role='separator' class='divider'></li>")),
+        Left((
+            "exportAllJsonModal", "Export All as JSON",
+            exportAllJsonModal(exportJsonCall)
+        )),
+        Left((
+            "exportFilteredJsonModal", "Export Filtered as JSON",
+             exportFilteredJsonModal(exportJsonCall, conditions)
+        )),
+        Left((
+            "exportFilteredTableJsonModal", "Export Filtered Table as JSON",
+            exportFilteredTableJsonModal(exportJsonCall, conditions)
+        ))
+    )
+)

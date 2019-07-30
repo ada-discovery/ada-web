@@ -24,10 +24,10 @@
     @displayTable(
         items,
         typeColumns[SeriesTransformationSpec](
-            (None, "", _ => {<input type="checkbox" class="table-selection"/>}),
             (None, "Field Path", fieldPathElement),
             (None, "Transformation Type", {x => scaleTypeElement(Some(x.transformType))})
-        )
+        ),
+        tableSelection = true
     )
 }
 

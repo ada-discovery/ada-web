@@ -1,0 +1,12 @@
+@import org.incal.core.FilterCondition
+@import views.html.export.exportModal
+
+@(
+    exportCall: (Seq[FilterCondition], Boolean) => Call
+)
+
+@modalBody = {
+    <p>Are you sure you want to export the FULL data set (no filter applied) with ALL the fields?</p>
+}
+
+@exportModal("exportAllJsonModal", "Full Json Export", exportCall(Nil, false), modalBody)
