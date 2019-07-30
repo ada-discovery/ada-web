@@ -940,3 +940,13 @@ function submitModalOnEnter(event, element) {
         return false;
     }
 }
+
+function activateTableAllSelection() {
+    $(".table-selection-all").change(function() {
+        var rows = $(this).closest("table").find(".table-selection")
+        var checked = $(this).is(':checked')
+        $.each(rows, function(i, row) {
+            $(row).prop("checked", checked)
+        })
+    });
+}

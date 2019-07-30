@@ -410,7 +410,6 @@ $.widget("custom.multiFilter", {
         }
     },
 
-
     _initFilterIfNeeded: function (successFun) {
         var that = this;
         if (!this.fieldNameAndLabels) {
