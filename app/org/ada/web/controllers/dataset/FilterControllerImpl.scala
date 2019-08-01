@@ -244,7 +244,7 @@ protected[controllers] class FilterControllerImpl @Inject() (
           else
             findAux(Nil).map { filters =>
               filters.filter { filter =>
-                filter.isPrivate || (filter.createdById.isDefined && filter.createdById.equals(user.id))
+                !filter.isPrivate || (filter.createdById.isDefined && filter.createdById.equals(user.id))
               }
             }
 
