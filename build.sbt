@@ -102,7 +102,7 @@ includeFilter in cssCompress := (includeFilter in cssCompress).value && new Simp
 
 // POM settings for Sonatype
 
-homepage := Some(url("https://ada-discovery.org"))
+homepage := Some(url("https://ada-discovery.github.io"))
 
 publishMavenStyle := true
 
