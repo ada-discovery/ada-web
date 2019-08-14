@@ -213,7 +213,11 @@ class RunnableController @Inject() (
     runnable match {
       // has a file output
       case fileOutput: RunnableFileOutput =>
-        WebExportUtil.stringToFile(fileOutput.output.toString(), fileOutput.fileName)
+        fileOutput.outputByteSource.map ( outputByteSource =>
+          WebExportUtil.streamToFile(outputByteSource, fileOutput.fileName)
+        ).getOrElse(
+          WebExportUtil.stringToFile(fileOutput.output.toString(), fileOutput.fileName)
+        )
 
       // has a HTML output
       case htmlOutput: RunnableHtmlOutput =>

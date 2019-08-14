@@ -9,6 +9,7 @@ import play.api.http.HeaderNames._
 import org.ada.server.dataaccess.JsonUtil.{jsonToDelimitedString, jsonsToCsv}
 import play.api.http.HttpEntity
 import play.api.mvc.{ResponseHeader, Result}
+import akka.stream.scaladsl.StreamConverters
 
 object WebExportUtil {
 
