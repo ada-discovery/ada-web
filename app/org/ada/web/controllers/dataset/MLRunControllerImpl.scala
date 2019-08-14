@@ -2,7 +2,7 @@ package org.ada.web.controllers.dataset
 
 import akka.stream.Materializer
 import be.objectify.deadbolt.scala.AuthenticatedRequest
-import org.ada.web.util.toHumanReadableCamel
+import org.incal.core.util.toHumanReadableCamel
 import org.ada.server.models.{DistributionWidgetSpec, _}
 import org.ada.server.models.Filter.{FilterIdentity, FilterOrId}
 import org.ada.server.models.DataSetFormattersAndIds._
@@ -90,6 +90,7 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
   override protected type ShowViewData = (
     String,
     R,
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -99,12 +100,14 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
   ) = { request =>
     val treeFuture = dataSpaceService.getTreeForCurrentUser(request)
     val dataSetNameFuture = dsa.dataSetName
+    val settingFuture = dsa.setting
 
     for {
       dataSetName <- dataSetNameFuture
       tree <- treeFuture
+      setting <- settingFuture
     } yield
-      (dataSetName + " " + entityName, item, tree)
+      (dataSetName + " " + entityName, item, setting, tree)
   }
 
   // list view and data
@@ -119,6 +122,7 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
     Traversable[Field],
     Map[BSONObjectID, String],
     Map[BSONObjectID, String],
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -149,6 +153,8 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
       widgets(widgetSpecs, criteria)
     )
 
+    val settingFuture = dsa.setting
+
     for {
       tree <- treeFuture
 
@@ -163,12 +169,14 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
       filters <- filtersFuture
 
       widgets <- widgetsFuture
+
+      setting <- settingFuture
     } yield {
       val fieldNameLabelMap = fields.map(field => (field.name, field.labelOrElseName)).toMap
       val mlMethodIdNameMap = mlMethods.map(mlMethods => (identity.of(mlMethods).get, mlMethodName(mlMethods))).toMap
       val filterIdNameMap = filters.map(filter => (filter._id.get, filter.name.get)).toMap
 
-      (dataSetName + " " + entityName, dataSetName, page, conditions, widgets.flatten, fieldNameLabelMap, resultFields, mlMethodIdNameMap, filterIdNameMap, tree)
+      (dataSetName + " " + entityName, dataSetName, page, conditions, widgets.flatten, fieldNameLabelMap, resultFields, mlMethodIdNameMap, filterIdNameMap, setting, tree)
     }
   }
 
@@ -176,7 +184,7 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
 
   protected type CreateViewData = (
     String,
-    Option[FilterShowFieldStyle.Value],
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -189,7 +197,7 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
         val context = implicitly[DataSetWebContext]
 
         render {
-          case Accepts.Html() => Ok(createView(context)(dataSetName, setting.filterShowFieldStyle, tree))
+          case Accepts.Html() => Ok(createView(context)(dataSetName, setting, tree))
           case Accepts.Json() => BadRequest("ML run create function doesn't support JSON response.")
         }
       }

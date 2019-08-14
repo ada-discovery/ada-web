@@ -8,12 +8,14 @@
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
 @import org.ada.web.util.enumToValueString
+@import org.ada.server.models.DataSetSetting
 
 @(
     displayName: String,
     fieldName: String,
     form: Form[Field],
     categories: Traversable[Category],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -41,5 +43,5 @@
     dictionaryRouter.plainList,
     deleteCall = None,
     Some(datasetMenu(dataSpaceMetaInfos)),
-    Some(datasetSubNavWithJs())
+    Some(datasetSubNavWithJs(setting))
 )

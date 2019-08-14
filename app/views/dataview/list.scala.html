@@ -10,11 +10,13 @@
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.incal.play.Page
 @import org.incal.core.FilterCondition
+@import org.ada.server.models.DataSetSetting
 
 @(
     domainName : String,
     page: Page[DataView],
     conditions: Seq[FilterCondition],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -70,5 +72,5 @@
     Some(table),
     None,
     Some(datasetMenu(dataSpaceMetaInfos)),
-    Some(datasetSubNavWithJs())
+    Some(datasetSubNavWithJs(setting))
 )

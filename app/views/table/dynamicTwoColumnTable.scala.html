@@ -1,0 +1,28 @@
+@import org.ada.web.util.typeColumns
+@import views.html.datasetimport.schedulePanel
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel}
+@import views.html.table.{displayTable, dynamicTable}
+@import views.html.table.dynamicTableJsImport
+@import views.html.elements.labelValue
+@import views.html.elements._
+@import play.api.i18n.Messages
+@import views.html.table.dynamicNColumnTable
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(
+    collectionItemName: String,
+    tableLabel: String,
+    field1Label: String,
+    field2Label: String,
+    data: Seq[(String, String)] = Nil,
+    customRowToModelJs: Option[Html] = None
+)(implicit webContext: WebContext)
+
+@dynamicNColumnTable(
+    collectionItemName,
+    tableLabel,
+    Seq(field1Label, field2Label),
+    data.map { case (a, b) => Seq(a, b)},
+    customRowToModelJs
+)

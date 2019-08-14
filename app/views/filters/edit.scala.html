@@ -7,11 +7,13 @@
 @import org.ada.server.models.Filter
 @import reactivemongo.bson.BSONObjectID
 @import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.server.models.DataSetSetting
 
 @(
     displayName: String,
     id: BSONObjectID,
     form: Form[Filter],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -36,5 +38,5 @@
     filterRouter.plainList,
     Some(filterRouter.delete(id)),
     Some(datasetMenu(dataSpaceMetaInfos)),
-    Some(datasetSubNavWithJs())
+    Some(datasetSubNavWithJs(setting))
 )

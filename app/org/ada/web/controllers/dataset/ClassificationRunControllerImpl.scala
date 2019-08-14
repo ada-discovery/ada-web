@@ -25,11 +25,11 @@ abstract class ClassificationRunControllerImpl[R <: ClassificationResult: Format
   protected implicit val doubleScatterWidgetWrites = new WidgetWrites[Any](Seq(doubleFieldType, doubleFieldType))
 
   override protected def showView = { implicit ctx =>
-    (view.show(router)(_, _, _)).tupled
+    (view.show(router)(_, _, _, _)).tupled
   }
 
   override protected def listView = { implicit ctx =>
-    (view.list(router)(_, _, _, _, _, _, _, _, _, _)).tupled
+    (view.list(router)(_, _, _, _, _, _, _, _, _, _, _)).tupled
   }
 
   protected def binCurvesToWidgets(

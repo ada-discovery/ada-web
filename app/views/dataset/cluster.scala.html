@@ -9,10 +9,11 @@
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
 @import org.ada.web.controllers.ml.routes
+@import org.ada.server.models.DataSetSetting
 
 @(
     dataSetName: String,
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -21,7 +22,7 @@
 @bottomResources = {
     @inputFieldAndFilterResources(
         Seq("filter"),
-        filterShowFieldStyle
+        setting.filterShowFieldStyle
     )
     @highchartsJsImport()
 
@@ -135,7 +136,7 @@
     </script>
 }
 
-@main(Messages("clusterization.title", dataSetName), Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs()), None, Some(bottomResources)) {
+@main(Messages("clusterization.title", dataSetName), Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs(setting)), None, Some(bottomResources)) {
 
     <div class="page-header">
         <h3>

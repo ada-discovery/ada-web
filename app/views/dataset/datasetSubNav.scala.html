@@ -5,11 +5,14 @@
 @import org.incal.play.security.SecurityRole
 @import org.ada.web.models.security.DataSetPermission
 @import org.incal.play.util.WebUtil.matchesPath
+@import org.incal.core.util.nonAlphanumericToUnderscore
 @import org.ada.web.controllers.dataset.ControllerName
 @import org.ada.web.controllers.dataset.DataSetWebContext
 @import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.server.models.DataSetSetting
+@import org.ada.server.models.{NavigationItem, Menu, Link}
 
-@()(implicit context: DataSetWebContext)
+@(setting: DataSetSetting)(implicit context: DataSetWebContext)
 
 @listItemWithPermission(call: Call, text: String, permissionControllerName: ControllerName.Value, permissionActionName: String, matchPrefixDepth : Option[Int] = None) = {
     @restrictOrPattern(Array(SecurityRole.admin), DataSetPermission(context.dataSetId, permissionControllerName, permissionActionName)) {
@@ -17,10 +20,33 @@
     }
 }
 
-@listItem(call: Call, text: String, matchPrefixDepth : Option[Int] = None) = {
-    <li @if(matchesPath(call.url, toRequest.uri, matchPrefixDepth, configuration.getString("play.http.context"))) { class="active"}>
-        <a href="@call">@text</a>
+@listItem(call: Call, text: String, matchPrefixDepth: Option[Int] = None) = {
+    @listItemAux(call.url, text, matchPrefixDepth)
+}
+
+@listItemAux(url: String, text: String, matchPrefixDepth: Option[Int] = None) = {
+    <li @if(matchesPath(url, toRequest.uri, matchPrefixDepth, configuration.getString("play.http.context"))) { class="active"}>
+        <a href="@url">@text</a>
     </li>
+}
+
+@extraDropDown(menu: Menu) = {
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">@menu.header<span class="caret"></span></a>
+        <ul class="dropdown-menu">
+            @menu.links.map(extraNavItem)
+        </ul>
+    </li>
+}
+
+@extraNavItem(navigationItem: NavigationItem) = @{
+    navigationItem match {
+        case Link(label, url) =>
+            restrictOrPattern(Array(SecurityRole.admin), DataSetPermission(context.dataSetId, ControllerName.extra, nonAlphanumericToUnderscore(label.toLowerCase))) {
+                listItemAux(url, label)
+            }
+        case menu: Menu => extraDropDown(menu)
+    }
 }
 
 <ul id="dataSetSubMenu" class="nav nav-tabs">
@@ -81,6 +107,8 @@
             @listItemWithPermission(dataViewRouter.plainList, "Views", ControllerName.dataview, "find", Some(2))
         </ul>
     </li>
+
+    @setting.extraNavigationItems.map(extraNavItem)
 </ul>
 
 <script type="text/javascript">

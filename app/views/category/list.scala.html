@@ -9,11 +9,13 @@
 @import org.ada.web.controllers.dataset.DataSetWebContext
 @import org.incal.play.Page
 @import org.incal.core.FilterCondition
+@import org.ada.server.models.DataSetSetting
 
 @(
     domainName : String,
     page: Page[Category],
     conditions: Seq[FilterCondition],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -113,7 +115,7 @@
     Some(table),
     Some(treeChart(categoryRouter, categoryJsRouter)),
     Some(datasetMenu(dataSpaceMetaInfos)),
-    Some(datasetSubNavWithJs())
+    Some(datasetSubNavWithJs(setting))
 )
 
 @helper.javascriptRouter("categoryJsRoutes")(

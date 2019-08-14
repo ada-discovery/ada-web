@@ -96,6 +96,7 @@ protected[controllers] class FilterControllerImpl @Inject() (
     String,
     BSONObjectID,
     Form[Filter],
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -112,6 +113,8 @@ protected[controllers] class FilterControllerImpl @Inject() (
         case None => Future(())
       }
 
+    val settingFuture = dsa.setting
+
     for {
       // get the data set name
       dataSetName <- dataSetNameFuture
@@ -121,12 +124,15 @@ protected[controllers] class FilterControllerImpl @Inject() (
 
       // set the "created by" field for the filter
       _ <- setCreatedByFuture
+
+      // get the setting
+      setting <- settingFuture
     } yield
-      (dataSetName + " Filter", id, form, tree)
+      (dataSetName + " Filter", id, form, setting, tree)
   }
 
   override protected def editView = { implicit ctx =>
-    (view.edit(_, _, _, _)).tupled
+    (view.edit(_, _, _, _, _)).tupled
   }
 
   // list view and data
@@ -135,6 +141,7 @@ protected[controllers] class FilterControllerImpl @Inject() (
     String,
     Page[Filter],
     Seq[FilterCondition],
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -145,6 +152,7 @@ protected[controllers] class FilterControllerImpl @Inject() (
     val setCreatedByFuture = FilterRepo.setCreatedBy(userRepo, page.items)
     val treeFuture = dataSpaceService.getTreeForCurrentUser(request)
     val dataSetNameFuture = dsa.dataSetName
+    val settingFuture = dsa.setting
 
     for {
       // set created by
@@ -155,12 +163,15 @@ protected[controllers] class FilterControllerImpl @Inject() (
 
       // get the data set name
       dataSetName <- dataSetNameFuture
+
+      // get the setting
+      setting <- settingFuture
     } yield
-      (dataSetName + " Filter", page, conditions, tree)
+      (dataSetName + " Filter", page, conditions, setting, tree)
   }
 
   override protected def listView = { implicit ctx =>
-    (view.list(_, _, _, _)).tupled
+    (view.list(_, _, _, _, _)).tupled
   }
 
   override def saveCall(

@@ -35,7 +35,7 @@ import org.ada.server.models.ml.classification.ClassificationResult
 import org.ada.server.field.FieldUtil.caseClassToFlatFieldTypes
 import org.ada.web.services.{DataSpaceService, WidgetGenerationService}
 import views.html.{dataview, dictionary => view}
-import org.ada.web.util.toHumanReadableCamel
+import org.incal.core.util.toHumanReadableCamel
 import org.incal.play.security.AuthAction
 
 import scala.concurrent.Future
@@ -155,6 +155,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
     String,
     Form[Field],
     Traversable[Category],
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -165,6 +166,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
     val dataSetNameFuture = dsa.dataSetName
     val categoriesFuture = allCategoriesFuture
     val treeFuture = dataSpaceService.getTreeForCurrentUser(request)
+    val settingFuture = dsa.setting
 
     for {
       // get the data set name
@@ -175,12 +177,15 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
 
       // get the data space tree
       tree <- treeFuture
+
+      // get the setting
+      setting <- settingFuture
     } yield
-      (dataSetName + " Field", id, form, allCategories, tree)
+      (dataSetName + " Field", id, form, allCategories, setting, tree)
   }
 
   override protected def editView = { implicit ctx =>
-    (view.edit(_, _, _, _, _)).tupled
+    (view.edit(_, _, _, _, _, _)).tupled
   }
 
   // list view and data
@@ -191,6 +196,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
     Seq[FilterCondition],
     Traversable[Widget],
     Traversable[(String, Option[String])],
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -218,6 +224,8 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
 
     val setCategoriesFuture = setCategoriesById(categoryRepo, page.items)
 
+    val settingFuture = dsa.setting
+
     for {
       // get the data space tree
       tree <- treeFuture
@@ -230,12 +238,15 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
 
       // set categories
       _ <- setCategoriesFuture
+
+      // get the setting
+      setting <- settingFuture
     } yield
-      (dataSetName + " Field", page, newConditions, widgets.flatten, fieldNameLabels, tree)
+      (dataSetName + " Field", page, newConditions, widgets.flatten, fieldNameLabels, setting, tree)
   }
 
   override protected def listView = { implicit ctx =>
-    (view.list(_, _, _, _, _, _)).tupled
+    (view.list(_, _, _, _, _, _, _)).tupled
   }
 
   // actions

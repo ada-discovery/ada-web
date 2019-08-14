@@ -6,6 +6,7 @@
 @import reactivemongo.bson.BSONObjectID
 @import views.html.dataview.edit
 @import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.server.models.DataSetSetting
 
 @(
     domainName: String,
@@ -14,7 +15,7 @@
     nameFieldMap: Map[String,  Field],
     idFilterNameMap: Map[BSONObjectID, String],
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo],
-    showFieldStyle: Option[FilterShowFieldStyle.Value]
+    dataSetSetting: DataSetSetting
 )(
     implicit context: DataSetWebContext
 )
@@ -26,6 +27,6 @@
     nameFieldMap,
     idFilterNameMap,
     dataSpaceMetaInfos,
-    showFieldStyle,
+    dataSetSetting,
     dataViewRouter.update
 )

@@ -1,8 +1,8 @@
 @import org.ada.server.models.datatrans.DropFieldsTransformation
 @import views.html.datasetimport.schedulePanel
-@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead, twoColumnTable}
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead}
 @import views.html.elements.{inputText, labelValue}
-@import views.html.table.{dynamicStringTable, dynamicTableJsImport}
+@import views.html.table.{dynamicStringTable, dynamicTableJsImport, dynamicTwoColumnTable}
 @import play.api.i18n.Messages
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
@@ -50,7 +50,7 @@
     </script>
 }
 
-@twoColumnTable(
+@dynamicTwoColumnTable(
     "targetGroupDisplayStringRatio",
     "Target Group Display String Ratios",
     "Field Name",

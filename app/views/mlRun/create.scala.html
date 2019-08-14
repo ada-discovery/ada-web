@@ -11,10 +11,11 @@
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
 @import org.incal.spark_ml.models.classification.ClassificationEvalMetric
+@import org.ada.server.models.DataSetSetting
 
 @(
     title: String,
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo],
     firstColumnContent: Html,
     secondColumnContent: Html,
@@ -27,7 +28,7 @@
 @bottomResources = {
     @inputFieldAndFilterResources(
         Seq("filter", "replicationFilter"),
-        filterShowFieldStyle
+        setting.filterShowFieldStyle
     )
     @highchartsJsImport()
 
@@ -62,7 +63,7 @@
                 typeaheadElement,
                 nameElement,
                 url,
-                @filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id,
+                @setting.filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id,
                 focusFun
             )
         }
@@ -129,7 +130,7 @@
     @extraBottomResources
 }
 
-@main(title, Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs()), None, Some(bottomResources)) {
+@main(title, Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs(setting)), None, Some(bottomResources)) {
 
     <div class="page-header">
         <h3>

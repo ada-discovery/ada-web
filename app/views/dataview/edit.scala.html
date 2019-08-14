@@ -8,6 +8,7 @@
 @import views.html.dataview.elements
 @import views.html.dataview.activateTypeahead
 @import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.server.models.DataSetSetting
 
 @(
     displayName: String,
@@ -16,14 +17,14 @@
     nameFieldMap: Map[String,  Field],
     idFilterNameMap: Map[BSONObjectID, String],
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo],
-    showFieldStyle: Option[FilterShowFieldStyle.Value],
+    dataSetSetting: DataSetSetting,
     updateCall: BSONObjectID => Call
 )(
     implicit context: DataSetWebContext
 )
 
 @bottomResources = {
-    @activateTypeahead(showFieldStyle)
+    @activateTypeahead(dataSetSetting.filterShowFieldStyle)
     @datasetSubNavJs()
 }
 
@@ -31,11 +32,11 @@
     displayName,
     "dataView",
 	form.errors,
-    elements(form, nameFieldMap, idFilterNameMap, dataSetRouter.allFields, showFieldStyle),
+    elements(form, nameFieldMap, idFilterNameMap, dataSetRouter.allFields, dataSetSetting.filterShowFieldStyle),
     updateCall(id),
     dataViewRouter.plainList,
     Some(dataViewRouter.delete(id)),
     Some(datasetMenu(dataSpaceMetaInfos)),
-    Some(datasetSubNav()),
+    Some(datasetSubNav(dataSetSetting)),
     Some(bottomResources)
 )

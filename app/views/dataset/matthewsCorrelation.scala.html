@@ -9,11 +9,12 @@
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
 @import org.incal.play.routes.CustomDirAssets
+@import org.ada.server.models.DataSetSetting
 
 @(
     dataSetName: String,
     filterSpec: Filter,
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -152,7 +153,7 @@
 @widgetsScreen(
     Messages("matthewsCorrelation.title", dataSetName),
     Seq(filterSpec),
-    filterShowFieldStyle,
+    setting,
     dataSpaceMetaInfos,
     inputElements,
     Some(extraActions),

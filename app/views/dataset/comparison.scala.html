@@ -11,11 +11,12 @@
 @import org.ada.web.util.toJsonHtml
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.server.models.DataSetSetting
 
 @(
     dataSetName: String,
     filters: Seq[Filter],
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     field: Option[Field],
     groupField: Option[Field],
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
@@ -134,7 +135,7 @@
 @widgetsScreen(
     Messages("comparison.title", dataSetName),
     filters,
-    filterShowFieldStyle,
+    setting,
     dataSpaceMetaInfos,
     inputElements,
     None,

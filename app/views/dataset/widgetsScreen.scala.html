@@ -14,11 +14,12 @@
 @import org.ada.web.util.toJsonHtml
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.server.models.DataSetSetting
 
 @(
     title: String,
     filters: Seq[Filter],
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo],
     inputElements: Html,
     extraActions: Option[Html],
@@ -35,7 +36,7 @@
             @fixedTableRow("filtersTr") {
                 @filters.zipWithIndex.map { case (filterSpec, index) =>
                     <td style='padding-left: 10px; vertical-align:top'>
-                        @dataSetFilter(Some(filterSpec), filterShowFieldStyle, filterLabel = if(filters.size > 1) s"Filter ${index + 1}" else "Filter")
+                        @dataSetFilter(Some(filterSpec), setting.filterShowFieldStyle, filterLabel = if(filters.size > 1) s"Filter ${index + 1}" else "Filter")
                     </td>
                 }
             }
@@ -117,7 +118,7 @@
                 typeaheadElement,
                 nameElement,
                 url,
-                @filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id,
+                @setting.filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id,
                 focusFun
             )
         }
@@ -134,7 +135,7 @@
                             typeaheadElement,
                             nameElement,
                             data,
-                            @filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
+                            @setting.filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
                         );
                         if (index == 0 && isFocus) {
                             setTimeout(function(){ $(typeaheadElement).focus();}, 250);
@@ -295,7 +296,7 @@
     @extraBottomResources
 }
 
-@main(title, Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs()), None, Some(bottomResources)) {
+@main(title, Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs(setting)), None, Some(bottomResources)) {
 
     <div class="page-header">
         <h3>

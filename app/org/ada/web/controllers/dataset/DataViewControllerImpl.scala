@@ -122,7 +122,7 @@ protected[controllers] class DataViewControllerImpl @Inject() (
     Map[String, Field],
     Map[BSONObjectID, String],
     Traversable[DataSpaceMetaInfo],
-    Option[FilterShowFieldStyle.Value]
+    DataSetSetting
   )
 
   override protected def getFormEditViewData(
@@ -165,7 +165,7 @@ protected[controllers] class DataViewControllerImpl @Inject() (
       _ <- setCreatedByFuture
     } yield {
       val idFilterNameMap = filters.map( filter => (filter._id.get, filter.name.getOrElse(""))).toMap
-      (dataSetName + " Data View", id, form, nameFieldMap, idFilterNameMap, tree, setting.filterShowFieldStyle)
+      (dataSetName + " Data View", id, form, nameFieldMap, idFilterNameMap, tree, setting)
     }
   }
 
@@ -179,6 +179,7 @@ protected[controllers] class DataViewControllerImpl @Inject() (
     String,
     Page[DataView],
     Seq[FilterCondition],
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -189,17 +190,19 @@ protected[controllers] class DataViewControllerImpl @Inject() (
     val setCreatedByFuture = DataViewRepo.setCreatedBy(userRepo, page.items)
     val dataSpaceTreeFuture = dataSpaceService.getTreeForCurrentUser(request)
     val dataSetNameFuture = dsa.dataSetName
+    val settingFuture = dsa.setting
 
     for {
       _ <- setCreatedByFuture
       tree <- dataSpaceTreeFuture
       dataSetName <- dataSetNameFuture
+      setting <- settingFuture
     } yield
-      (dataSetName + " Data View", page, conditions, tree)
+      (dataSetName + " Data View", page, conditions, setting, tree)
   }
 
   override protected def listView = { implicit ctx =>
-    (view.list(_, _, _, _)).tupled
+    (view.list(_, _, _, _, _)).tupled
   }
 
   // actions

@@ -104,7 +104,7 @@ protected[controllers] class CategoryControllerImpl @Inject() (
     Form[Category],
     Traversable[Category],
     Traversable[Field],
-    Option[FilterShowFieldStyle.Value],
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -119,7 +119,7 @@ protected[controllers] class CategoryControllerImpl @Inject() (
     val dataSetNameFuture = dsa.dataSetName
     val treeFuture = dataSpaceService.getTreeForCurrentUser(request)
     val categoriesFuture = allCategoriesFuture
-    val showFieldStyleFuture = dsa.setting.map(_.filterShowFieldStyle)
+    val dataSetSettingFuture = dsa.setting
 
     for {
       // retrieve the associated fields
@@ -134,10 +134,10 @@ protected[controllers] class CategoryControllerImpl @Inject() (
       // retrieve all the categories
       allCategories <- categoriesFuture
 
-      // get the show field style
-      showFieldStyle <- showFieldStyleFuture
+      // get the setting
+      setting <- dataSetSettingFuture
     } yield
-      (dataSetName + " Category", id, form, allCategories, fields, showFieldStyle, tree)
+      (dataSetName + " Category", id, form, allCategories, fields, setting, tree)
   }
 
   override protected def editView = { implicit ctx =>
@@ -150,6 +150,7 @@ protected[controllers] class CategoryControllerImpl @Inject() (
     String,
     Page[Category],
     Seq[FilterCondition],
+    DataSetSetting,
     Traversable[DataSpaceMetaInfo]
   )
 
@@ -159,15 +160,17 @@ protected[controllers] class CategoryControllerImpl @Inject() (
   ) = { request =>
     val treeFuture = dataSpaceService.getTreeForCurrentUser(request)
     val nameFuture = dsa.dataSetName
+    val dataSetSettingFuture = dsa.setting
 
     for {
       tree <- treeFuture
       dataSetName <- nameFuture
+      setting <- dataSetSettingFuture
     } yield
-      (dataSetName + " Category", page, conditions, tree)
+      (dataSetName + " Category", page, conditions, setting, tree)
   }
 
-  override protected def listView = { implicit ctx => (view.list(_, _, _, _)).tupled }
+  override protected def listView = { implicit ctx => (view.list(_, _, _, _, _)).tupled }
 
   override protected def deleteCall(
     id: BSONObjectID)(

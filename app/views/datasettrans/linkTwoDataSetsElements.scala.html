@@ -1,8 +1,8 @@
 @import org.ada.server.models.datatrans.LinkTwoDataSetsTransformation
 @import org.ada.web.util.typeColumns
 @import views.html.datasetimport.schedulePanel
-@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead, twoColumnTable}
-@import views.html.table.{displayTable, dynamicTable}
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead}
+@import views.html.table.{displayTable, dynamicTable, dynamicTwoColumnTable}
 @import views.html.table.dynamicTableJsImport
 @import views.html.elements.{labelValue, checkbox}
 @import views.html.elements._
@@ -21,7 +21,7 @@
 @dataSetTypeahead("linkTwoDataSetsTransformation", "leftSourceDataSetId", form, id, Some("Linked"))
 @dataSetTypeahead("linkTwoDataSetsTransformation", "rightSourceDataSetId", form)
 
-@twoColumnTable(
+@dynamicTwoColumnTable(
     "linkFieldName",
     "Link Fields",
     "Left",

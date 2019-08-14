@@ -9,11 +9,12 @@
 @import views.html.elements._
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.server.models.DataSetSetting
 
 @(
     dataSetName: String,
     filterSpec: Filter,
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -196,7 +197,7 @@
 @widgetsScreen(
     Messages("independenceTest.title", dataSetName),
     Seq(filterSpec),
-    filterShowFieldStyle,
+    setting,
     dataSpaceMetaInfos,
     inputElements,
     Some(extraActions),

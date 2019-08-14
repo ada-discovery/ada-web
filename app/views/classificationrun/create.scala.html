@@ -14,10 +14,11 @@
 @import org.ada.web.controllers.dataset.DataSetWebContext
 @import org.incal.spark_ml.models.classification.ClassificationEvalMetric
 @import org.ada.web.controllers.ml.routes
+@import org.ada.server.models.DataSetSetting
 
 @(
     dataSetName: String,
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -303,7 +304,7 @@
 
 @mlRunCreate(
     Messages("classification.title", dataSetName),
-    filterShowFieldStyle,
+    setting,
     dataSpaceMetaInfos,
     firstColumn,
     secondColumn,

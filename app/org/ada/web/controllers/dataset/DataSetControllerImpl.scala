@@ -248,6 +248,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         router.getDefaultView,
         true,
         fieldNameLabelAndRendererMap,
+        setting,
         dataSpaceTree
       )
     }
@@ -594,7 +595,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
                 viewParts,
                 callbackId,
                 dataView.map(_.elementGridWidth).getOrElse(3),
-                setting.filterShowFieldStyle,
+                setting,
                 editPossible,
                 dataSpaceTree
               )
@@ -1088,7 +1089,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           case Accepts.Html() => Ok(dataset.distribution(
             dataSetName,
             filter,
-            setting.filterShowFieldStyle,
+            setting,
             field,
             None,
             dataSpaceTree
@@ -1185,7 +1186,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           case Accepts.Html() => Ok(dataset.cumulativeCount(
             dataSetName,
             filter,
-            setting.filterShowFieldStyle,
+            setting,
             field,
             None,
             dataSpaceTree
@@ -1263,7 +1264,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           case Accepts.Html() => Ok(dataset.scatter(
             dataSetName,
             filter,
-            setting.filterShowFieldStyle,
+            setting,
             xField,
             yField,
             None,
@@ -1335,7 +1336,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         case Accepts.Html() => Ok(dataset.pearsonCorrelation(
           dataSetName,
           filter,
-          setting.filterShowFieldStyle,
+          setting,
           dataSpaceTree
         ))
         case Accepts.Json() => BadRequest("The function getPearsonCorrelations function doesn't support JSON response.")
@@ -1407,7 +1408,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         case Accepts.Html() => Ok(dataset.matthewsCorrelation(
           dataSetName,
           filter,
-          setting.filterShowFieldStyle,
+          setting,
           dataSpaceTree
         ))
         case Accepts.Json() => BadRequest("The function getMatthewsCorrelations function doesn't support JSON response.")
@@ -1471,7 +1472,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         case Accepts.Html() => Ok(dataset.heatmap(
           dataSetName,
           filter,
-          setting.filterShowFieldStyle,
+          setting,
           None,
           None,
           None,
@@ -1549,7 +1550,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         case Accepts.Html() => Ok(dataset.table(
           dataSetName,
           filter,
-          setting.filterShowFieldStyle,
+          setting,
           dataSpaceTree
         ))
         case Accepts.Json() => BadRequest("The function getTable function doesn't support JSON response.")
@@ -1581,7 +1582,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         case Accepts.Html() => Ok(dataset.comparison(
           dataSetName,
           paddedFilters,
-          setting.filterShowFieldStyle,
+          setting,
           None,
           None,
           dataSpaceTree
@@ -1928,7 +1929,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         case Accepts.Html() => Ok(dataset.independenceTest(
           dataSetName,
           newFilter,
-          setting.filterShowFieldStyle,
+          setting,
           dataSpaceTree
         ))
         case Accepts.Json() => BadRequest("GetIndependenceTest function doesn't support JSON response.")
@@ -2097,7 +2098,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
                 url,
                 sessionId,
                 field,
-                setting.filterShowFieldStyle,
+                setting,
                 tree
               ))
               case Accepts.Json() => BadRequest("getFractalis function doesn't support JSON response.")
@@ -2120,7 +2121,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       render {
         case Accepts.Html() => Ok(dataset.cluster(
           dataSetName,
-          setting.filterShowFieldStyle,
+          setting,
           tree
         ))
         case Accepts.Json() => BadRequest("getUnsupervisedLearning function doesn't support JSON response.")
@@ -2407,7 +2408,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       // get the data set name, data space tree and the data set setting
       (dataSetName, tree, setting) <- getDataSetNameTreeAndSetting
     } yield
-      Ok(dataset.processSeries(dataSetName, seriesProcessingSpecForm, setting.filterShowFieldStyle, tree))
+      Ok(dataset.processSeries(dataSetName, seriesProcessingSpecForm, setting, tree))
   }
 
   override def runSeriesProcessing = AuthAction { implicit request =>
@@ -2417,7 +2418,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           // get the data set name, data space tree and the data set setting
           (dataSetName, tree, setting) <- getDataSetNameTreeAndSetting
         } yield {
-          BadRequest(dataset.processSeries(dataSetName, formWithErrors, setting.filterShowFieldStyle, tree))
+          BadRequest(dataset.processSeries(dataSetName, formWithErrors, setting, tree))
         }
       },
       spec =>
@@ -2432,7 +2433,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     // get the data set name, data space tree and the data set setting
       (dataSetName, tree, setting) <- getDataSetNameTreeAndSetting
     } yield
-      Ok(dataset.transformSeries(dataSetName, seriesTransformationSpecForm, setting.filterShowFieldStyle, tree))
+      Ok(dataset.transformSeries(dataSetName, seriesTransformationSpecForm, setting, tree))
   }
 
   override def runSeriesTransformation = AuthAction { implicit request =>
@@ -2442,7 +2443,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         // get the data set name, data space tree and the data set setting
           (dataSetName, tree, setting) <- getDataSetNameTreeAndSetting
         } yield {
-          BadRequest(dataset.transformSeries(dataSetName, formWithErrors, setting.filterShowFieldStyle, tree))
+          BadRequest(dataset.transformSeries(dataSetName, formWithErrors, setting, tree))
         }
       },
       spec =>
@@ -2666,6 +2667,7 @@ case class DataSetShowViewDataHolder(
   listCall: Call,
   nonNullOnly: Boolean,
   fieldNameLabelAndRendererMap: Map[String, (String, JsReadable => String)],
+  setting: DataSetSetting,
   dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )
 

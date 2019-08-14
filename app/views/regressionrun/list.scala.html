@@ -16,6 +16,7 @@
 @import org.incal.core.FilterCondition
 @import org.ada.web.controllers.dataset.MLRunRouter
 @import org.ada.web.models.Widget
+@import org.ada.server.models.DataSetSetting
 
 @(
     router: MLRunRouter)(
@@ -28,6 +29,7 @@
     allRegressionRunFields: Traversable[Field],
     mlModelIdNameMap: Map[BSONObjectID, String],
     filterIdNameMap: Map[BSONObjectID, String],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -116,7 +118,7 @@
     Some(table),
     Some(filterWidgetPanel("filterDiv", widgets, 6)),
     Some(datasetMenu(dataSpaceMetaInfos)),
-    Some(datasetSubNavWithJs()),
+    Some(datasetSubNavWithJs(setting)),
     None,
     Some(bottomResources)
 )

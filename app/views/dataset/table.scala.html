@@ -7,11 +7,12 @@
 @import views.html.elements.labelValue
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.server.models.DataSetSetting
 
 @(
     dataSetName: String,
     filterSpec: Filter,
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -37,7 +38,7 @@
                     dataSetName,
                     dataSetRouter.exportTableAsCsv(Nil, _, true, None, _, _, true, true, false, Nil),
                     dataSetRouter.exportTableAsJson(Nil, _, _, true, false, Nil),
-                    filterShowFieldStyle,
+                    setting.filterShowFieldStyle,
                     None,
                     Some(selectedOnlyElement)
                 )
@@ -223,7 +224,7 @@
 @widgetsScreen(
     Messages("table.title", dataSetName),
     Seq(filterSpec),
-    filterShowFieldStyle,
+    setting,
     dataSpaceMetaInfos,
     inputElements,
     Some(extraActions),

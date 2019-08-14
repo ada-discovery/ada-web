@@ -1,0 +1,21 @@
+@import views.html.table.dynamicNColumnTable
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+
+@(
+    collectionItemName: String,
+    tableLabel: String,
+    field1Label: String,
+    field2Label: String,
+    field3Label: String,
+    data: Seq[(String, String, String)] = Nil,
+    customRowToModelJs: Option[Html] = None
+)(implicit webContext: WebContext)
+
+@dynamicNColumnTable(
+    collectionItemName,
+    tableLabel,
+    Seq(field1Label, field2Label, field3Label),
+    data.map { case (a, b, c) => Seq(a, b, c)},
+    customRowToModelJs
+)

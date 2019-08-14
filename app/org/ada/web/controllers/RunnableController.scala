@@ -17,6 +17,7 @@ import be.objectify.deadbolt.scala.AuthenticatedRequest
 import org.ada.server.field.FieldUtil
 import org.ada.web.runnables.{InputView, RunnableFileOutput}
 import org.ada.web.util.WebExportUtil
+import org.incal.core.util.toHumanReadableCamel
 import org.incal.core.runnables._
 import org.incal.core.util.ReflectionUtil.currentThreadClassLoader
 import org.incal.play.security.SecurityRole
@@ -235,7 +236,7 @@ class RunnableController @Inject() (
     implicit request => Future {
       val runnableIdAndNames =  findRunnableNames.map { runnableName =>
         val shortName = runnableName.split("\\.", -1).lastOption.getOrElse(runnableName)
-        Json.obj("name" -> runnableName, "label" -> org.ada.web.util.toHumanReadableCamel(shortName))
+        Json.obj("name" -> runnableName, "label" -> toHumanReadableCamel(shortName))
       }
       Ok(JsArray(runnableIdAndNames))
     }

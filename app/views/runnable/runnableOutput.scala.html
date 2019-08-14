@@ -7,6 +7,7 @@
 @import views.html.layout
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
+@import org.incal.core.util.toHumanReadableCamel
 @import org.ada.web.controllers.routes
 @import org.incal.play.security.SecurityRole
 
@@ -26,11 +27,11 @@
     </script>
 }
 
-@main(util.toHumanReadableCamel(scriptClazz.getSimpleName), bottomResources = Some(bottomResources)) {
+@main(toHumanReadableCamel(scriptClazz.getSimpleName), bottomResources = Some(bottomResources)) {
 
     <div class="page-header">
         <h3>
-            @util.toHumanReadableCamel(scriptClazz.getSimpleName)
+            @toHumanReadableCamel(scriptClazz.getSimpleName)
         </h3>
     </div>
 

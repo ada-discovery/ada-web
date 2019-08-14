@@ -46,15 +46,11 @@
 
                         dataSetTransformationJsRoutes.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.resultDataSetIdAndName(sourceDataSetId, '@suffix', transformationId).ajax({
                             success: function (data) {
-                                console.log("called")
                                 $('#resultDataSetSpec_id').val(data.id)
                                 $('#resultDataSetSpec_name').val(data.name)
                             },
                             error: showErrorResponse
                         })
-
-
-
                     })
                 }
             }, 250)

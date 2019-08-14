@@ -7,7 +7,7 @@ import org.ada.server.models._
 import org.ada.server.models.dataimport.{CsvDataSetImport, DataSetImport}
 import org.ada.web.controllers.core.GenericMapping
 import org.incal.core.util.{firstCharToLowerCase, hasNonAlphanumericUnderscore}
-import org.ada.web.util.toHumanReadableCamel
+import org.incal.core.util.toHumanReadableCamel
 import org.incal.play.controllers.{CreateEditFormViews, IdForm, WebContext}
 import org.incal.play.formatters.{EnumFormatter, MapJsonFormatter, SeqFormatter}
 import play.api.data.{Form, Mapping}
@@ -71,7 +71,8 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
     "storageType" -> of[StorageType.Value],
     "mongoAutoCreateIndexForProjection" -> boolean,
     "cacheDataSet" -> ignored(false),
-    "ownerId" -> ignored(Option.empty[BSONObjectID])
+    "ownerId" -> ignored(Option.empty[BSONObjectID]),
+    "extraNavigationItems" -> ignored(Seq[NavigationItem]())
   )(DataSetSetting.apply)(DataSetSetting.unapply)
 
   protected val dataViewMapping: Mapping[DataView] = mapping(

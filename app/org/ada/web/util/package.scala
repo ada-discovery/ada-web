@@ -2,7 +2,7 @@ package org.ada.web
 
 import org.ada.web.models._
 import org.ada.server.models._
-import org.apache.commons.lang.StringUtils
+import org.incal.core.util.toHumanReadableCamel
 import play.api.{Logger, LoggerLike}
 import org.ada.server.dataaccess.JsonUtil
 import play.api.libs.json.{Json, Writes}
@@ -15,21 +15,6 @@ package object util {
 
   def shorten(string : String, length: Int = 25) =
     if (string.length > length) string.substring(0, length - 2) + ".." else string
-
-  /**
-   * Helper function for conversion of input string to camel case.
-   * Replaces underscores "_" with whitespace " " and turns the next character into uppercase.
-   *
-   * @param s Input string.
-   * @return String converted to camel case.
-   */
-  def toHumanReadableCamel(s: String): String = {
-    StringUtils.splitByCharacterTypeCamelCase(s.replaceAll("[_|\\.]", " ")).filter(!_.equals(" ")).map(
-      _.toLowerCase.capitalize
-    ).mkString(" ")
-//    val split = s.split("_")
-//    split.map { x => x.capitalize}.mkString(" ")
-  }
 
   def fieldLabel(fieldName : String): String =
     toHumanReadableCamel(JsonUtil.unescapeKey(fieldName))

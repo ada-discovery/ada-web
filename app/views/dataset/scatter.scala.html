@@ -7,11 +7,12 @@
 @import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
 @import org.incal.play.routes.CustomDirAssets
+@import org.ada.server.models.DataSetSetting
 
 @(
     dataSetName: String,
     filterSpec: Filter,
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     xField: Option[Field],
     yField: Option[Field],
     groupOrValueField: Option[Field],
@@ -149,7 +150,7 @@
 @widgetsScreen(
     Messages("scatterAnalysis.title", dataSetName),
     Seq(filterSpec),
-    filterShowFieldStyle,
+    setting,
     dataSpaceMetaInfos,
     inputElements,
     Some(extraActions),

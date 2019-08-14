@@ -8,6 +8,7 @@
 @import views.html.runnable.genericFields
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
+@import org.incal.core.util.toHumanReadableCamel
 @import be.objectify.deadbolt.scala.views.html.restrictOr
 @import org.ada.server.models.FieldTypeSpec
 @import org.ada.server.models.FieldTypeId
@@ -33,10 +34,10 @@
     </script>
 }
 
-@main(util.toHumanReadableCamel(title), bottomResources = Some(bottomResources), extraMessages = Some(formErrors("runnable", errors))) {
+@main(toHumanReadableCamel(title), bottomResources = Some(bottomResources), extraMessages = Some(formErrors("runnable", errors))) {
     <div class="page-header">
         <h3>
-        @util.toHumanReadableCamel(title)
+        @toHumanReadableCamel(title)
         </h3>
     </div>
 

@@ -11,10 +11,11 @@
 @import org.incal.spark_ml.models.regression.RegressionEvalMetric
 @import org.incal.spark_ml.models.VectorScalerType
 @import org.ada.web.controllers.ml.routes
+@import org.ada.server.models.DataSetSetting
 
 @(
     dataSetName: String,
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -266,7 +267,7 @@
 
 @mlRunCreate(
     Messages("temporalRegression.title", dataSetName),
-    filterShowFieldStyle,
+    setting,
     dataSpaceMetaInfos,
     firstColumn,
     secondColumn,

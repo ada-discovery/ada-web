@@ -8,11 +8,13 @@
 @import org.incal.spark_ml.models.result.ClassificationResult
 @import org.ada.web.controllers.dataset.MLRunRouter
 @import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.server.models.DataSetSetting
 
 @(
     router: MLRunRouter)(
     title: String,
     item: ClassificationResult,
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -26,5 +28,5 @@
     false,
     Map(),
     Some(datasetMenu(dataSpaceMetaInfos)),
-    Some(datasetSubNavWithJs())
+    Some(datasetSubNavWithJs(setting))
 )

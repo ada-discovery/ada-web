@@ -3,7 +3,7 @@ package org.ada.web.controllers.dataset
 import com.google.inject.ImplementedBy
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import org.ada.server.util.ClassFinderUtil.findClasses
-import org.ada.web.util.toHumanReadableCamel
+import org.incal.core.util.toHumanReadableCamel
 import play.api.inject.Injector
 import javax.inject.{Inject, Singleton}
 

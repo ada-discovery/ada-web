@@ -14,11 +14,12 @@
 @import views.html.dataset.dynamicFieldTable
 @import views.html.layout.formErrors
 @import org.ada.web.util.enumToValueString
+@import org.ada.server.models.DataSetSetting
 
 @(
     dataSetName: String,
     form: Form[DataSetSeriesProcessingSpec],
-    filterShowFieldStyle: Option[FilterShowFieldStyle.Value],
+    setting: DataSetSetting,
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
     implicit context: DataSetWebContext
@@ -58,7 +59,7 @@
                 $('#preserveFieldNameDiv #fieldTypeahead'),
                 $('#preserveFieldNameDiv #fieldName'),
                 '@Html(dataSetRouter.allFields.url)',
-                @filterShowFieldStyle.getOrElse(NamesAndLabels).id
+                @setting.filterShowFieldStyle.getOrElse(NamesAndLabels).id
             )
         })
 
@@ -79,7 +80,7 @@
     </script>
 }
 
-@main(Messages("seriesProcessing.title", dataSetName), Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs()), None, Some(bottomResources), Some(formErrors("processSeries", form.errors))) {
+@main(Messages("seriesProcessing.title", dataSetName), Some(datasetMenu(dataSpaceMetaInfos)), Some(datasetSubNavWithJs(setting)), None, Some(bottomResources), Some(formErrors("processSeries", form.errors))) {
 
     <div class="page-header">
         <h3>

@@ -24,6 +24,6 @@
     cancelCall = cancelCall,
     deleteCall = None,
     sideBar = Some(datasetMenu(dataSpaceMetaInfos)),
-    topContentBar = Some(datasetSubNavWithJs()),
+    topContentBar = form.value.map(setting => datasetSubNavWithJs(setting)),
     bottomResources = Some(fieldTypeaheadsActivationJs(form))
 )

@@ -9,10 +9,11 @@ import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.server.dataaccess.RepoTypes.{DataSetSettingRepo, DataSpaceMetaInfoRepo}
 import org.ada.server.models.{ChartType, DataSetFormattersAndIds, DataSetSetting, FilterShowFieldStyle, StorageType, WidgetSpec}
 import org.ada.server.models.DataSetFormattersAndIds.{DataSetSettingIdentity, serializableDataSetSettingFormat, widgetSpecFormat}
+import org.ada.server.models.NavigationItem.navigationItemFormat
 import org.ada.server.models._
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import play.api.Logger
-import play.api.data.Form
+import play.api.data.{Form, FormError, Mapping}
 import play.api.data.Forms._
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -24,7 +25,10 @@ import org.ada.web.controllers.dataset.routes.{DataSetSettingController => dataS
 import org.incal.core.dataaccess.Criterion.Infix
 import org.incal.play.controllers._
 import org.incal.play.formatters._
+import play.api.data.format.Formatter
+import play.api.libs.json.Json
 
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 
 class DataSetSettingController @Inject() (
@@ -46,6 +50,7 @@ class DataSetSettingController @Inject() (
   private implicit val storageTypeFormatter = EnumFormatter(StorageType)
   private implicit val widgetSpecFormatter = JsonFormatter[WidgetSpec]
   private implicit val bsonObjectIdFormatter = BSONObjectIDStringFormatter
+  private implicit val navigationItemFormatter = JsonFormatter[NavigationItem]
 
   override protected[controllers] val form = Form(
     mapping(
@@ -63,7 +68,8 @@ class DataSetSettingController @Inject() (
       "storageType" -> of[StorageType.Value],
       "mongoAutoCreateIndexForProjection" -> boolean,
       "cacheDataSet" -> ignored(false),
-      "ownerId" -> optional(of[BSONObjectID])
+      "ownerId" -> optional(of[BSONObjectID]),
+      "extraNavigationItems" -> seq(of[NavigationItem]).transform(mergeMenus, mergeMenus)
     )(DataSetSetting.apply)(DataSetSetting.unapply)
   )
 
@@ -168,5 +174,33 @@ class DataSetSettingController @Inject() (
       dsaf(item.dataSetId).foreach(_.updateDataSetRepo(item))
       // return id
       id
+    }
+
+
+  private def mergeMenus(navigationItems: Seq[NavigationItem]): Seq[NavigationItem] =
+    navigationItems.foldLeft(ArrayBuffer[NavigationItem]()) { case (items, navItem) =>
+      navItem match {
+        // if it's a link we just add it
+        case link: Link => items :+ link
+
+        // menu with not header take the links and add
+        case Menu("", links) => items ++ links
+
+        // for normal menus we need to search if we don't have it already with the same header
+        case Menu(header, links) if header.nonEmpty => items.zipWithIndex.find { case (navItem,_ ) =>
+          navItem match {
+            case Menu(header2, _) => header == header2
+            case _ => false
+          }}.map { case (matchedItem, index) =>
+          // if yes we add the links and update
+          val matchedMenu = matchedItem.asInstanceOf[Menu]
+          val updatedMenu = matchedMenu.copy(links = matchedMenu.links ++ links)
+          items(index) = updatedMenu
+          items
+        }.getOrElse(
+          // otherwise we add the entire menu to the list
+          items :+ Menu(header, links)
+        )
+      }
     }
 }

@@ -6,7 +6,7 @@ import org.ada.server.dataaccess.StreamSpec
 import org.ada.server.models._
 import org.ada.server.models.datatrans.{DataSetMetaTransformation, ResultDataSetSpec}
 import org.ada.web.controllers.core.GenericMapping
-import org.ada.web.util.toHumanReadableCamel
+import org.incal.core.util.toHumanReadableCamel
 import org.incal.core.util.hasNonAlphanumericUnderscore
 import org.incal.play.controllers.{CreateEditFormViews, IdForm, WebContext}
 import org.incal.play.formatters.{EnumFormatter, MapJsonFormatter, SeqFormatter}
