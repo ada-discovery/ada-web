@@ -1,0 +1,8 @@
+db.getCollection('unsupervisedLearnings').renameCollection("clusterings")
+
+db.getCollection('clusterings').find({}).forEach(function(item)
+{
+    const parts = item.concreteClass.split('.');
+    item.concreteClass = "org.incal.spark_ml.models.clustering." + parts[parts.length - 1];
+    db.getCollection('clusterings').save(item);
+})

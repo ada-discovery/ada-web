@@ -20,7 +20,7 @@ GET         /loggedout                                                          
 GET         /unauthorized                                                           org.ada.web.controllers.AuthController.unauthorized
 
 
-# for testing
+# for no-authentication access
 GET         /loginBasic                                                             org.ada.web.controllers.AuthController.loginBasic
 GET         /loginAdmin                                                             org.ada.web.controllers.AuthController.loginAdmin
 
@@ -42,8 +42,6 @@ GET         /runnables/names                                                    
 POST        /runnables/run                                                          org.ada.web.controllers.RunnableController.runScript(className : String)
 GET         /runnables/inputForm                                                    org.ada.web.controllers.RunnableController.getScriptInputForm(className : String)
 POST        /runnables/runForInput                                                  org.ada.web.controllers.RunnableController.runInputScript(className : String)
-
-
 
 # Data Set Import
 GET         /admin/dataSetImport                                                    org.ada.web.controllers.dataset.dataimport.DataSetImportController.find(p: Int ?= 0, s: String ?= "dataSpaceName", filter: Seq[org.incal.core.FilterCondition] ?= Nil)

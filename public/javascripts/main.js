@@ -950,3 +950,18 @@ function activateTableAllSelection() {
         })
     });
 }
+
+function getSelectedRowIds(tableElement) {
+    var ids = []
+
+    $(tableElement).find('tbody').find('tr').each(function() {
+        var checked = $(this).find("td input.table-selection[type=checkbox]").is(':checked');
+        var id = $(this).find("#_id").val()
+
+        if (checked) {
+            ids.push(id);
+        }
+    });
+
+    return ids;
+}

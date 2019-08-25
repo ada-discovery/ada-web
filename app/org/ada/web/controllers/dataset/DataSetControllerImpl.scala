@@ -24,7 +24,7 @@ import org.ada.web.models.Widget.WidgetWrites
 import org.ada.server.json.{ManifestedFormat, OptionFormat, SubTypeFormat, TupleFormat}
 import org.ada.server.models.ml._
 import org.ada.web.controllers.dataset.IndependenceTestResult._
-import org.ada.server.dataaccess.RepoTypes.{ClassifierRepo, RegressorRepo, ClusteringRepo}
+import org.ada.server.dataaccess.RepoTypes.{ClassifierRepo, ClusteringRepo, RegressorRepo}
 import org.ada.server.dataaccess.dataset.{DataSetAccessor, DataSetAccessorFactory}
 import play.api.Logger
 import play.api.data.{Form, Mapping}
@@ -62,6 +62,7 @@ import org.incal.spark_ml.models.VectorScalerType
 import org.ada.server.services.importers.TranSMARTService
 import org.ada.web.services.{DataSpaceService, WidgetGenerationService}
 import org.ada.web.services.widgetgen.DistributionWidgetGeneratorHelper
+import play.api.i18n.Messages
 
 import scala.math.Ordering.Implicits._
 import scala.concurrent.{Future, TimeoutException}
@@ -1556,7 +1557,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         case Accepts.Json() => BadRequest("The function getTable function doesn't support JSON response.")
       }
 
-    }.recover(handleExceptionsWithErrorCodes("a table"))
+    }.recover(handleExceptionsWithErrorCodes("a export table"))
   }
 
   override def getComparison(

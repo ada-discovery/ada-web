@@ -1,7 +1,7 @@
 package org.ada.web.controllers
 
 import javax.inject.Inject
-import org.ada.server.models.{DataSpaceMetaInfo, HtmlSnippet, HtmlSnippetId}
+import org.ada.server.models.{DataSpaceMetaInfo, HtmlSnippet, HtmlSnippetId, User}
 import org.incal.core.dataaccess.Criterion._
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
@@ -9,7 +9,7 @@ import org.ada.web.services.DataSpaceService
 import org.incal.play.security.AuthAction
 import org.incal.play.security.SecurityUtil._
 import org.ada.server.dataaccess.RepoTypes.HtmlSnippetRepo
-import org.ada.web.controllers.core.AdaBaseController
+import org.ada.web.controllers.core.{AdaBaseController, BSONObjectIDSeqFormatter}
 import org.ada.web.models.security.DeadboltUser
 import views.html.layout
 import play.api.cache.Cached

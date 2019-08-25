@@ -93,7 +93,7 @@
                 var params = {}
 
                 params["tableColumnNames"] = getFieldNames()
-                params["selectedIds"] = getSelectedRowIds()
+                params["selectedIds"] = getSelectedRowIds($('#widgetsDiv .table-div'))
 
                 addParams($(this), params)
 
@@ -111,7 +111,7 @@
             if (fieldNames.length == 0) {
                 showError("Table generation cannot be launched. No fields specified.");
             } else if (fieldNames.length > 50) {
-                showError("Table generation cannot be launched. The maximum number of fields allowed is 50 but " + inputFieldNames.length + " were given.");
+                showError("Table generation cannot be launched. The maximum number of fields allowed is 50 but " + fieldNames.length + " were given.");
             } else {
                 dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.generateTableWithFilter(0, "", fieldNames, filterOrIdJson).ajax({
                     success: function (data) {
@@ -162,21 +162,6 @@
         function getFieldNames() {
             $('#fieldNameDiv').dynamicTable('updateModelFromTable');
             return $('#fieldNameDiv').dynamicTable('getModel');
-        }
-
-        function getSelectedRowIds() {
-            var ids = []
-
-            $('#widgetsDiv .table-div tbody').find('tr').each(function() {
-                var checked = $(this).find("td input.table-selection[type=checkbox]").is(':checked');
-                var id = $(this).find("#_id").val()
-
-                if (checked) {
-                    ids.push(id);
-                }
-            });
-
-            return ids;
         }
 
         function addAllFields() {
