@@ -544,3 +544,33 @@ a.carousel-control.right{
     border-radius: 6px;
     width: 100%
 }
+
+/*.data-space-menu, .categorical-tree-menu {*/
+    /*position: absolute;*/
+    /*left: 0;*/
+    /*right: 0;*/
+/*}*/
+
+#data-space-menu {
+    height: 45%;
+    overflow-y:scroll;
+}
+
+#categorical-tree-menu {
+    height: 45%;
+}
+
+#categorical-tree-menu>.jsTree-tree {
+    max-height: 100%;
+}
+
+#data-set-menu-separator {
+    height:3px;
+    border:none;
+    color:gray;
+    background-color:gray;
+}
+
+#data-set-menu-separator:hover {
+    cursor: pointer;
+}

@@ -85,6 +85,15 @@
             activateAllFilters(function(filterOrId) {calcHeatmap()});
 
             $("#heatmapDiv").ada_charts({chartType: 'heatmap'})
+
+            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
+                if(data.type == "field-Date" || data.type == "field-Integer" || data.type == "field-Double") {
+                    $('#inputDiv #xFieldName').val(data.id)
+                    $('#inputDiv #xFieldTypeahead').val(data.text)
+
+                    calcHeatmap();
+                }
+            });
         });
 
         function calcHeatmap() {

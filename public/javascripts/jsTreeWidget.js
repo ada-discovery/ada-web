@@ -32,7 +32,7 @@ $.widget( "custom.jsTreeWidget", {
             },
 
             "plugins" : [
-                "search", "sort", "state", "types", "wholerow" // "contextmenu", "dnd",
+                "search", "sort", "types", "wholerow" // "contextmenu", "dnd", "state",
             ]
         });
 

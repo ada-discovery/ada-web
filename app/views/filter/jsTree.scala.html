@@ -12,13 +12,13 @@
 
 <div class="row jsTree-filter">
     <div class="col-md-9">
-        <input id="@{treeElementId}-Search-Input" class="jsTree-search-input" placeholder="Field Name or Label"></input>
+        <input id="@{treeElementId}-Search-Input" class="jsTree-search-input form-control" placeholder="Field Name or Label"></input>
     </div>
     <div class="col-md-3">
-        <a class="btn btn-info btn-sm" id="collapseAll" href="#" data-toggle="tooltip" title="Collapse All" onclick="$('#categoryTree').jstree('close_all');return false;">
+        <a class="btn btn-info btn-sm" id="collapseAll" href="#" data-toggle="tooltip" title="Collapse All" onclick="$('#@{treeElementId}').jstree('close_all');return false;">
             <span class="glyphicon glyphicon-resize-small" aria-hidden="true"></span>
         </a>
-        <a class="btn btn-info btn-sm" id="expandAll" href="#" data-toggle="tooltip" title="Expand All" onclick="$('#categoryTree').jstree('open_all');return false;">
+        <a class="btn btn-info btn-sm" id="expandAll" href="#" data-toggle="tooltip" title="Expand All" onclick="$('#@{treeElementId}').jstree('open_all');return false;">
             <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
         </a>
     </div>

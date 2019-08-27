@@ -6,7 +6,7 @@
 @import org.ada.web.models.JsTreeNode
 
 @(
-    elementName: String,
+    elementNameId: String,
     categoriesOrCall: Either[Traversable[Category], Call],
     nodeSelectedFun: Option[Html] = None
 )(
@@ -22,7 +22,7 @@
 
 @jsTree(
     categoryTreeDataOrUrl,
-    elementName,
+    elementNameId,
     Json.obj(
         "default" -> Json.obj("icon" -> "glyphicon glyphicon-folder-close category-node"),
         "category" -> Json.obj("icon" -> "glyphicon glyphicon-folder-close category-node"),

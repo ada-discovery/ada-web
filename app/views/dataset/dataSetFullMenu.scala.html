@@ -1,0 +1,75 @@
+@import org.ada.web.controllers.dataset.DataSetRouter
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.incal.play.util.WebUtil.{matchesPath, getParamValue}
+@import views.html.dataset.datasetMenu
+@import org.ada.web.util.shorten
+@import org.ada.web.controllers.dataset.routes.{DataSpaceMetaInfoController => dataSpaceMetaInfoRoutes}
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.filter.categoricalTree
+@import views.html.filter.jsTreeImport
+
+@(dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo], dataSetRouter: DataSetRouter)(implicit webContext: WebContext)
+
+@categoryTreeNodeSelectedJsFun = {
+    function(node) {
+        if (node.type.startsWith("field-")) {
+            var text = node.text
+            var nonNullCount = node.data.nonNullCount
+            if (nonNullCount) {
+                var lastIndex = text.lastIndexOf(" (" + nonNullCount + ")")
+                text = text.substring(0, lastIndex)
+            }
+
+            $('#sideCategoricalTree').trigger("nodeSelected", {id: node.id, text: text, type: node.type});
+        }
+    }
+}
+
+@jsTreeImport()
+
+<div style="height: 90vh;">
+    <div id="data-space-menu" class="data-space-menu">
+        @datasetMenu(dataSpaceMetaInfos)
+    </div>
+
+    <hr id="data-set-menu-separator" onclick="resizeDataSpaceMenu();"/>
+
+    <div id="categorical-tree-menu" class="categorical-tree-menu">
+        @categoricalTree("sideCategoricalTree", Right(dataSetRouter.getCategoriesWithFieldsAsTreeNodes(Left(Nil))), Some(categoryTreeNodeSelectedJsFun))
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $("#sideCategoricalTree").on('open_node.jstree', function (event, data) {
+            data.instance.set_type(data.node, 'category-open');
+        });
+
+        $("#sideCategoricalTree").on('close_node.jstree', function (event, data) {
+            data.instance.set_type(data.node, 'category');
+        });
+
+        $("#sideCategoricalTree").jsTreeWidget('init');
+    })
+
+    function resizeDataSpaceMenu() {
+        const currentSpaceHeight = $("#data-space-menu").prop('style')['height'];
+        const newSpaceHeight = (currentSpaceHeight == "0%") ? "100%" : (currentSpaceHeight == "100%") ? "45%" : "0%"
+        const newCatHeight = (currentSpaceHeight == "0%") ? "0%" : (currentSpaceHeight == "100%") ? "45%" : "90%"
+
+        $("#data-space-menu").height(newSpaceHeight);
+        if (newSpaceHeight == "0%") {
+            $("#data-space-menu").hide()
+        } else {
+            $("#data-space-menu").show()
+        }
+
+        $("#categorical-tree-menu").height(newCatHeight);
+        if (newCatHeight == "0%") {
+            $("#categorical-tree-menu").hide()
+        } else {
+            $("#categorical-tree-menu").show()
+        }
+    }
+</script>

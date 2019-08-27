@@ -79,6 +79,14 @@
 
             activateAllFilters(function(filterOrId) {calcScatter()});
 
+            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
+                if(data.type == "field-Date" || data.type == "field-Integer" || data.type == "field-Double") {
+                    $('#inputDiv #xFieldName').val(data.id)
+                    $('#inputDiv #xFieldTypeahead').val(data.text)
+
+                    calcScatter();
+                }
+            });
 //            $("#scatterDiv").ada_charts({chartType: 'scatterplot'})
         });
 

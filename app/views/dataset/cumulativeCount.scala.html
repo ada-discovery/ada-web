@@ -62,6 +62,15 @@
             $("#dataViewSelectionModal #submitButton").on("click", addCumulativeCountToView)
 
             activateAllFilters(function(filterOrId) {calcCumulativeCount()});
+
+            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
+                if(data.type == "field-Date" || data.type == "field-Integer" || data.type == "field-Double") {
+                    $('#inputDiv #fieldName').val(data.id)
+                    $('#inputDiv #fieldTypeahead').val(data.text)
+
+                    calcCumulativeCount();
+                }
+            });
         });
 
         function calcCumulativeCount() {

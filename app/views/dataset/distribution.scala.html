@@ -86,6 +86,13 @@
             });
 
             activateAllFilters(function(filterOrId) {calcDistribution()})
+
+            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
+                $('#inputDiv #fieldName').val(data.id)
+                $('#inputDiv #fieldTypeahead').val(data.text)
+
+                calcDistribution();
+            });
         });
 
         function calcDistribution() {
