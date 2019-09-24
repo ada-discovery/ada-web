@@ -402,7 +402,7 @@ a.carousel-control.right{
     color: #626262;
 }
 
-.col-md-10-25, .col-md-8-5, .col-md-1-75 {
+.col-md-10-25, .col-md-8-5, .col-md-8-25, .col-md-1-75 {
     position: relative;
     min-height: 1px;
     padding-right: 15px;
@@ -410,7 +410,7 @@ a.carousel-control.right{
 }
 
 @media (min-width: 992px) {
-    .col-md-10-25, .col-md-8-5, .col-md-1-75 {
+    .col-md-10-25, .col-md-8-5, .col-md-8-25, .col-md-1-75 {
         float: left;
     }
     .col-md-10-25 {
@@ -418,6 +418,9 @@ a.carousel-control.right{
     }
     .col-md-8-5 {
         width: 70.833%
+    }
+    .col-md-8-25 {
+        width: 68.75%
     }
     .col-md-1-75 {
         width: 14.583%
@@ -573,4 +576,11 @@ a.carousel-control.right{
 
 #data-set-menu-separator:hover {
     cursor: pointer;
+}
+
+.jstree-anchor {
+    margin-left : -10px !important;
+}
+.jstree-node {
+    margin-left : 10px !important;
 }

@@ -30,9 +30,8 @@ $.widget( "custom.jsTreeWidget", {
                 "show_only_matches" : true,
                 "search_leaves_only": true
             },
-
             "plugins" : [
-                "search", "sort", "types", "wholerow" // "contextmenu", "dnd", "state",
+                "search", "sort", "types", "wholerow" // , "dnd", "contextmenu", "dnd", "state",
             ]
         });
 

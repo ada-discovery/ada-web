@@ -446,8 +446,8 @@ function prependTrollboxMessage(author, timeCreated, text, isAdmin, fadeIn) {
 }
 
 function showHideMessageBox() {
-    if ($("#contentDiv").hasClass("col-md-8-5")) {
-        $("#contentDiv").removeClass("col-md-8-5").addClass("col-md-10-25")
+    if ($("#contentDiv").hasClass("col-md-8-25")) {
+        $("#contentDiv").removeClass("col-md-8-25").addClass("col-md-10")
         $("#messageBoxDiv").hide();
         $("#showHideMessageBoxSpan").html("&#8612;")
 
@@ -455,7 +455,7 @@ function showHideMessageBox() {
             refreshHighcharts();
         }
     } else {
-        $("#contentDiv").removeClass("col-md-10-25").addClass("col-md-8-5")
+        $("#contentDiv").removeClass("col-md-10").addClass("col-md-8-25")
         $("#messageBoxDiv").show();
         $("#showHideMessageBoxSpan").html("&#8614;")
 
@@ -964,4 +964,20 @@ function getSelectedRowIds(tableElement) {
     });
 
     return ids;
+}
+
+function enableFieldDragover(fieldNameElement, fieldTypeahedElement, execFun, acceptedTypes) {
+    fieldTypeahedElement.on('dragover', false).on('drop', function (ev) {
+        ev.preventDefault();
+        var transfer = ev.originalEvent.dataTransfer;
+        var id = transfer.getData("id");
+        var text = transfer.getData("text");
+        var type = transfer.getData("type");
+
+        if (id && (!acceptedTypes || acceptedTypes.includes(type))) {
+            $(fieldNameElement).val(id)
+            $(fieldTypeahedElement).val(text)
+            execFun();
+        }
+    });
 }
