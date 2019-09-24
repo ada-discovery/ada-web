@@ -57,6 +57,23 @@
             $("#dataViewSelectionModal #submitButton").on("click", addIndependenceTestToView)
 
             activateAllFilters(function(filterOrId) {testIndependence()});
+
+            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
+                var row = {
+                    "fieldName": data.id,
+                    "fieldTypeahead": data.text
+                }
+
+                $('#inputFieldNameDiv').dynamicTable('addTableRow', row)
+
+                testIndependence()
+            });
+
+            enableFieldDragover(
+                $('#inputDiv #targetFieldName'),
+                $('#inputDiv #targetFieldTypeahead'),
+                testIndependence
+            )
         });
 
         function testIndependence() {

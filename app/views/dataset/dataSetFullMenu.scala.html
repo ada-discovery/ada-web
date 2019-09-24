@@ -44,7 +44,62 @@
     $(function () {
         $("#sideCategoricalTree").on('open_node.jstree', function (event, data) {
             data.instance.set_type(data.node, 'category-open');
+
+            var leafs = $(event.target).find(".jstree-leaf")
+            $.each(leafs, function(index, leaf) {
+                var node = $("#sideCategoricalTree").jstree(true).get_node(leaf.id)
+
+                if (node.type != "category") {
+                    $(leaf).attr('dragabble', 'true');
+
+                    var text = node.text
+                    var nonNullCount = node.data.nonNullCount
+                    if (nonNullCount) {
+                        var lastIndex = text.lastIndexOf(" (" + nonNullCount + ")")
+                        text = text.substring(0, lastIndex)
+                    }
+
+                    $(leaf).on('dragstart', function (evt) {
+                        evt.originalEvent.dataTransfer.setData("id", node.id);
+                        evt.originalEvent.dataTransfer.setData("text", text);
+                        evt.originalEvent.dataTransfer.setData("type", node.type);
+                    });
+                }
+            })
         });
+
+        $("#sideCategoricalTree").on('search.jstree', function (ndes, str, res) {
+            console.log(str)
+            // console.log(str)
+            // console.log(res)
+
+            $.each(str.nodes, function(index, leaf) {
+                var node = $("#sideCategoricalTree").jstree(true).get_node(leaf.id)
+
+                if (node.type != "category") {
+                    console.log(leaf.id)
+                    console.log(node)
+
+                    var text = node.text
+                    var nonNullCount = node.data.nonNullCount
+                    if (nonNullCount) {
+                        var lastIndex = text.lastIndexOf(" (" + nonNullCount + ")")
+                        text = text.substring(0, lastIndex)
+                    }
+
+                    var lf = $("#sideCategoricalTree").find("#" + leaf.id)[0]
+                    console.log(lf)
+                    $(lf).attr('dragabble', 'true');
+                    $(lf).on('dragstart', function (evt) {
+                        console.log('dragstart')
+                        console.log(text)
+                        evt.originalEvent.dataTransfer.setData("id", node.id);
+                        evt.originalEvent.dataTransfer.setData("text", text);
+                        evt.originalEvent.dataTransfer.setData("type", node.type);
+                    });
+                }
+            })
+        })
 
         $("#sideCategoricalTree").on('close_node.jstree', function (event, data) {
             data.instance.set_type(data.node, 'category');

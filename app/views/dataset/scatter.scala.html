@@ -80,13 +80,34 @@
             activateAllFilters(function(filterOrId) {calcScatter()});
 
             $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
-                if(data.type == "field-Date" || data.type == "field-Integer" || data.type == "field-Double") {
+                if(["field-Date", "field-Integer", "field-Double"].includes(data.type)) {
                     $('#inputDiv #xFieldName').val(data.id)
                     $('#inputDiv #xFieldTypeahead').val(data.text)
 
                     calcScatter();
                 }
             });
+
+            enableFieldDragover(
+                $('#inputDiv #xFieldName'),
+                $('#inputDiv #xFieldTypeahead'),
+                calcScatter,
+                ["field-Date", "field-Integer", "field-Double"]
+            )
+
+            enableFieldDragover(
+                $('#inputDiv #yFieldName'),
+                $('#inputDiv #yFieldTypeahead'),
+                calcScatter,
+                ["field-Date", "field-Integer", "field-Double"]
+            )
+
+            enableFieldDragover(
+                $('#inputDiv #groupOrValueFieldName'),
+                $('#inputDiv #groupOrValueFieldTypeahead'),
+                calcScatter,
+                ["field-Boolean", "field-Enum", "field-String", "field-Date", "field-Integer", "field-Double"]
+            )
 //            $("#scatterDiv").ada_charts({chartType: 'scatterplot'})
         });
 

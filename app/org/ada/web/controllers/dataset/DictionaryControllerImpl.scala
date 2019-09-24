@@ -201,7 +201,7 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
   )
 
   private val widgetSpecs = Seq(
-    DistributionWidgetSpec("fieldType", None)
+    DistributionWidgetSpec("fieldType", None, displayOptions = MultiChartDisplayOptions(chartType = Some(ChartType.Pie)))
   )
 
   override protected def getListViewData(

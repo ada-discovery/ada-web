@@ -81,6 +81,18 @@
             // add table columns
             addTableColumnsAndSelectedBeforeModalSubmit("exportFilteredTableCsvModal")
             addTableColumnsAndSelectedBeforeModalSubmit("exportFilteredTableJsonModal")
+
+            // enable an interaction with the side categorical tree
+            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
+                var newRow = {
+                    "fieldName": data.id,
+                    "fieldTypeahead": data.text
+                };
+
+                $('#fieldNameDiv').dynamicTable('addTableRow', newRow)
+
+                // generateTable()
+            });
         });
 
         function addTableColumnsAndSelectedBeforeModalSubmit(modalId) {

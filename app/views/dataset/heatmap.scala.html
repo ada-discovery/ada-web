@@ -80,6 +80,10 @@
                 }
             });
 
+            $("#inputDiv #aggType").change(function() {
+                calcHeatmap();
+            });
+
             $("#dataViewSelectionModal #submitButton").on("click", addHeatmapToView)
 
             activateAllFilters(function(filterOrId) {calcHeatmap()});
@@ -87,13 +91,34 @@
             $("#heatmapDiv").ada_charts({chartType: 'heatmap'})
 
             $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
-                if(data.type == "field-Date" || data.type == "field-Integer" || data.type == "field-Double") {
+                if(["field-Date", "field-Integer", "field-Double"].includes(data.type)) {
                     $('#inputDiv #xFieldName').val(data.id)
                     $('#inputDiv #xFieldTypeahead').val(data.text)
 
                     calcHeatmap();
                 }
             });
+
+            enableFieldDragover(
+                $('#inputDiv #xFieldName'),
+                $('#inputDiv #xFieldTypeahead'),
+                calcHeatmap,
+                ["field-Date", "field-Integer", "field-Double"]
+            )
+
+            enableFieldDragover(
+                $('#inputDiv #yFieldName'),
+                $('#inputDiv #yFieldTypeahead'),
+                calcHeatmap,
+                ["field-Date", "field-Integer", "field-Double"]
+            )
+
+            enableFieldDragover(
+                $('#inputDiv #valueFieldName'),
+                $('#inputDiv #valueFieldTypeahead'),
+                calcHeatmap,
+                ["field-Date", "field-Integer", "field-Double"]
+            )
         });
 
         function calcHeatmap() {

@@ -64,13 +64,27 @@
             activateAllFilters(function(filterOrId) {calcCumulativeCount()});
 
             $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
-                if(data.type == "field-Date" || data.type == "field-Integer" || data.type == "field-Double") {
+                if(["field-Date", "field-Integer", "field-Double"].includes(data.type)) {
                     $('#inputDiv #fieldName').val(data.id)
                     $('#inputDiv #fieldTypeahead').val(data.text)
 
                     calcCumulativeCount();
                 }
             });
+
+            enableFieldDragover(
+                $('#inputDiv #fieldName'),
+                $('#inputDiv #fieldTypeahead'),
+                calcCumulativeCount,
+                ["field-Date", "field-Integer", "field-Double"]
+            )
+
+            enableFieldDragover(
+                $('#inputDiv #groupFieldName'),
+                $('#inputDiv #groupFieldTypeahead'),
+                calcCumulativeCount,
+                ["field-Boolean", "field-Enum", "field-String"]
+            )
         });
 
         function calcCumulativeCount() {

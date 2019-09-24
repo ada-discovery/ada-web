@@ -59,6 +59,19 @@
             activateAllFilters(function(filterOrId) {calcCorrelations()});
 
             $("#heatmapDiv").ada_charts({chartType: 'heatmap'})
+
+            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
+                if("field-Boolean" == data.type) {
+                    var newRow = {
+                        "fieldName": data.id,
+                        "fieldTypeahead": data.text
+                    };
+
+                    $('#fieldNameDiv').dynamicTable('addTableRow', newRow)
+
+                    calcCorrelations()
+                }
+            });
         });
 
         function calcCorrelations() {

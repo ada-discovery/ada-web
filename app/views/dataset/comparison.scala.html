@@ -44,6 +44,18 @@
             });
 
             activateAllFilters(function(filterOrId) {calcComparison()})
+
+            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
+                $('#inputDiv #fieldName').val(data.id)
+                $('#inputDiv #fieldTypeahead').val(data.text)
+                calcComparison();
+            });
+
+            enableFieldDragover(
+                $('#inputDiv #fieldName'),
+                $('#inputDiv #fieldTypeahead'),
+                calcComparison
+            )
         });
 
         function addNewFilter() {

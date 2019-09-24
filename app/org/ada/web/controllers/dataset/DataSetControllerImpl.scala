@@ -867,7 +867,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       // get a new filter
       val newFilter = setFilterLabels(resolvedFilter, nameFieldMap)
       val conditionPanel = views.html.filter.conditionPanel(Some(newFilter))
-      val filterModel = Json.toJson(resolvedFilter.conditions)
+      val filterModel = Json.toJson(newFilter.conditions)
 
       val jsonResponse = Ok(Json.obj(
         "conditionPanel" -> conditionPanel.toString(),
@@ -1147,7 +1147,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
                 )
 
               } else {
-                val chartType = if (groupField.isDefined) ChartType.Column else ChartType.Pie
+                val chartType = ChartType.Column // if (groupField.isDefined) ChartType.Column else ChartType.Pie
                 val distributionWidget = distWidgetSpec(chartType)
 
                 Seq(
@@ -1986,7 +1986,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       // filter model / condition panel
       val newFilter = setFilterLabels(resolvedFilter, nameFieldMap)
       val conditionPanel = views.html.filter.conditionPanel(Some(newFilter))
-      val filterModel = Json.toJson(resolvedFilter.conditions)
+      val filterModel = Json.toJson(newFilter.conditions)
 
       // run independence tests
       val inputFields = fields.filterNot(_.name.equals(targetFieldName))
@@ -2027,6 +2027,11 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       projection = Seq("name", "label", "categoryId", "fieldType")
     )
 
+    val fieldsWithNoCategoryFuture = fieldRepo.find(
+      criteria = Seq("categoryId" #== None),
+      projection = Seq("name", "label", "categoryId", "fieldType")
+    )
+
     for {
     // get the data set setting
       setting <- settingFuture
@@ -2040,23 +2045,26 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       // retrieve all the fields with a category defined
       fieldsWithCategory <- fieldsWithCategoryFuture
 
+      // retrieve all the fields with a category defined
+      fieldsWithNoCategory <- fieldsWithNoCategoryFuture
+
       // convert conditions to criteria
       criteria <- toCriteria(filter.conditions)
 
       // count the not-null elements for each field
       fieldNotNullCounts <-
-      if (setting.filterShowNonNullCount) {
-        seqFutures(fieldsWithCategory.toSeq.grouped(1000)) { fieldGroup =>
-          Future.sequence(
-            fieldGroup.map(field =>
-              // count not null
-              dsa.dataSetRepo.count(criteria ++ Seq(field.name #!@)).map(count => (field, Some(count)))
+        if (setting.filterShowNonNullCount) {
+          seqFutures(fieldsWithCategory.toSeq.grouped(1000)) { fieldGroup =>
+            Future.sequence(
+              fieldGroup.map(field =>
+                // count not null
+                dsa.dataSetRepo.count(criteria ++ Seq(field.name #!@)).map(count => (field, Some(count)))
+              )
             )
-          )
+          }
+        } else {
+          Future(Seq(fieldsWithCategory.map(field => (field, None))))
         }
-      } else {
-        Future(Seq(fieldsWithCategory.map(field => (field, None))))
-      }
     } yield {
       val jsTreeNodes =
         categories.map(JsTreeNode.fromCategory) ++

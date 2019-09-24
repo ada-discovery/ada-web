@@ -93,6 +93,19 @@
 
                 calcDistribution();
             });
+
+            enableFieldDragover(
+                $('#inputDiv #fieldName'),
+                $('#inputDiv #fieldTypeahead'),
+                calcDistribution
+            )
+
+            enableFieldDragover(
+                $('#inputDiv #groupFieldName'),
+                $('#inputDiv #groupFieldTypeahead'),
+                calcDistribution,
+                ["field-Boolean", "field-Enum", "field-String"]
+            )
         });
 
         function calcDistribution() {

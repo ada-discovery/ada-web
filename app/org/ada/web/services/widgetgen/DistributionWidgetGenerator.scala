@@ -262,7 +262,7 @@ trait DistributionWidgetGeneratorHelper {
 
     val displayOptions = spec.displayOptions
     val title = displayOptions.title.getOrElse(createTitle(field, groupField))
-    val initializedDisplayOptions = displayOptions.copy(chartType = Some(displayOptions.chartType.getOrElse(ChartType.Pie)))
+    val initializedDisplayOptions = displayOptions.copy(chartType = Some(displayOptions.chartType.getOrElse(ChartType.Column)))
 
     // create a categorical widget
     CategoricalCountWidget(
