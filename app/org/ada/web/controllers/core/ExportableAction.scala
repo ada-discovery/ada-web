@@ -19,7 +19,7 @@ trait ExportableAction[E] {
 
   this: ReadonlyControllerImpl[E, _] =>
 
-  def exportToCsv(
+  protected def exportToCsv(
     filename: String,
     delimiter: String = ",",
     eol: String = "\n",
@@ -29,11 +29,14 @@ trait ExportableAction[E] {
     orderBy: Option[String] = None,
     filter: Seq[FilterCondition] = Nil,
     extraCriteria: Seq[Criterion[Any]] = Nil,
+    useProjection: Boolean = true,
     nameFieldTypeMap: Map[String, FieldType[_]] = Map())(
     implicit materializer: Materializer
   ) = Action.async { implicit request =>
+    val projection = if (useProjection) fieldNames else Nil
+
     for {
-      jsonStream <- getJsonStream(filter, extraCriteria, orderBy, fieldNames)
+      jsonStream <- getJsonStream(filter, extraCriteria, orderBy, projection)
     } yield {
       val finalJsonStream =
         if (nameFieldTypeMap.nonEmpty)
@@ -45,17 +48,20 @@ trait ExportableAction[E] {
     }
   }
 
-  def exportToJson(
+  protected def exportToJson(
     filename: String)(
     orderBy: Option[String],
     filter: Seq[FilterCondition] = Nil,
     extraCriteria: Seq[Criterion[Any]] = Nil,
     fieldNames: Traversable[String] = Nil,
+    useProjection: Boolean = true,
     nameFieldTypeMap: Map[String, FieldType[_]] = Map())(
     implicit ev: Format[E], materializer: Materializer
   ) = Action.async { implicit request =>
+    val projection = if (useProjection) fieldNames else Nil
+
     for {
-      jsonStream <- getJsonStream(filter, extraCriteria, orderBy, fieldNames)
+      jsonStream <- getJsonStream(filter, extraCriteria, orderBy, projection)
     } yield {
       val finalJsonStream =
         if (nameFieldTypeMap.nonEmpty)
@@ -82,8 +88,11 @@ trait ExportableAction[E] {
         sort = orderBy.fold(Seq[Sort]())(toSort),
         projection = projection
       )
-    } yield
+    } yield {
+      println("Json stream with projection: " + projection.mkString(","))
+
       recordsSource.map(item => toJson(item).as[JsObject])
+    }
 
   private def toDisplayJsonsStream(
     source: Source[JsObject, _],

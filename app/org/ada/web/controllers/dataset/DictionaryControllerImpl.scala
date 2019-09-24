@@ -272,7 +272,8 @@ protected[controllers] class DictionaryControllerImpl @Inject() (
       if (replaceEolWithSpace) csvCharReplacements else Nil)(
       fieldsNames,
       Some(exportOrderByFieldName),
-      filter
+      filter,
+      useProjection = tableColumnsOnly
     )
   }
 

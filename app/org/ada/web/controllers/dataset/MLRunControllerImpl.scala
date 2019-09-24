@@ -389,7 +389,8 @@ protected[controllers] abstract class MLRunControllerImpl[R <: MLResult : Format
       if (replaceEolWithSpace) csvCharReplacements else Nil)(
       fieldsNames,
       Some(exportOrderByFieldName),
-      filter
+      filter,
+      useProjection = tableColumnsOnly
     )
   }
 

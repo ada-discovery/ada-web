@@ -356,6 +356,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           setting.exportOrderByFieldName,
           filter,
           extraCriteria,
+          tableFieldNames.nonEmpty,
           nameFieldTypeMap
         ).apply(request)
       }
@@ -433,6 +434,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           filter,
           extraCriteria,
           headerFieldNames,
+          tableFieldNames.nonEmpty,
           nameFieldTypeMap
         ).apply(request)
       }
