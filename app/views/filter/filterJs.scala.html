@@ -13,7 +13,7 @@
     submitAjaxFun: Option[Html] = None,
     listFiltersCall: Option[Call] = None,
     saveFilterAjaxFun: Option[Html] = None,
-    categoryTreeElementId: Option[String] = None
+    isCategoricalTree: Boolean = false
 )(
     implicit request: Request[_], webJarAssets: WebJarAssets
 )
@@ -54,7 +54,7 @@
 
         var saveFilterAjax = @if(saveFilterAjaxFun.isDefined) { @saveFilterAjaxFun.get } else { null }
 
-        @if(categoryTreeElementId.isDefined) {
+        @if(isCategoricalTree) {
             $("#@{filterElementId}").multiCategoryFilter({
                 jsonConditions: jsConditions,
                 fieldNameAndLabels: fieldNameAndLabels,
@@ -65,8 +65,7 @@
                 saveFilterAjaxFun: saveFilterAjax,
                 filterSubmitParamName: '@filterSubmitParamName',
                 filterId: filterId,
-                createSubmissionJson: createSubmissionJson,
-                categoryTreeElementId: '@categoryTreeElementId.get'
+                createSubmissionJson: createSubmissionJson
             })
         } else {
             $("#@{filterElementId}").multiFilter({

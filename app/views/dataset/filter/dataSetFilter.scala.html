@@ -16,12 +16,15 @@
     implicit dataSetWebContext: DataSetWebContext
 )
 
-@filterUI(
-    filter,
-    filterShowFieldStyle,
-    true,
-    true,
-    filterElementId.getOrElse("filter" + Random.nextLong()),
-    Some(Right(dataSetRouter.getCategoriesWithFieldsAsTreeNodes(filter.map(_.conditionsOrId).getOrElse(Left(Nil))))),
-    filterLabel = filterLabel
-)
+@defining(filterElementId.getOrElse("filter" + Random.nextLong())) { filterId: String =>
+    @filterUI(
+        filter,
+        filterShowFieldStyle,
+        true,
+        true,
+        filterElementId = filterId,
+        categoriesOrCall = Some(Right(dataSetRouter.getCategoriesWithFieldsAsTreeNodes(filter.map(_.conditionsOrId).getOrElse(Left(Nil))))),
+        categoricalTreeId = "categoryTree_" + filterId,
+        filterLabel = filterLabel
+    )
+}

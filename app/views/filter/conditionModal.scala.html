@@ -47,7 +47,7 @@
                 <div class="modal-body">
                     <input id="conditionIndex" type="hidden" value=""/>
                     @if(categoriesOrCall.isDefined) {
-                        <div id="categoryFilterDiv" class="row collapse">
+                        <div id="@{categoricalTreeId}-FilterDiv" class="row collapse">
                             @categoricalTree(categoricalTreeId, categoriesOrCall.get, Some(categoryTreeNodeSelectedJsFun))
                             <hr/>
                         </div>
@@ -66,11 +66,11 @@
                             <input id="value" class="float-left conditionValue" placeholder="Condition"/>
                         </div>
                         <div clas="col-md-2">
-                            <a id="showChoicesButton" class="btn btn-sm btn-default" data-toggle="collapse" data-target="#showChoicesPanel" data-toggle="tooltip" title="Field Name/Label Display Options">
+                            <a id="showChoicesButton" class="btn btn-sm btn-default" data-toggle="collapse" data-target="#@{filterElementId}-showChoicesPanel" data-toggle="tooltip" title="Field Name/Label Display Options">
                                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                             </a>
                             @if(categoriesOrCall.isDefined) {
-                                <a id="showCategoryTreeButton" class="btn btn-sm btn-default" data-toggle="collapse" data-target="#categoryFilterDiv" data-toggle="tooltip" title="Show Category Tree">
+                                <a id="showCategoryTreeButton" class="btn btn-sm btn-default" data-toggle="collapse" data-target="#@{categoricalTreeId}-FilterDiv" data-toggle="tooltip" title="Show Category Tree">
                                     <span class="glyphicon glyphicon-leaf" aria-hidden="true"></span>
                                 </a>
                             }
@@ -81,7 +81,7 @@
                             <span id="fieldInfo" class="help-block"></span>
                         </div>
                     </div>
-                    <div id="showChoicesPanel" class="row collapse">
+                    <div id="@{filterElementId}-showChoicesPanel" class="row collapse">
                         <hr/>
                         <div class="well">
                             What do you want to show?

@@ -1,5 +1,5 @@
 @import views.html.layout
-@import views.html.dataset.{fixedTableRow, datasetMenu, datasetSubNav, datasetSubNavJs, bootstrapSelectImport, datasetJsImport}
+@import views.html.dataset.{fixedTableRow, dataSetFullMenu, datasetMenu, datasetSubNav, datasetSubNavJs, bootstrapSelectImport, datasetJsImport}
 @import views.html.chart.highcharts.{highchartsJsImport, highchartsJsImportForBulkExport}
 @import views.html.dataset.view.{viewExportDropdown, viewTables, viewCountFilters}
 @import views.html.dataset.filter.dataSetFilterJs
@@ -219,6 +219,14 @@
     </script>
 }
 
+@sideMenu = @{
+    if(dataSetSetting.showSideCategoricalTree) {
+        dataSetFullMenu(dataSpaceMetaInfos, dataSetRouter)
+    } else {
+        datasetMenu(dataSpaceMetaInfos)
+    }
+}
+
 @layout.list(
     itemName,
     Some(dataSetName + " ("+ dataViewName + ")"),
@@ -230,7 +238,7 @@
         None
     },
     Some(filtersAndWidgets),
-    Some(datasetMenu(dataSpaceMetaInfos)),
+    Some(sideMenu),
     Some(datasetSubNav(dataSetSetting)),
     None,
     Some(bottomResources)

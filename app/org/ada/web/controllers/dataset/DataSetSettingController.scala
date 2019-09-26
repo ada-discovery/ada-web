@@ -69,6 +69,7 @@ class DataSetSettingController @Inject() (
       "mongoAutoCreateIndexForProjection" -> boolean,
       "cacheDataSet" -> ignored(false),
       "ownerId" -> optional(of[BSONObjectID]),
+      "showSideCategoricalTree" -> boolean,
       "extraNavigationItems" -> seq(of[NavigationItem]).transform(mergeMenus, mergeMenus)
     )(DataSetSetting.apply)(DataSetSetting.unapply)
   )

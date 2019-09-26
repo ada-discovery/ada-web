@@ -9,9 +9,8 @@ $.widget( "custom.multiCategoryFilter", {
         listFiltersUrl: null,
         saveFilterAjaxFun: null,
         filterSubmitParamName: null,
-        filterId: null,
-        createSubmissionJson: null,
-        categoryTreeElementId: null
+        filterId: null, // not an element id but a persisted id of the filter if any
+        createSubmissionJson: null
     },
 
     // the constructor
@@ -23,7 +22,7 @@ $.widget( "custom.multiCategoryFilter", {
         var fieldDisplayChoiceCallback = null;
         var initFilterIfNeededTreeCallback = null;
 
-        this.categoryTreeElement = $("#" + that.options.categoryTreeElementId);
+        this.categoryTreeElement = this.element.find(".categoricalTree");
 
         this.categoryTreeElement.on('open_node.jstree', function (event, data) {
             data.instance.set_type(data.node,'category-open');

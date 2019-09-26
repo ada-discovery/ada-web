@@ -1,7 +1,4 @@
-////////////
-// Filter //
-////////////
-
+// filterId: is not an element id but a persisted id of the filter if any
 function activateDataSetFilter(filterElement, jsonConditions, filterId, submitAjaxFun, getFieldsUrl, listFiltersUrl) {
     var saveFilterAjaxFun = function(filter) {
         var filterJson = JSON.stringify(filter)
@@ -20,11 +17,23 @@ function activateDataSetFilter(filterElement, jsonConditions, filterId, submitAj
         listFiltersUrl: listFiltersUrl,
         saveFilterAjaxFun: saveFilterAjaxFun,
         filterSubmitParamName: "filterOrId",
-        filterId: filterId,
-        categoryTreeElementId: 'categoryTree'
+        filterId: filterId
     })
 
     addAllowedValuesUpdateForFilter(filterElement)
+
+    // add a drag-and-drop support
+    $(filterElement).find(".filter-part").on('dragover', false).on('drop', function (ev) {
+        ev.preventDefault();
+        var transfer = ev.originalEvent.dataTransfer;
+        var id = transfer.getData("id");
+        var text = transfer.getData("text");
+        var type = transfer.getData("type");
+
+        if (type.startsWith("field")) {
+            $(filterElement).multiFilter("showAddConditionModalForField", id, text)
+        }
+    });
 }
 
 function saveFilterToView(viewId) {

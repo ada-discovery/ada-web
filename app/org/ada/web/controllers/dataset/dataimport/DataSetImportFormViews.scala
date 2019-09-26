@@ -72,6 +72,7 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
     "mongoAutoCreateIndexForProjection" -> boolean,
     "cacheDataSet" -> ignored(false),
     "ownerId" -> ignored(Option.empty[BSONObjectID]),
+    "showSideCategoricalTree" -> boolean,
     "extraNavigationItems" -> ignored(Seq[NavigationItem]())
   )(DataSetSetting.apply)(DataSetSetting.unapply)
 

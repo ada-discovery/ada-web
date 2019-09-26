@@ -9,7 +9,7 @@ $.widget("custom.multiFilter", {
         listFiltersUrl: null,
         saveFilterAjaxFun: null,
         filterSubmitParamName: null,
-        filterId: null,
+        filterId: null, // not an element id but a persisted id of the filter if any
         createSubmissionJson: null,
         initFilterIfNeededCallback: null,
         fieldDisplayChoiceCallback: null
@@ -43,7 +43,7 @@ $.widget("custom.multiFilter", {
 
         this.loadFilterButtonElement = this.element.find("#loadFilterButton");
         this.saveFilterButtonElement = this.element.find("#saveFilterButton");
-        this.showAddConditioButtonElement = this.element.find("#showAddConditioButton");
+        this.showAddConditionButtonElement = this.element.find("#showAddConditionButton");
         this.rollbackFilterButtonElement = this.element.find("#rollbackFilterButton");
 
         if (this.fieldNameAndLabels) {
@@ -120,7 +120,7 @@ $.widget("custom.multiFilter", {
         this.loadFilterModalElement.find("#submitButton").click(function() { that._loadFilterFromModal() });
         this.addEditConditionModalElement.find("#submitButton").click(function() { that._addEditConditionFinished() });
 
-        this.showAddConditioButtonElement.click(function() { that._showAddConditionModal() });
+        this.showAddConditionButtonElement.click(function() { that._showAddConditionModal() });
         this.rollbackFilterButtonElement.click(function() { that._rollbackModelAndSubmit() });
         this.loadFilterButtonElement.click(function() { that._loadFilterSelectionAndShowModal() });
     },
@@ -132,6 +132,20 @@ $.widget("custom.multiFilter", {
 
             var condition = {conditionType : "="};
             that._updateModalFromModel(condition, that.conditionFields);
+
+            that.addEditConditionModalElement.modal('show');
+        });
+    },
+
+    showAddConditionModalForField: function(fieldName, fieldLabel) {
+        var that = this;
+        this._initFilterIfNeeded(function() {
+            that.addEditConditionModalElement.find("#conditionIndex").first().val("");
+
+            var condition = {conditionType : "="};
+            that._updateModalFromModel(condition, that.conditionFields);
+
+            that.setFieldTypeaheadAndName(fieldName, fieldLabel);
 
             that.addEditConditionModalElement.modal('show');
         });

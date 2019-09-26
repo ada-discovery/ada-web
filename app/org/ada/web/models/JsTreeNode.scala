@@ -1,6 +1,6 @@
 package org.ada.web.models
 
-import org.ada.server.models.{Category, Field}
+import org.ada.server.models.{Category, Field, FilterShowFieldStyle}
 import play.api.libs.json.{JsObject, Json}
 
 case class JsTreeNode(
@@ -24,14 +24,24 @@ object JsTreeNode {
       Some(Json.obj("label" -> category.label))
     )
 
-  def fromField(field: Field, nonNullCount: Option[Int]) = {
+  def fromField(
+    field: Field,
+    nonNullCount: Option[Int] = None,
+    filterShowFieldStyle: Option[FilterShowFieldStyle.Value] = None
+  ) = {
     val countText = nonNullCount.map(" (" + _ + ")").getOrElse("")
     val countJson = nonNullCount.map( count => Json.obj("nonNullCount" -> count)).getOrElse(Json.obj())
+
+    val label =
+      filterShowFieldStyle.getOrElse(FilterShowFieldStyle.LabelsAndNamesOnlyIfLabelUndefined) match {
+        case FilterShowFieldStyle.NamesOnly => field.name
+        case _ => field.labelOrElseName
+      }
 
     JsTreeNode(
       field.name,
       field.categoryId.map(_.stringify).getOrElse("#"),
-      field.labelOrElseName + countText,
+      label + countText,
       Some("field-" + field.fieldType.toString),
       Some(Json.obj("label" -> field.label) ++  countJson)
     )

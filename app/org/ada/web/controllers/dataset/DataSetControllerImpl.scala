@@ -2024,18 +2024,13 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
     val allCategoriesFuture = categoryRepo.find()
 
-    val fieldsWithCategoryFuture = fieldRepo.find(
-      criteria = Seq("categoryId" #!= None),
-      projection = Seq("name", "label", "categoryId", "fieldType")
-    )
-
-    val fieldsWithNoCategoryFuture = fieldRepo.find(
-      criteria = Seq("categoryId" #== None),
+    val fieldsFuture = fieldRepo.find(
+//      criteria = Seq("categoryId" #!= None),
       projection = Seq("name", "label", "categoryId", "fieldType")
     )
 
     for {
-    // get the data set setting
+      // get the data set setting
       setting <- settingFuture
 
       // get the filter
@@ -2044,11 +2039,8 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       // retrieve all the categories
       categories <- allCategoriesFuture
 
-      // retrieve all the fields with a category defined
-      fieldsWithCategory <- fieldsWithCategoryFuture
-
-      // retrieve all the fields with a category defined
-      fieldsWithNoCategory <- fieldsWithNoCategoryFuture
+      // retrieve all the fields defined (with and without category)
+      fields <- fieldsFuture
 
       // convert conditions to criteria
       criteria <- toCriteria(filter.conditions)
@@ -2056,7 +2048,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       // count the not-null elements for each field
       fieldNotNullCounts <-
         if (setting.filterShowNonNullCount) {
-          seqFutures(fieldsWithCategory.toSeq.grouped(1000)) { fieldGroup =>
+          seqFutures(fields.toSeq.grouped(1000)) { fieldGroup =>
             Future.sequence(
               fieldGroup.map(field =>
                 // count not null
@@ -2064,13 +2056,13 @@ protected[controllers] class DataSetControllerImpl @Inject() (
               )
             )
           }
-        } else {
-          Future(Seq(fieldsWithCategory.map(field => (field, None))))
-        }
+        } else
+          Future(Seq(fields.map(field => (field, None))))
+
     } yield {
       val jsTreeNodes =
         categories.map(JsTreeNode.fromCategory) ++
-          fieldNotNullCounts.flatten.map { case (field, count) => JsTreeNode.fromField(field, count) }
+          fieldNotNullCounts.flatten.map { case (field, count) => JsTreeNode.fromField(field, count, setting.filterShowFieldStyle) }
 
       logger.info("Categories with fields and counts retrieved in " + (new ju.Date().getTime - start.getTime) + " ms.")
       Ok(Json.toJson(jsTreeNodes))

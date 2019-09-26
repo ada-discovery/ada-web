@@ -4,27 +4,30 @@
 @import play.api.libs.json.JsObject
 
 @(
+    treeElementId: String,
     dataOrUrl: Either[JsValue, String],
-    treeElementId: String = "jstree1",
     typesSetting: JsObject,
-    nodeSelectedFun: Option[Html] = None
+    extraClass: Option[String] = None,
+    nodeSelectedFun: Option[Html] = None,
+    nodeDoubleClickedFun: Option[Html] = None,
+    sortFun: Option[Html] = None
 )
 
 <div class="row jsTree-filter">
     <div class="col-md-7">
-        <input id="@{treeElementId}-Search-Input" class="jsTree-search-input form-control" placeholder="Field Name"></input>
+        <input id="treeSearchInput" class="jsTree-search-input form-control" placeholder="Field Name"></input>
     </div>
     <div class="col-md-5 pull-right">
-        <a class="btn btn-info btn-sm" id="collapseAll" href="#" data-toggle="tooltip" title="Collapse All" onclick="$('#@{treeElementId}').jstree('close_all');return false;">
+        <a class="btn btn-info btn-sm" id="treeCollapseAllButton" href="#" data-toggle="tooltip" title="Collapse All">
             <span class="glyphicon glyphicon-resize-small" aria-hidden="true"></span>
         </a>
-        <a class="btn btn-info btn-sm" id="expandAll" href="#" data-toggle="tooltip" title="Expand All" onclick="$('#@{treeElementId}').jstree('open_all');return false;">
+        <a class="btn btn-info btn-sm" id="treeExpandAllButton" href="#" data-toggle="tooltip" title="Expand All">
             <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
         </a>
     </div>
 </div>
 <div class="row jsTree-tree">
-    <div id="@treeElementId" class="col-md-12">
+    <div id="@treeElementId" class="col-md-12 @extraClass.getOrElse("")">
     </div>
     <hr/>
 </div>
@@ -58,7 +61,31 @@
                 null
             }
 
-        $("#@{treeElementId}-Search-Input").keypress(function (e) {
+        var nodeDoubleClickedFun =
+            @if(nodeDoubleClickedFun.isDefined) {
+                @nodeDoubleClickedFun.get
+            } else {
+                null
+            }
+
+        var sortFun =
+            @if(sortFun.isDefined) {
+                @sortFun.get
+            } else {
+                null
+            }
+
+        var treeParent = $("#@treeElementId").parent().parent()
+
+        treeParent.find("#treeCollapseAllButton").click(function() {
+            $("#@{treeElementId}").jstree('close_all');
+        })
+
+        treeParent.find("#treeExpandAllButton").click(function() {
+            $("#@{treeElementId}").jstree('open_all');
+        })
+
+        treeParent.find("#treeSearchInput").keypress(function (e) {
             if (e.which == 13) {
                 var searchString = $(this).val();
                 $('#@treeElementId').jstree('search', searchString);
@@ -70,7 +97,9 @@
         $("#@treeElementId").jsTreeWidget({
             data: data,
             typesSetting: @Html(Json.stringify(typesSetting)),
-            nodeSelectedFun: nodeSelectedFun
+            nodeSelectedFun: nodeSelectedFun,
+            nodeDoubleClickedFun: nodeDoubleClickedFun,
+            sortFun: sortFun
         });
     });
 </script>

@@ -6,9 +6,10 @@
 @import org.ada.web.models.JsTreeNode
 
 @(
-    elementNameId: String,
+    treeElementId: String,
     categoriesOrCall: Either[Traversable[Category], Call],
-    nodeSelectedFun: Option[Html] = None
+    nodeSelectedFun: Option[Html] = None,
+    nodeDoubleClickedFun: Option[Html] = None
 )(
     implicit request: Request[_], webJarAssets: WebJarAssets
 )
@@ -20,9 +21,25 @@
     }
 }
 
+@sortFun = {
+    function(a, b) {
+        var aNode = this.get_node(a);
+        var bNode = this.get_node(b);
+
+        var aType = (aNode.type.startsWith("category")) ? 0 : 1
+        var bType = (bNode.type.startsWith("category")) ? 0 : 1
+
+        if (aType == bType) {
+            return (aNode.text > bNode.text) ? 1 : -1;
+        } else {
+            return (aType > bType) ? 1 : -1;
+        }
+    }
+}
+
 @jsTree(
+    treeElementId,
     categoryTreeDataOrUrl,
-    elementNameId,
     Json.obj(
         "default" -> Json.obj("icon" -> "glyphicon glyphicon-folder-close category-node"),
         "category" -> Json.obj("icon" -> "glyphicon glyphicon-folder-close category-node"),
@@ -36,5 +53,8 @@
         "field-" + FieldTypeId.Date -> Json.obj("icon" -> "glyphicon glyphicon-calendar"),
         "field-" + FieldTypeId.Json -> Json.obj("icon" -> "glyphicon glyphicon-book")
     ),
-    nodeSelectedFun
+    Some("categoricalTree"),
+    nodeSelectedFun,
+    nodeDoubleClickedFun,
+    Some(sortFun)
 )

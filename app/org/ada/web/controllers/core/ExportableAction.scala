@@ -88,11 +88,8 @@ trait ExportableAction[E] {
         sort = orderBy.fold(Seq[Sort]())(toSort),
         projection = projection
       )
-    } yield {
-      println("Json stream with projection: " + projection.mkString(","))
-
+    } yield
       recordsSource.map(item => toJson(item).as[JsObject])
-    }
 
   private def toDisplayJsonsStream(
     source: Source[JsObject, _],

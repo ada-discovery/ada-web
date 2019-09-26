@@ -6,7 +6,7 @@ db.getCollection('dataset_settings').update({},
 
 db.getCollection('dataset_imports').update({'setting': {$exists: true}},
 	{$set:{"setting.extraNavigationItems":[]}},
-        {multi: true}
+    {multi: true}
 )
 
 
@@ -24,3 +24,13 @@ db.getCollection('dictionaries').find({'classificationResults': {$exists: true}}
         db.getCollection('dictionaries').save(item);
     }
 })
+
+db.getCollection('dataset_settings').update({},
+	{$set:{"showSideCategoricalTree":true}},
+	{multi: true}
+)
+
+db.getCollection('dataset_imports').update({'setting': {$exists: true}},
+	{$set:{"setting.showSideCategoricalTree":true}},
+    {multi: true}
+)

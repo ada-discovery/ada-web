@@ -3,7 +3,7 @@
 @import reactivemongo.play.json.BSONFormats._
 @import views.html.layout.main
 @import views.html.chart.highcharts.highchartsJsImport
-@import views.html.dataset.{dataSetFullMenu, datasetSubNavWithJs}
+@import views.html.dataset.{dataSetFullMenu, datasetMenu, datasetSubNavWithJs}
 @import views.html.dataset.filter.{dataSetFilter, dataSetFilterJs}
 @import views.html.dataview.dataViewSelectionModal
 @import views.html.dataset.fixedTableRow
@@ -296,7 +296,15 @@
     @extraBottomResources
 }
 
-@main(title, Some(dataSetFullMenu(dataSpaceMetaInfos, dataSetRouter)), Some(datasetSubNavWithJs(setting)), None, Some(bottomResources)) {
+@sideMenu = @{
+    if(setting.showSideCategoricalTree) {
+        dataSetFullMenu(dataSpaceMetaInfos, dataSetRouter)
+    } else {
+        datasetMenu(dataSpaceMetaInfos)
+    }
+}
+
+@main(title, Some(sideMenu), Some(datasetSubNavWithJs(setting)), None, Some(bottomResources)) {
 
     <div class="page-header">
         <h3>
@@ -321,7 +329,7 @@
                 <td style="width: 100%;">
                     <div class="row vertical-divider">
                         <div id="inputDiv" class="col-md-4 col-sm-12 collapse in">
-                        @inputElements
+                            @inputElements
                         </div>
 
                         <div id="widgetsDiv" class="col-md-8 col-sm-12">
