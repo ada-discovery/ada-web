@@ -57,8 +57,8 @@ dataSetImport.setting.tranSMARTVisitFieldName.label = TranSMART Visit Field
 dataSetImport.setting.tranSMARTReplacements.label = TranSMART Export Char Replacements
 dataSetImport.setting.cacheDataSet.label = Cache Data Set
 dataSetImport.setting.filterShowFieldStyle.label = Filter Show Field Style
-dataSetImport.setting.filterShowNonNullCount.label = Filter Show Non-Null Count
-dataSetImport.setting.overviewChartElementGridWidth.label = Element Grid Width
+dataSetImport.setting.filterShowNonNullCount.label = Show Non-Null Count
+dataSetImport.setting.showSideCategoricalTree.label = Show Side Tree
 dataSetImport.setting.mongoAutoCreateIndexForProjection.label = Mongo Auto-create Index for Projection
 dataSetImport.setting.storageType.label = Storage Type
 
