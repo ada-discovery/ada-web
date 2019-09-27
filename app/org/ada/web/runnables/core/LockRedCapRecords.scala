@@ -15,22 +15,23 @@ import org.ada.web.util.enumToValueString
 
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.Future.sequence
 
 class LockRedCapRecords @Inject()(
   configuration: Configuration,
   factory: RedCapServiceFactory
 ) extends InputFutureRunnableExt[LockRedCapRecordsSpec] with RunnableHtmlOutput with InputView[LockRedCapRecordsSpec] {
 
-  private val host = configuration.getString("runnables.lock_redcap_records.host").getOrElse(throwConfigMissing("host"))
-  private val token = configuration.getString("runnables.lock_redcap_records.token").getOrElse(throwConfigMissing("token"))
-
-  private val visits = configuration.getObjectList("runnables.lock_redcap_records.visits").getOrElse(throwConfigMissing("visits")).map(
+  private val confPrefix = "runnables.lock_redcap_records."
+  private val host = configuration.getString(confPrefix + "host").getOrElse(throwConfigMissing("host"))
+  private val token = configuration.getString(confPrefix + "token").getOrElse(throwConfigMissing("token"))
+  private val visits = configuration.getObjectList(confPrefix + "visits").getOrElse(throwConfigMissing("visits")).map(
     item => (
       item.get("value").unwrapped().toString,
       item.get("label").unwrapped().toString
     )
   )
+  private val excludedInstruments = configuration.getStringSeq(confPrefix + "excluded_instruments").map(_.toSet).getOrElse(Set())
 
   private def throwConfigMissing(entryName: String) =
     throw new AdaException(s"No REDCap $entryName defined. Please set 'runnables.lock_redcap_records.$entryName' in your config file (custom.conf).")
@@ -46,18 +47,56 @@ class LockRedCapRecords @Inject()(
       case NewLine => "\n"
     }
 
-    for {
-      _ <- Future.sequence(
-        input.records.split(delimiter, -1).toSeq.map { record =>
-          redCapService.lock(input.action, record.trim, Some(input.visit))
+    val records = input.records.split(delimiter, -1).toSeq.map(_.trim)
+
+    // aux function to get the lock status of all the records and instruments
+    def getLockStatuses =
+      sequence(
+        records.map { record =>
+          redCapService.lock(RedCapLockAction.status, record, Some(input.visit))
         }
       )
 
-      responses <- Future.sequence(
-        input.records.split(delimiter, -1).toSeq.map { record =>
-          redCapService.lock(RedCapLockAction.status, record.trim, Some(input.visit))
+    // aux function to perform locking or unlocking on all the instruments
+    def handleAllInstruments=
+      sequence(
+        records.map { record =>
+          redCapService.lock(input.action, record, Some(input.visit))
         }
-      ).map(_.flatten)
+      )
+
+    // aux function to perform locking or unlocking on all but the excluded instruments
+    def handleWithoutExcludedInstruments=
+      for {
+        // get the lock statuses
+        statuses <- getLockStatuses
+
+        // collect all the instruments available for each record
+        recordInstruments = statuses.flatMap { statuses =>
+          statuses.headOption.map { headStatus =>
+            (headStatus.record, statuses.map(_.instrument))
+          }
+        }
+
+        // filter those instruments that should be excluded and perform locking or unlocking on the remaining ones
+        _ <- sequence(
+          recordInstruments.map { case (record, instruments) =>
+            val remainingInstruments = instruments.filter(!excludedInstruments.contains(_))
+            sequence(
+              remainingInstruments.map(instrument =>
+                redCapService.lock(input.action, record, Some(input.visit), Some(instrument))
+              )
+            )
+          }
+        )
+      } yield ()
+
+    for {
+      // lock or unlock the records in parallel
+      _ <- if (excludedInstruments.nonEmpty) handleWithoutExcludedInstruments else handleAllInstruments
+
+      // get the status of each record
+      responses <- getLockStatuses.map(_.flatten)
     } yield {
       def report(prefix: String, responses: Traversable[LockRecordResponse]) = {
         val recordResponses = responses.map(response => (response.record, response)).toGroupMap.toSeq.sortBy(_._1)
