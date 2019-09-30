@@ -97,7 +97,7 @@ class RunnableController @Inject() (
         runnable.run()
 
         val execTimeSec = (new java.util.Date().getTime - start.getTime) / 1000
-        val message = s"Script ${className} was successfully executed in ${execTimeSec} sec."
+        val message = s"Script '${toShortHumanReadable(className)}' was successfully executed in ${execTimeSec} sec."
 
         handleRunnableOutput(runnable, message)
       } else {
@@ -140,7 +140,7 @@ class RunnableController @Inject() (
           inputRunnable.run(input)
 
           val execTimeSec = (new java.util.Date().getTime - start.getTime) / 1000
-          val message = s"Script ${className} was successfully executed in ${execTimeSec} sec."
+          val message = s"Script '${toShortHumanReadable(className)}' was successfully executed in ${execTimeSec} sec."
 
           handleRunnableOutput(inputRunnable, message)
         }
@@ -239,10 +239,14 @@ class RunnableController @Inject() (
   def getRunnableNames = restrictAdminAny(noCaching = true) {
     implicit request => Future {
       val runnableIdAndNames =  findRunnableNames.map { runnableName =>
-        val shortName = runnableName.split("\\.", -1).lastOption.getOrElse(runnableName)
-        Json.obj("name" -> runnableName, "label" -> toHumanReadableCamel(shortName))
+        Json.obj("name" -> runnableName, "label" -> toShortHumanReadable(runnableName))
       }
       Ok(JsArray(runnableIdAndNames))
     }
+  }
+
+  private def toShortHumanReadable(className: String) = {
+    val shortName = className.split("\\.", -1).lastOption.getOrElse(className)
+    toHumanReadableCamel(shortName)
   }
 }

@@ -73,7 +73,8 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
     "cacheDataSet" -> ignored(false),
     "ownerId" -> ignored(Option.empty[BSONObjectID]),
     "showSideCategoricalTree" -> boolean,
-    "extraNavigationItems" -> ignored(Seq[NavigationItem]())
+    "extraNavigationItems" -> ignored(Seq[NavigationItem]()),
+    "customControllerClassName" -> optional(text)
   )(DataSetSetting.apply)(DataSetSetting.unapply)
 
   protected val dataViewMapping: Mapping[DataView] = mapping(

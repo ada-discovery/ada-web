@@ -70,7 +70,8 @@ class DataSetSettingController @Inject() (
       "cacheDataSet" -> ignored(false),
       "ownerId" -> optional(of[BSONObjectID]),
       "showSideCategoricalTree" -> boolean,
-      "extraNavigationItems" -> seq(of[NavigationItem]).transform(mergeMenus, mergeMenus)
+      "extraNavigationItems" -> seq(of[NavigationItem]).transform(mergeMenus, mergeMenus),
+      "customControllerClassName" -> optional(text)
     )(DataSetSetting.apply)(DataSetSetting.unapply)
   )
 

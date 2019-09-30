@@ -23,7 +23,7 @@
                 $('#className'),
                 '@Html(routes.RunnableController.getRunnableNames().url)',
                 @FilterShowFieldStyle.LabelsOnly.id,
-                function(){setTimeout(function(){ $('#classNameTypeahead').focus();}, 250)}
+                function(){ setTimeout(function(){ $('#classNameTypeahead').focus();}, 250)}
             )
         })
 
