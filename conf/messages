@@ -61,6 +61,7 @@ dataSetImport.setting.filterShowNonNullCount.label = Show Non-Null Count
 dataSetImport.setting.showSideCategoricalTree.label = Show Side Tree
 dataSetImport.setting.mongoAutoCreateIndexForProjection.label = Mongo Auto-create Index for Projection
 dataSetImport.setting.storageType.label = Storage Type
+dataSetImport.setting.customControllerClassName = Custom Controller Class
 
 dataSetImport.dataView.tableColumnNames.label = Table Column Names
 dataSetImport.dataView.distributionCalcFieldNames.label = Distribution Calc Field Names
