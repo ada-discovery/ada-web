@@ -1,7 +1,6 @@
 # Ada Web [![version](https://img.shields.io/badge/version-0.8.0-green.svg)](https://ada-discovery.org) [![License: CC BY-NC 3.0](https://img.shields.io/badge/License-CC%20BY--NC%203.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/3.0/)
 
 <img src="https://ada-discovery.github.io/images/logo.png" width="450px">
-
 This is a web part of Ada Discovery Analytics.
 
 #### Installation
@@ -32,8 +31,6 @@ or to *pom.xml* (if you use maven)
 #### License
 
 The project and all source its code is distributed under the terms of the <a href="ttps://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 license</a>.
-
-<br/>
 
 #### Acknowledgement and Support
 
