@@ -17,8 +17,6 @@ GET         /login                                                              
 POST        /login                                                                  org.ada.web.controllers.AuthController.authenticate
 GET         /logout                                                                 org.ada.web.controllers.AuthController.logout
 GET         /loggedout                                                              org.ada.web.controllers.AuthController.loggedOut
-GET         /unauthorized                                                           org.ada.web.controllers.AuthController.unauthorized
-
 
 # for no-authentication access
 GET         /loginBasic                                                             org.ada.web.controllers.AuthController.loginBasic

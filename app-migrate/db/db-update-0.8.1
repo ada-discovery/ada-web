@@ -34,3 +34,8 @@ db.getCollection('dataset_imports').update({'setting': {$exists: true}},
 	{$set:{"setting.showSideCategoricalTree":true}},
     {multi: true}
 )
+
+db.getCollection('users').update({},
+	{$set:{"locked":false}},
+    {multi: true}
+)
