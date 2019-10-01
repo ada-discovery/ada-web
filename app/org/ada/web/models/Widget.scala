@@ -132,8 +132,8 @@ object Widget {
 
   implicit val displayOptionsFormat: Format[DisplayOptions] = new SubTypeFormat[DisplayOptions](
     Seq(
-      ManifestedFormat(basicDisplayOptionsFormat),
-      ManifestedFormat(multiChartDisplayOptionsFormat)
+      RuntimeClassFormat(basicDisplayOptionsFormat),
+      RuntimeClassFormat(multiChartDisplayOptionsFormat)
     )
   )
 

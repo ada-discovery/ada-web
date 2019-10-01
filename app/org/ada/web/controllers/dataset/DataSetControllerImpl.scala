@@ -21,7 +21,7 @@ import org.ada.server.models.DataSetFormattersAndIds.{FieldIdentity, JsObjectIde
 import org.apache.commons.lang3.StringEscapeUtils
 import org.ada.server.models.Filter.FilterOrId
 import org.ada.web.models.Widget.WidgetWrites
-import org.ada.server.json.{ManifestedFormat, OptionFormat, SubTypeFormat, TupleFormat}
+import org.ada.server.json._
 import org.ada.server.models.ml._
 import org.ada.web.controllers.dataset.IndependenceTestResult._
 import org.ada.server.dataaccess.RepoTypes.{ClassifierRepo, ClusteringRepo, RegressorRepo}
@@ -2677,8 +2677,8 @@ case class DataSetShowViewDataHolder(
 object IndependenceTestResult {
   implicit val independenceTestResultFormat: Format[IndependenceTestResult] = new SubTypeFormat[IndependenceTestResult] (
     Seq(
-      ManifestedFormat(Json.format[ChiSquareResult]),
-      ManifestedFormat(Json.format[OneWayAnovaResult])
+      RuntimeClassFormat(Json.format[ChiSquareResult]),
+      RuntimeClassFormat(Json.format[OneWayAnovaResult])
     )
   )
 }
