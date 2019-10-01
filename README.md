@@ -28,10 +28,12 @@ or to *pom.xml* (if you use maven)
     <classifier>assets</classifier>
 </dependency>
 ```
+<br/>
 
 #### License
 
 The project and all source its code is distributed under the terms of the <a href="ttps://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 license</a>. 
+<br/>
 
 #### Acknowledgement and Support
 
@@ -40,8 +42,6 @@ Development of this project has been significantly supported by
 * an FNR Grant (2015-2019, 2019-ongoing): *National Centre of Excellence in Research on Parkinson's Disease (NCER-PD)*: Phase I and Phase II
 
 * a one-year MJFF Grant (2018-2019): *Scalable Machine Learning And Reservoir Computing Platform for Analyzing Temporal Data Sets in the Context of Parkinson’s Disease and Biomedicine*
-<br/>
-<br/>
 <br/>
 
 <a href="https://wwwen.uni.lu/lcsb"><img src="https://ada-discovery.github.io/images/logos/logoLCSB-long-230x97.jpg" width="184px"></a>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<a href="https://www.fnr.lu"><img src="https://ada-discovery.github.io/images/logos/fnr_logo-350x94.png" width="280px"></a>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<a href="https://www.michaeljfox.org"><img src="https://ada-discovery.github.io/images/logos/MJFF-logo-resized-300x99.jpg" width="240px"></a>
