@@ -62,7 +62,6 @@ import org.incal.spark_ml.models.VectorScalerType
 import org.ada.server.services.importers.TranSMARTService
 import org.ada.web.services.{DataSpaceService, WidgetGenerationService}
 import org.ada.web.services.widgetgen.DistributionWidgetGeneratorHelper
-import play.api.i18n.Messages
 
 import scala.math.Ordering.Implicits._
 import scala.concurrent.{Future, TimeoutException}

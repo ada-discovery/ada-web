@@ -138,6 +138,8 @@
 
 @inputText("user", "name", form)
 @inputText("user", "email", form)
+@checkbox("user", "locked", form)
+
 @labelValue("user", "Roles"){
     @dynamicStringTable("role", form.value.map(_.roles).getOrElse(Nil))
 }

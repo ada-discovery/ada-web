@@ -28,7 +28,7 @@ class AuthController @Inject() (
   /**
     * Login form definition.
     */
-  val loginForm = Form {
+  private val loginForm = Form {
     tuple(
       "id" -> nonEmptyText,
       "password" -> nonEmptyText
@@ -38,6 +38,12 @@ class AuthController @Inject() (
 //        idPassword => Await.result(userManager.authenticate(idPassword._1, idPassword._2), 120000 millis)
 //      )
   }
+
+  private val unauthorizedMessage = "It appears that you don't have sufficient rights for access. Please login to proceed."
+  private val unauthorizedRedirect = loginRedirect(unauthorizedMessage)
+
+  private def loginRedirect(errorMessage: String) =
+    Redirect(routes.AuthController.login).flashing("errors" -> errorMessage)
 
   /**
     * Redirect to login page.
@@ -84,7 +90,7 @@ class AuthController @Inject() (
         authenticateAux(
           (formWithErrors: Form[(String, String)]) => BadRequest(views.html.auth.login(formWithErrors)),
           BadRequest(views.html.auth.login(loginForm.withGlobalError("Invalid user id or password"))),
-          Redirect(routes.AuthController.unauthorized()),
+          loginRedirect("User not found or locked."),
           (userId: String) => gotoLoginSucceeded(userId)
         )
 
@@ -92,7 +98,7 @@ class AuthController @Inject() (
         authenticateAux(
           (formWithErrors: Form[(String, String)]) => BadRequest(formWithErrors.errorsAsJson),
           Unauthorized("Invalid user id or password\n"),
-          Unauthorized("User not found.\n"),
+          Unauthorized("User not found or locked.\n"),
           (userId: String) => gotoLoginSucceeded(userId, Future(Ok(s"User '${userId}' successfully logged in. Check the header for a 'PLAY_SESSION' cookie.\n")))
         )
       }
@@ -101,7 +107,7 @@ class AuthController @Inject() (
   private def authenticateAux(
     badFormResult: Form[(String, String)] => Result,
     authenticationUnsuccessfulResult: Result,
-    userNotFoundResult: Result,
+    userNotFoundOrLockedResult: Result,
     loginSuccessfulResult: String => Future[Result])(
     implicit request: Request[_]
   ): Future[Result] = {
@@ -119,21 +125,12 @@ class AuthController @Inject() (
               Future(authenticationUnsuccessfulResult)
             } else
               userOption match {
-                case Some(user) => loginSuccessfulResult(user.ldapDn)
-                case None => Future(userNotFoundResult)
+                case Some(user) => if (user.locked) Future(userNotFoundOrLockedResult) else loginSuccessfulResult(user.ldapDn)
+                case None => Future(userNotFoundOrLockedResult)
               }
         } yield
           response
     )
-  }
-
-  /**
-    * TODO: Give more specific error message (e.g. you are supposed to be admin)
-    * Redirect user on authorization failure.
-    */
-  def unauthorized = AuthAction { implicit request =>
-    val message = "It appears that you don't have sufficient rights for access. Please login to proceed."
-    Future(Ok(views.html.auth.login(loginForm)).flashing("errors" -> message))
   }
 
   // immediately login as basic user
@@ -141,7 +138,7 @@ class AuthController @Inject() (
     if(userManager.debugUsers.nonEmpty)
       gotoLoginSucceeded(userManager.basicUser.ldapDn)
     else
-      Future(Redirect(routes.AuthController.unauthorized()))
+      Future(unauthorizedRedirect)
   }
 
   // immediately login as admin user
@@ -149,6 +146,6 @@ class AuthController @Inject() (
     if (userManager.debugUsers.nonEmpty)
       gotoLoginSucceeded(userManager.adminUser.ldapDn)
     else
-      Future(Redirect(routes.AuthController.unauthorized()))
+      Future(unauthorizedRedirect)
   }
 }

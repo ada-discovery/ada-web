@@ -25,11 +25,10 @@ class UserProfileController @Inject() (userRepo: UserRepo) extends AdaBaseContro
     mapping(
       "id" -> ignored(Option.empty[BSONObjectID]),
       "name" -> text,
-      "email" -> ignored("placeholder"),
-      //"LDAP DN" -> ignored("placeholder"),
-      //"affiliation" -> text,
+      "email" -> email,
       "roles" -> ignored(Seq[String]()),
-      "permissions" -> ignored(Seq[String]())
+      "permissions" -> ignored(Seq[String]()),
+      "locked" -> ignored(false)
     )(User.apply)(User.unapply))
 
   /**
@@ -62,14 +61,16 @@ class UserProfileController @Inject() (userRepo: UserRepo) extends AdaBaseContro
     * Save changes made in user settings page to database.
     * Extracts current user from token for information match.
     */
+  @Deprecated // TODO: unused?
   def updateSettings = restrictSubjectPresentAny(noCaching = true) { implicit request =>
     currentUserFromRequest.map { case DeadboltUser(user) =>
       userUpdateForm.bindFromRequest.fold(
         { formWithErrors =>
-          Future(BadRequest(formWithErrors.errors.toString).flashing("failure" -> "An unexpected error occured"))
+          Future(BadRequest(formWithErrors.errors.toString).flashing("failure" -> "An unexpected error occurred"))
         },
         (newUserData: User) =>
-          userRepo.update(newUserData).map { _ =>
+          // we allow only email to be updated
+          userRepo.update(user.copy(email = newUserData.email)).map { _ =>
             render {
               case Accepts.Html() => Redirect(routes.UserProfileController.profile()).flashing("success" -> "Profile has been updated")
               case Accepts.Json() => Ok(Json.obj("message" -> "Profile successfully updated"))
