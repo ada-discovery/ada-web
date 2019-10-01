@@ -30,7 +30,7 @@ or to *pom.xml* (if you use maven)
 
 #### License
 
-The project and all source its code is distributed under the terms of the <a href="ttps://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 license</a>.
+The project and all source its code is distributed under the terms of the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 license</a>.
 
 #### Acknowledgement and Support
 
