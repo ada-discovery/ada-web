@@ -22,7 +22,6 @@ temporalRegression.title = Temporal Regression of {0}
 clusterization.title = Clustering of {0}
 seriesProcessing.title = Series Processing of {0}
 seriesTransformation.title = Series Transformation of {0}
-fractalis.title = Fractalis ({0})
 independenceTest.title = Independence Test of {0}
 network.title = {0} Network
 mds.title = MDS of {0}
