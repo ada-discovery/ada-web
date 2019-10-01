@@ -6,8 +6,8 @@ import reactivemongo.bson.BSONObjectID
 import scalaz.Scalaz._
 
 /**
-  * Container for various calls from Controllers.
-  * To be passed to other modules like views to simplify data access.
+  * Container for various calls available for the data set controller.
+  * To be passed to other modules like views to simplify access to data set actions.
   */
 class DataSetRouter(dataSetId: String) extends GenericRouter(routes.DataSetDispatcher, "dataSet", dataSetId) {
   val list = routes.find _ map route
@@ -28,7 +28,6 @@ class DataSetRouter(dataSetId: String) extends GenericRouter(routes.DataSetDispa
   val runSeriesProcessing = routeFun(_.runSeriesProcessing)
   val getSeriesTransformationSpec = routeFun(_.getSeriesTransformationSpec)
   val runSeriesTransformation = routeFun(_.runSeriesTransformation)
-  val getFractalis = routes.getFractalis _ map route
   val getTable = routes.getTable _ map route
   val generateTable = routes.generateTable _ map route
   val fieldNamesAndLabels = routes.getFieldNamesAndLabels _ map route

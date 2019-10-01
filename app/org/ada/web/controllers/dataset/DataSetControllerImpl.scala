@@ -140,8 +140,6 @@ protected[controllers] class DataSetControllerImpl @Inject() (
   private val comparisonGenMethod = WidgetGenerationMethod.RepoAndFullData
   private val independenceTestKeepUndefined = false
 
-  private lazy val fractalisServerUrl = configuration.getString("fractalis.server.url")
-
   private val resultDataSetMapping: Mapping[ResultDataSetSpec] = mapping(
     "id" -> nonEmptyText,
     "name" -> nonEmptyText,
@@ -2068,68 +2066,22 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     }
   }
 
-  override def getFractalis(
-    fieldNameOption: Option[String]
-  ) = AuthAction { implicit request => {
+  override def getClusterization = AuthAction { implicit request =>
+    {
       for {
         // get the data set name, data space tree and the data set setting
         (dataSetName, tree, setting) <- getDataSetNameTreeAndSetting
-
-        // field
-        field <- {
-          val fieldName = fieldNameOption match {
-            case Some(fieldName) => Some(fieldName)
-            case None => setting.defaultDistributionFieldName
-          }
-
-          fieldName.map(fieldRepo.get).getOrElse(Future(None))
-        }
       } yield {
-        val sessionCookie = request.cookies.get("PLAY2AUTH_SESS_ID")
-        val sessionId = sessionCookie.map(_.value)
-
-        //        println("isSecure  : " + sessionCookie.get.secure)
-        //        println("HTTP Only : " + sessionCookie.get.httpOnly)
-        //        println("Value     : " + sessionCookie.get.value)
-
-        fractalisServerUrl.map { url =>
-          sessionId.map { sessionId =>
-            render {
-              case Accepts.Html() => Ok(dataset.fractalis(
-                dataSetName,
-                url,
-                sessionId,
-                field,
-                setting,
-                tree
-              ))
-              case Accepts.Json() => BadRequest("getFractalis function doesn't support JSON response.")
-            }
-          }.getOrElse(
-            BadRequest("Session id not available.")
-          )
-        }.getOrElse(
-          BadRequest("URL for Fractalis is not available. Set one in a config file with the id \'fractalis.server.url\'.")
-        )
+        render {
+          case Accepts.Html() => Ok(dataset.cluster(
+            dataSetName,
+            setting,
+            tree
+          ))
+          case Accepts.Json() => BadRequest("getUnsupervisedLearning function doesn't support JSON response.")
+        }
       }
-    }.recover(handleExceptions("a fractalis"))
-  }
-
-  override def getClusterization = AuthAction { implicit request => {
-    for {
-      // get the data set name, data space tree and the data set setting
-      (dataSetName, tree, setting) <- getDataSetNameTreeAndSetting
-    } yield {
-      render {
-        case Accepts.Html() => Ok(dataset.cluster(
-          dataSetName,
-          setting,
-          tree
-        ))
-        case Accepts.Json() => BadRequest("getUnsupervisedLearning function doesn't support JSON response.")
-      }
-    }
-  }.recover(handleExceptions("a clusterization"))
+    }.recover(handleExceptions("a clusterization"))
   }
 
   private def getDataSetNameTreeAndSetting(

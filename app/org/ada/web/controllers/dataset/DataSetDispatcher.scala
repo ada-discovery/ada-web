@@ -149,10 +149,6 @@ class DataSetDispatcher @Inject() (
     filterOrId: FilterOrId
   ) = dispatchAjax(_.testIndependence(filterOrId))
 
-  override def getFractalis(
-    fieldNameOption: Option[String]
-  ) = dispatch(_.getFractalis(fieldNameOption))
-
   override def getClusterization = dispatch(_.getClusterization)
 
   override def cluster(

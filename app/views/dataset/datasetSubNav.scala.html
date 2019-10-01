@@ -89,10 +89,6 @@
             <li role="separator" class="divider"></li>
             @listItemWithPermission(dataSetRouter.getSeriesProcessingSpec, "Series Processing", ControllerName.dataSet, "getSeriesProcessingSpec", Some(2))
             @listItemWithPermission(dataSetRouter.getSeriesTransformationSpec, "Series Transformation", ControllerName.dataSet, "getSeriesTransformationSpec", Some(2))
-            @if(configuration.getString("fractalis.server.url").isDefined) {
-                <li role="separator" class="divider"></li>
-                @listItemWithPermission(dataSetRouter.getFractalis(None), "Fractalis", ControllerName.dataSet, "getFractalis", Some(2))
-            }
         </ul>
     </li>
     @listItemWithPermission(dictionaryRouter.plainList, "Dictionary", ControllerName.field, "find", Some(2))

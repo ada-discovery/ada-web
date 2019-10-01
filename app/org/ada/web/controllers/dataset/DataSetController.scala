@@ -131,10 +131,6 @@ trait DataSetController extends ReadonlyController[BSONObjectID] {
     filterOrId: FilterOrId
   ): Action[AnyContent]
 
-  def getFractalis(
-    fieldName: Option[String]
-  ): Action[AnyContent]
-
   def getClusterization: Action[AnyContent]
 
   def cluster(
