@@ -41,7 +41,9 @@ package object util {
         Html(value.toString)
     })
 
-  def typeColumns[T](columns: (Option[String], String, T => Any)*): Traversable[(Option[String], String, Any => Html)] =
+  def typeColumns[T](
+    columns: (Option[String], String, T => Any)*
+  ): Traversable[(Option[String], String, Any => Html)] =
     columns.map(typeColumn[T])
 
   def formatScheduleTime(scheduledTime: ScheduledTime) = {

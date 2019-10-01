@@ -15,6 +15,7 @@
     dataSpaceMetaInfo: DataSpaceMetaInfo,
     nestedDataSpaceCount: Int,
     nestedDataSetCount: Int,
+    isAdmin: Boolean = true,
     dataSetIdSizeMap: Map[String, Int],
     dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
 )(
@@ -31,8 +32,9 @@
         typeColumns[DataSetMetaInfo](
             (None, "Name", _.name),
             (None, "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
-            (None, "# Items", {info: DataSetMetaInfo => dataSetIdSizeMap.get(info.id).map(_.toString).getOrElse("")}),
-            (None, "Hidden?", hideCheckbox)
+            (None, "# Items", {info: DataSetMetaInfo => dataSetIdSizeMap.get(info.id).map(_.toString).getOrElse("")})
+        ) ++ (
+            if (isAdmin) typeColumns[DataSetMetaInfo]((None, "Hidden?", hideCheckbox)) else Nil
         ),
         None,
         Some({ item : Any => new DataSetRouter(item.asInstanceOf[DataSetMetaInfo].id).getDefaultView})
@@ -83,7 +85,7 @@
     dataSpaceMetaInfo.name + " Study",
     elements,
     None,
-    Some(dataSpaceMetaInfoRoutes.edit(dataSpaceMetaInfo._id.get)),
+    if(isAdmin) Some(dataSpaceMetaInfoRoutes.edit(dataSpaceMetaInfo._id.get)) else None,
     None,
     Some(datasetMenu(dataSpaceMetaInfos)),
     None,

@@ -58,6 +58,7 @@ class DataSpaceMetaInfoController @Inject() (
     DataSpaceMetaInfo,
     Int,
     Int,
+    Boolean,
     Map[String, Int],
     Traversable[DataSpaceMetaInfo]
   )
@@ -66,9 +67,15 @@ class DataSpaceMetaInfoController @Inject() (
     id: BSONObjectID,
     form: Form[DataSpaceMetaInfo]
   ) = { implicit request =>
-    getFormEditViewData(id, form)(request).map { case (_, newForm, subDataSpaceCount, subDataSetCount, dataSetSizes, tree) =>
+    for {
+      // current user
+      user <- currentUser()
+
+      // get the edit-form data
+      (_, newForm, subDataSpaceCount, subDataSetCount, dataSetSizes, tree) <- getFormEditViewData(id, form)(request)
+    } yield {
       newForm.value.map( dataSpace =>
-        (dataSpace, subDataSpaceCount, subDataSetCount, dataSetSizes, tree)
+        (dataSpace, subDataSpaceCount, subDataSetCount, user.map(_.isAdmin).getOrElse(false), dataSetSizes, tree)
       ).getOrElse(
         throw new AdaException(s"Cannot access the data space '${id.stringify}'.")
       )
@@ -76,7 +83,7 @@ class DataSpaceMetaInfoController @Inject() (
   }
 
   override protected def showView = { implicit ctx =>
-    (view.show(_, _, _, _, _)).tupled
+    (view.show(_, _, _, _, _, _)).tupled
   }
 
   // edit view and data
