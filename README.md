@@ -1,4 +1,4 @@
-# Ada Web [![version](https://img.shields.io/badge/version-0.8.0-green.svg)](https://ada-discovery.org) [![License: CC BY-NC 3.0](https://img.shields.io/badge/License-CC%20BY--NC%203.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/3.0/)
+# Ada Web [![version](https://img.shields.io/badge/version-0.8.0-green.svg)](https://ada-discovery.org) [![License: CC BY-NC 3.0](https://img.shields.io/badge/License-CC%20BY--NC%203.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/3.0/) [![Build Status](https://travis-ci.com/ada-discovery/ada-web.svg?branch=master)](https://travis-ci.com/ada-discovery/ada-web)
 
 <img src="https://ada-discovery.github.io/images/logo.png" width="450px">
 This is a web part of Ada Discovery Analytics.
