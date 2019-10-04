@@ -26,6 +26,7 @@
                 @select("dataSetImport", "setting.filterShowFieldStyle", form, enumToValueString(FilterShowFieldStyle), true)
                 @checkbox("dataSetImport", "setting.filterShowNonNullCount", form)
                 @checkbox("dataSetImport", "setting.showSideCategoricalTree", form)
+                @textarea("dataSetImport", "setting.description", form, Seq('cols -> 20, 'rows -> 5))
                 @inputText("dataSetImport", "setting.customControllerClassName", form)
             </div>
         </div>

@@ -25,12 +25,12 @@
         <p class="text-muted" align="center">
             @defining((configuration.getString("copyright.url"), configuration.getString("copyright.text"))) { urlAndText: (Option[String], Option[String]) =>
                 @if(urlAndText._1.isDefined && urlAndText._2.isDefined) {
-                    &copy; <a target="_blank" href="@urlAndText._1.get">@urlAndText._2.get</a> &
+                    &copy; <a target="_blank" href="@urlAndText._1.get">@urlAndText._2.get</a>
                 } else {
-                    &copy;
+                    &copy; <a target="_blank" href="https://ada-discovery.github.io">Ada Discovery Analytics</a>
                 }
             }
-            <a target="_blank" href="https://ada-discovery.github.io">Ada Discovery Analytics</a> 2016-@(new java.util.Date().format("yyyy")). All rights reserved.
+            2016-@(new java.util.Date().format("yyyy")). All rights reserved.
         </p>
     </div>
 </footer>

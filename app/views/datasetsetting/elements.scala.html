@@ -1,4 +1,4 @@
-@import views.html.elements.{inputText, inputTextReadonly, labelValue, checkbox, select, inputFieldTypeahead}
+@import views.html.elements.{inputText, textarea, inputTextReadonly, labelValue, checkbox, select, inputFieldTypeahead}
 @import views.html.elements.{fieldTypeahead, inputTypeahead}
 @import views.html.table.{dynamicTwoColumnTable, dynamicThreeColumnTable}
 @import views.html.attributeLabel
@@ -43,6 +43,8 @@
     form,
     "User"
 )
+
+@textarea("dataSetSetting", "description", form, Seq('cols -> 20, 'rows -> 5))
 
 @rowToModel = {
     <script type="text/javascript">
