@@ -43,6 +43,7 @@ dataSetSetting.tranSMARTVisitFieldName.label = TranSMART Visit Field
 dataSetSetting.tranSMARTReplacements.label = TranSMART Export Char Replacements
 dataSetSetting.mongoAutoCreateIndexForProjection.label = Mongo Auto-create Index for Projection
 dataSetSetting.filterShowNonNullCount.label = Filter Show Non-Null Count
+dataSetSetting.customControllerClassName.label = Custom Controller Class
 
 dataSetImport.setting.keyFieldName.label = Key Field
 dataSetImport.setting.exportOrderByFieldName.label = Export OrderBy Field
@@ -60,7 +61,8 @@ dataSetImport.setting.filterShowNonNullCount.label = Show Non-Null Count
 dataSetImport.setting.showSideCategoricalTree.label = Show Side Tree
 dataSetImport.setting.mongoAutoCreateIndexForProjection.label = Mongo Auto-create Index for Projection
 dataSetImport.setting.storageType.label = Storage Type
-dataSetImport.setting.customControllerClassName = Custom Controller Class
+dataSetImport.setting.customControllerClassName.label = Custom Controller Class
+dataSetImport.setting.description.label = Description
 
 dataSetImport.dataView.tableColumnNames.label = Table Column Names
 dataSetImport.dataView.distributionCalcFieldNames.label = Distribution Calc Field Names
