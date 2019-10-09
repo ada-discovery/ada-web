@@ -143,6 +143,13 @@ filter.timeCreated.label = Time Created
 login.id = User Id
 login.password = Password
 
+dataSets.menu = Studies
+ml.menu = ML
+admin.menu = Admin
+links.menu = Links
+docs.menu = Docs / Help
+contact.menu = Contact
+
 dataView.displayName = Data View
 category.displayName = Category
 field.displayName = Field

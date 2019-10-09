@@ -149,6 +149,14 @@ tr.clickable-row {
   cursor: pointer;
 }
 
+tr.clickable-row:hover {
+    background-color: darkgray;
+}
+
+.table-striped > tbody > tr.clickable-row:nth-of-type(odd):hover {
+    background-color: darkgray;
+}
+
 .typeahead-large.tt-input,
 .typeahead-large.tt-hint{
     font-size: 18px;
