@@ -33,6 +33,7 @@ GET         /ldap/:id/get                                                       
 # Admin
 POST        /admin/importLdapUsers                                                  org.ada.web.controllers.AdminController.importLdapUsers
 POST        /admin/purgeMissingLdapUsers                                            org.ada.web.controllers.AdminController.purgeMissingLdapUsers
+POST        /admin/lockMissingLdapUsers                                             org.ada.web.controllers.AdminController.lockMissingLdapUsers
 
 # Runnable
 GET         /runnables/select                                                       org.ada.web.controllers.RunnableController.selectRunnable

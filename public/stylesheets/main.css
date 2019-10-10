@@ -150,11 +150,11 @@ tr.clickable-row {
 }
 
 tr.clickable-row:hover {
-    background-color: darkgray;
+    background-color: #C0C0C0;
 }
 
 .table-striped > tbody > tr.clickable-row:nth-of-type(odd):hover {
-    background-color: darkgray;
+    background-color: #C0C0C0;
 }
 
 .typeahead-large.tt-input,
