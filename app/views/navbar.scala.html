@@ -76,8 +76,13 @@
                                             Import from LDAP
                                         </a>
                                     }
+                                    @listItemCustom(routes.AdminController.lockMissingLdapUsers()) {
+                                        <a href="#" onclick="submit('post', '@routes.AdminController.lockMissingLdapUsers'); return false;">
+                                            Lock Missing
+                                        </a>
+                                    }
                                     @listItemCustom(routes.AdminController.purgeMissingLdapUsers()) {
-                                        <a href="#" onclick="submit('post', '@routes.AdminController.purgeMissingLdapUsers'); return false;">
+                                        <a data-toggle="modal" data-target="#purgeMissingLdapUsersModalConfirmation">
                                             Purge Missing
                                         </a>
                                     }
@@ -119,13 +124,25 @@
                             </ul>
                         </li>
                     }{
-                        <a href="@routes.AuthController.login">Login&#160;&#160;&#160; @webContext.request.subject.map(_.identifier).getOrElse("N/A")<span class="glyphicon glyphicon-log-in"></span></a>
+                        <a href="@routes.AuthController.login">Login&#160;&#160;&#160;<span class="glyphicon glyphicon-log-in"></span></a>
                     }
                 </li>
             </ul>
         </div>
     </div>
 </div>
+
+@purgeMissingButtons = {
+    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-default" onclick="submit('post', '@routes.AdminController.purgeMissingLdapUsers'); return false;">Yes, Delete All Missing</button>
+}
+
+@purgeMissingModalInner = {
+    <p>Are you sure you want to delete all the LDAP-missing users?</p>
+    <p>Note that these users might have created artifacts such as views and filters, or could act as data set owners. Once removed this information (not the actual views or filters) will be irreversibly lost. Therefore we storgly recommend to use <i>Lock Missing</i> function instead.</p>
+}
+
+@modal("purgeMissingLdapUsersModalConfirmation", "Are you sure?", purgeMissingModalInner, None, Some(purgeMissingButtons))
 
 @helper.javascriptRouter("htmlSnippetJsRoutes")(
     org.ada.web.controllers.routes.javascript.HtmlSnippetController.getHtmlLinks
