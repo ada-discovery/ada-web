@@ -145,10 +145,14 @@ export ADA_LDAP_BIND_PASSWORD="XXX"
             There are several basic user management actions admins can conveniently perform:
             <ul>
                 <li>
-                    <b>Import Users</b> from the specified LDAP <code>groups</code> to Ada using the <code>Admin &rarr; User Actions &rarr; Import from LDAP</code> function.
+                    <b>Import Users</b> from the specified LDAP <code>groups</code> to Ada by using the <code>Admin &rarr; User Actions &rarr; Import from LDAP</code> function.
                 </li>
                 <li>
-                    <b>Purge Missing Users</b> who exist only locally but not in the LDAP server by using <code>Admin &rarr; User Actions &rarr; Purge Missing</code>.
+                    <b>Lock Missing Users</b> who exist only locally but not on the LDAP server by using <code>Admin &rarr; User Actions &rarr; Lock Missing</code>.
+                </li>
+                <li>
+                    <b>Purge Missing Users</b> who exist only locally but not on the LDAP server by using <code>Admin &rarr; User Actions &rarr; Purge Missing</code>.
+                    <b>Warning</b>: Use this function with caution. Users who have been removed on the LDAP server (e.g., after they left the project) might have created artifacts such as views and filters or could still act as data set owners for historical reasons. Once removed this information (not the actual views or filters) will be irreversibly lost. Therefore we strongly recommend to use <i>Lock Missing</i> function instead.
                 </li>
                 <li>
                     <b>Make User Admin</b> by selecting a desired user in the list <code>Admin &rarr; Users</code> (double click on a table row), adding a new role by clicking <img src="@CustomDirAssets.versioned("images/documentation/new_purple_button.png")"/> and typing <code>admin</code>, and finally confirming with <code>Update</code>.

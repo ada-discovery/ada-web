@@ -139,7 +139,7 @@
 
 @purgeMissingModalInner = {
     <p>Are you sure you want to delete all the LDAP-missing users?</p>
-    <p>Note that these users might have created artifacts such as views and filters, or could act as data set owners. Once removed this information (not the actual views or filters) will be irreversibly lost. Therefore we storgly recommend to use <i>Lock Missing</i> function instead.</p>
+    <p>Note that these users might have created artifacts such as views and filters or could still act as data set owners for historical reasons. Once removed this information (not the actual views or filters) will be irreversibly lost. Therefore we strongly recommend to use <i>Lock Missing</i> function instead.</p>
 }
 
 @modal("purgeMissingLdapUsersModalConfirmation", "Are you sure?", purgeMissingModalInner, None, Some(purgeMissingButtons))
