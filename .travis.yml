@@ -3,6 +3,8 @@ scala:
    - 2.11.12
 jdk:
   - openjdk8
+services:
+  - mongodb
 addons:
   apt:
     packages:
