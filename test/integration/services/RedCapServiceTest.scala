@@ -1,4 +1,4 @@
-package services
+package integration.services
 
 import org.ada.server.models.redcap.JsonFormat.responseFormat
 import org.ada.server.services.importers.{RedCapLockAction, RedCapServiceFactory}
