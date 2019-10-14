@@ -19,6 +19,8 @@ before_script:
   - cd .. && rm -rf ada-server
   # configure MongoDB
   - mongo $ADA_MONGO_DB_NAME --eval 'db.createUser({user:"$ADA_MONGO_DB_USERNAME", pwd:"$ADA_MONGO_DB_PASSWORD" , roles:["readWrite"]});'
+script:
+  - sbt "test:testOnly *Spec"
 before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
