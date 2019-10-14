@@ -25,7 +25,7 @@ class CsvImporterTest extends FlatSpec with GuiceOneAppPerSuite {
       dataSetName = "iris",
       delimiter = ",",
       matchQuotes = false,
-      inferFieldTypes = false,
+      inferFieldTypes = true,
       path = Some(irisCsv)
     )
     val importer = app.injector.instanceOf[DataSetCentralImporter]
