@@ -8,9 +8,11 @@ addons:
     packages:
       - git
 before_script:
+  # build ada-server dependency and publish locally
   - git clone https://github.com/ada-discovery/ada-server.git
   - cd ada-server
   - sbt publish-local
+  - cd .. && rm -rf ada-server
 before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
