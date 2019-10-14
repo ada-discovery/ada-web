@@ -6,7 +6,8 @@ import org.ada.server.models.redcap.LockRecordResponse
 import org.ada.server.services.importers.{RedCapLockAction, RedCapServiceFactory}
 import org.ada.web.runnables.InputView
 import org.incal.core.runnables.{InputFutureRunnableExt, RunnableHtmlOutput}
-import play.api.Configuration
+import org.incal.core.util.seqFutures
+import play.api.{Configuration, Logger}
 import org.incal.core.util.GroupMapList
 import org.incal.play.controllers.WebContext
 import org.incal.play.controllers.WebContext._
@@ -21,6 +22,8 @@ class LockRedCapRecords @Inject()(
   configuration: Configuration,
   factory: RedCapServiceFactory
 ) extends InputFutureRunnableExt[LockRedCapRecordsSpec] with RunnableHtmlOutput with InputView[LockRedCapRecordsSpec] {
+
+  private val logger = Logger("LockRedCapRecords")
 
   private val confPrefix = "runnables.lock_redcap_records."
   private val host = configuration.getString(confPrefix + "host").getOrElse(throwConfigMissing("host"))
@@ -59,11 +62,10 @@ class LockRedCapRecords @Inject()(
 
     // aux function to perform locking or unlocking on all the instruments
     def handleAllInstruments=
-      sequence(
-        records.map { record =>
-          redCapService.lock(input.action, record, Some(input.visit))
-        }
-      )
+      seqFutures(records) { record =>
+        logger.debug(s"Performing '${input.action}' on ALL instruments for the record ${record} and visit ${input.visit}.")
+        redCapService.lock(input.action, record, Some(input.visit))
+      }
 
     // aux function to perform locking or unlocking on all but the excluded instruments
     def handleWithoutExcludedInstruments=
@@ -74,26 +76,33 @@ class LockRedCapRecords @Inject()(
         // collect all the instruments available for each record
         recordInstruments = statuses.flatMap { statuses =>
           statuses.headOption.map { headStatus =>
+            logger.debug(s"Obtained ${statuses.size} instrument statuses for the record ${headStatus.record} and visit ${input.visit}.")
             (headStatus.record, statuses.map(_.instrument))
           }
         }
 
         // filter those instruments that should be excluded and perform locking or unlocking on the remaining ones
-        _ <- sequence(
-          recordInstruments.map { case (record, instruments) =>
+        _ <- seqFutures(recordInstruments) { case (record, instruments) =>
             val remainingInstruments = instruments.filter(!excludedInstruments.contains(_))
+            logger.debug(s"Performing '${input.action}' on ${remainingInstruments.size} instruments for the record ${record} and visit ${input.visit}.")
             sequence(
               remainingInstruments.map(instrument =>
                 redCapService.lock(input.action, record, Some(input.visit), Some(instrument))
               )
             )
           }
-        )
       } yield ()
 
     for {
       // lock or unlock the records in parallel
-      _ <- if (excludedInstruments.nonEmpty) handleWithoutExcludedInstruments else handleAllInstruments
+      _ <-
+        if (excludedInstruments.nonEmpty) {
+          logger.info(s"Locking with ${excludedInstruments.size} instruments excluded.")
+          handleWithoutExcludedInstruments
+        } else {
+          logger.info(s"Locking with all instruments.")
+          handleAllInstruments
+        }
 
       // get the status of each record
       responses <- getLockStatuses.map(_.flatten)

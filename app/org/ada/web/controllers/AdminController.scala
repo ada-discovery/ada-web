@@ -22,4 +22,11 @@ class AdminController @Inject() (userManager: UserManager) extends BaseControlle
         appHomeRedirect.flashing("success" -> "Missing users successfully purged.")
       )
   }
+
+  def lockMissingLdapUsers = restrictAdminAny(noCaching = true) {
+    implicit request =>
+      userManager.lockMissing.map ( _ =>
+        appHomeRedirect.flashing("success" -> "Missing users successfully locked.")
+      )
+  }
 }

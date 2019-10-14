@@ -1,6 +1,6 @@
 @import org.incal.play.util.WebUtil.matchesPath
 @import play.api.i18n.Messages
-@import be.objectify.deadbolt.scala.views.html.{subjectPresent, subjectPresentOr, restrict, pattern}
+@import be.objectify.deadbolt.scala.views.html.{subjectPresent, subjectPresentOr, restrict, pattern, dynamic}
 @import org.incal.play.security.SecurityRole
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
@@ -43,11 +43,11 @@
         <div id="navigation" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 @subjectPresent() {
-                    @listItem(routes.AppController.dataSets(), "Studies", Some(1))
+                    @listItem(routes.AppController.dataSets(), webContext.msg("dataSets.menu"), Some(1))
                 }
                 @restrict(roles = List(Array(SecurityRole.admin))) {
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">ML<span class="caret"></span></a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">@webContext.msg("ml.menu")<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             @listItem(mlRoutes.ClassifierController.find(), "Classifiers")
                             @listItem(mlRoutes.RegressorController.find(), "Regressors")
@@ -57,7 +57,7 @@
 
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                            Admin<span class="caret"></span></a>
+                            @webContext.msg("admin.menu")<span class="caret"></span></a>
                         <ul class="dropdown-menu multi-level">
                             @listItem(dataSetImportRoutes.DataSetImportController.find(), "Data Set Imports")
                             @listItem(dataSetTransformationRoutes.DataSetTransformationController.find(), "Data Set Transformations")
@@ -76,8 +76,13 @@
                                             Import from LDAP
                                         </a>
                                     }
+                                    @listItemCustom(routes.AdminController.lockMissingLdapUsers()) {
+                                        <a href="#" onclick="submit('post', '@routes.AdminController.lockMissingLdapUsers'); return false;">
+                                            Lock Missing
+                                        </a>
+                                    }
                                     @listItemCustom(routes.AdminController.purgeMissingLdapUsers()) {
-                                        <a href="#" onclick="submit('post', '@routes.AdminController.purgeMissingLdapUsers'); return false;">
+                                        <a data-toggle="modal" data-target="#purgeMissingLdapUsersModalConfirmation">
                                             Purge Missing
                                         </a>
                                     }
@@ -96,16 +101,16 @@
                 @subjectPresent() {
                     <li id="linksDropdownToggle" class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                            Links<span class="caret"></span>
+                            @webContext.msg("links.menu")<span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu">
                         </ul>
                     </li>
                 }
 
-                @listItem(routes.DocumentationController.intro(), "Docs / Help")
+                @listItem(routes.DocumentationController.intro(), webContext.msg("docs.menu"))
 
-                @listItem(routes.AppController.contact(), "Contact", Some(1))
+                @listItem(routes.AppController.contact(), webContext.msg("contact.menu"), Some(1))
 
                 <li>
                     <!-- show login link, if no subject present; otherwise show user dropdown list -->
@@ -126,6 +131,18 @@
         </div>
     </div>
 </div>
+
+@purgeMissingButtons = {
+    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-default" onclick="submit('post', '@routes.AdminController.purgeMissingLdapUsers'); return false;">Yes, Delete All Missing</button>
+}
+
+@purgeMissingModalInner = {
+    <p>Are you sure you want to delete all the LDAP-missing users?</p>
+    <p>Note that these users might have created artifacts such as views and filters or could still act as data set owners for historical reasons. Once removed this information (not the actual views or filters) will be irreversibly lost. Therefore we strongly recommend to use <i>Lock Missing</i> function instead.</p>
+}
+
+@modal("purgeMissingLdapUsersModalConfirmation", "Are you sure?", purgeMissingModalInner, None, Some(purgeMissingButtons))
 
 @helper.javascriptRouter("htmlSnippetJsRoutes")(
     org.ada.web.controllers.routes.javascript.HtmlSnippetController.getHtmlLinks

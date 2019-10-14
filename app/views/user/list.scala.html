@@ -89,13 +89,18 @@
     </div>
 }
 
+@lockedCheckbox(user: User) = {
+    <input type="checkbox" @if(user.locked) { checked="checked" } disabled="disabled"/>
+}
+
 @table = @{
     paginatedTable(
         page,
         routes.UserController.find(_, _, conditions),
         typeColumns[User](
             (Some("id"), "Id", _.ldapDn),
-            (Some("email"), "Email", _.email)
+            (Some("email"), "Email", _.email),
+            (Some("locked"), "Locked", lockedCheckbox)
         ),
         Some({ item : Any => routes.UserController.get(item.asInstanceOf[User]._id.get)})
     )
