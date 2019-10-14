@@ -3,6 +3,14 @@ scala:
    - 2.11.12
 jdk:
   - openjdk8
+addons:
+  apt:
+    packages:
+      - git
+before_script:
+  - git clone https://github.com/ada-discovery/ada-server.git
+  - cd ada-server
+  - sbt publish-local
 before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
