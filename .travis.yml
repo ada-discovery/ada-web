@@ -1,8 +1,26 @@
 language: scala
+env:
+  - ADA_MONGO_DB_NAME=ada ADA_MONGO_DB_USERNAME=ci ADA_MONGO_DB_PASSWORD=ci
 scala:
    - 2.11.12
 jdk:
   - openjdk8
+services:
+  - mongodb
+addons:
+  apt:
+    packages:
+      - git
+before_script:
+  # build ada-server dependency and publish locally
+  - git clone https://github.com/ada-discovery/ada-server.git
+  - cd ada-server
+  - sbt publish-local
+  - cd .. && rm -rf ada-server
+  # configure MongoDB
+  - mongo $ADA_MONGO_DB_NAME --eval 'db.createUser({user:"$ADA_MONGO_DB_USERNAME", pwd:"$ADA_MONGO_DB_PASSWORD" , roles:["readWrite"]});'
+script:
+  - sbt "test:testOnly *Spec"
 before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
