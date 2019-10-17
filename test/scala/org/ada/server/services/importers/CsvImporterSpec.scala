@@ -1,40 +1,43 @@
-package unit
+package scala.org.ada.server.services.importers
 
 import com.google.inject.Injector
-import org.ada.server.models.dataimport.CsvDataSetImport
-import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import net.codingwell.scalaguice.InjectorExtensions._
+import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
+import org.ada.server.models.dataimport.CsvDataSetImport
 import org.ada.server.services.GuicePlayTestApp
+import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Application
 
 import scala.io.Codec
 
-class CsvImporterSpec extends FlatSpec with GuiceOneAppPerSuite {
+class CsvImporterSpec extends AsyncFlatSpec {
 
-  private implicit val codec: Codec = Codec.UTF8
+  private implicit val codec = Codec.UTF8
   private val irisCsv = getClass.getResource("/iris.csv").getPath
 
-  override def fakeApplication(): Application =
-    GuicePlayTestApp()
-//    new GuiceApplicationBuilder()
-//      .bindings(bind[DataSetCentralImporter].to(classOf[DataSetCentralImporterImpl]))
-//      .build()
+  private val guiceInjector = GuicePlayTestApp().injector.instanceOf[Injector]
+  private val importer = guiceInjector.instance[DataSetCentralImporter]
+  private val dsaf = guiceInjector.instance[DataSetAccessorFactory]
 
-  private def guiceInjector = app.injector.instanceOf[Injector]
-
-  "CsvDataSetImport" should "run without error" in {
+  "CsvDataSetImport" should "imports iris.csv correctly" in {
+    val dataSetId = "test.iris"
+    val dataSetName = "iris"
     val importInfo = CsvDataSetImport(
       dataSpaceName = "test",
-      dataSetName = "iris",
-      dataSetId = "test.iris",
+      dataSetName = dataSetName,
+      dataSetId = dataSetId,
       delimiter = ",",
       matchQuotes = false,
       inferFieldTypes = true,
       path = Some(irisCsv)
     )
-    val importer = guiceInjector.instance[DataSetCentralImporter]
-    importer(importInfo)
+    importer(importInfo) flatMap { _ =>
+      dsaf(dataSetId) match {
+        case Some(dsa) =>
+          dsa.dataSetName map { name => assert(name == dataSetName) }
+          dsa.dataSetRepo.count() map { count => assert(count == 150)}
+        case None => assert(false, "Dataset not found, despite successful loading.")
+      }
+    }
   }
 }
