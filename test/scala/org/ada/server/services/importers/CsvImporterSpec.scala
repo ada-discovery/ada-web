@@ -14,7 +14,7 @@ import scala.io.Codec
 class CsvImporterSpec extends FlatSpec with GuiceOneAppPerSuite {
 
   private implicit val codec: Codec = Codec.UTF8
-  private val irisCsv = getClass.getResource("/iris.csv").toString
+  private val irisCsv = getClass.getResource("/iris.csv").getPath
 
   override def fakeApplication(): Application =
     GuicePlayTestApp()
