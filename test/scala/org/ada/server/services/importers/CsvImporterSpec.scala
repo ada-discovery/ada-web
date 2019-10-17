@@ -8,20 +8,20 @@ import org.ada.server.services.GuicePlayTestApp
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.io.Codec
 
-class CsvImporterSpec extends FlatSpec {
+class CsvImporterSpec extends AsyncFlatSpec {
 
+  implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
   private implicit val codec = Codec.UTF8
-  private implicit val executor = ExecutionContext.global
   private val irisCsv = getClass.getResource("/iris.csv").getPath
 
   private val guiceInjector = GuicePlayTestApp().injector.instanceOf[Injector]
   private val importer = guiceInjector.instance[DataSetCentralImporter]
   private val dsaf = guiceInjector.instance[DataSetAccessorFactory]
 
-  "CsvDataSetImport" should "import iris.csv correctly" in {
+  "CsvDataSetImport" should "import iris.csv to MongoDB" in {
     val dataSetId = "test.iris"
     val dataSetName = "iris"
     val importInfo = CsvDataSetImport(
