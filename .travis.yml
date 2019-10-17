@@ -18,7 +18,7 @@ before_script:
   - sbt publish-local
   - cd .. && rm -rf ada-server
   # configure MongoDB
-  - mongo $ADA_MONGO_DB_NAME --eval 'db.createUser({user:"$ADA_MONGO_DB_USERNAME", pwd:"$ADA_MONGO_DB_PASSWORD" , roles:["readWrite"]});'
+  - mongo $ADA_MONGO_DB_NAME --eval "db.createUser({user:\"$ADA_MONGO_DB_USERNAME\", pwd:\"$ADA_MONGO_DB_PASSWORD\" , roles:[\"readWrite\"]});"
 script:
   - sbt "test:testOnly *Spec"
 before_cache:
