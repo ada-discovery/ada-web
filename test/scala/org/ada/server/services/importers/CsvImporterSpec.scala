@@ -8,12 +8,13 @@ import org.ada.server.services.GuicePlayTestApp
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Codec
 
-class CsvImporterSpec extends AsyncFlatSpec {
+class CsvImporterSpec extends FlatSpec {
 
   private implicit val codec = Codec.UTF8
+  private implicit val executor = ExecutionContext.global
   private val irisCsv = getClass.getResource("/iris.csv").getPath
 
   private val guiceInjector = GuicePlayTestApp().injector.instanceOf[Injector]
