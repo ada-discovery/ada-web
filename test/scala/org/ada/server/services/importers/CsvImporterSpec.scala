@@ -20,7 +20,7 @@ class CsvImporterSpec extends AsyncFlatSpec {
   private val importer = guiceInjector.instance[DataSetCentralImporter]
   private val dsaf = guiceInjector.instance[DataSetAccessorFactory]
 
-  "CsvDataSetImport" should "imports iris.csv correctly" in {
+  "CsvDataSetImport" should "import iris.csv correctly" in {
     val dataSetId = "test.iris"
     val dataSetName = "iris"
     val importInfo = CsvDataSetImport(
@@ -37,7 +37,7 @@ class CsvImporterSpec extends AsyncFlatSpec {
         case Some(dsa) =>
 //          dsa.dataSetName map { name => assert(name == dataSetName) }
           dsa.dataSetRepo.count() map { count => assert(count == 150)}
-        case None => Future(assert(false, s"Dataset '$dataSetName' not found in DB."))
+        case None => fail(s"Dataset '$dataSetName' not found in DB.")
       }
     }
   }
