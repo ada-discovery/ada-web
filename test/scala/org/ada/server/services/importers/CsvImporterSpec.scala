@@ -8,6 +8,7 @@ import org.ada.server.services.GuicePlayTestApp
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
+import scala.concurrent.Future
 import scala.io.Codec
 
 class CsvImporterSpec extends AsyncFlatSpec {
@@ -36,7 +37,7 @@ class CsvImporterSpec extends AsyncFlatSpec {
         case Some(dsa) =>
 //          dsa.dataSetName map { name => assert(name == dataSetName) }
           dsa.dataSetRepo.count() map { count => assert(count == 150)}
-        case None => assert(false, s"Dataset '$dataSetName' not found in DB.")
+        case None => Future(assert(false, s"Dataset '$dataSetName' not found in DB."))
       }
     }
   }
