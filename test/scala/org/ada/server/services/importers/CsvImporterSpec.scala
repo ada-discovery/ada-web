@@ -14,6 +14,7 @@ import scala.io.Codec
 class CsvImporterSpec extends AsyncFlatSpec {
 
   implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit def executior = ExecutionContext.global
   private implicit val codec = Codec.UTF8
   private val irisCsv = getClass.getResource("/iris.csv").getPath
 
