@@ -11,10 +11,10 @@ import org.scalatest._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.io.Codec
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class CsvImporterSpec extends FlatSpec {
 
+  implicit def executor = scala.concurrent.ExecutionContext.Implicits.global
   private val timeout = 20 minutes
   private implicit val codec = Codec.UTF8
   private val irisCsv = getClass.getResource("/iris.csv").getPath
