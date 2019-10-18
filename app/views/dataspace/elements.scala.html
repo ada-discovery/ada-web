@@ -55,7 +55,7 @@
 
 @dataSetTable = {
     @displayTable(
-        form.value.get.dataSetMetaInfos.sortBy(_.sortOrder),
+        form.value.map(_.dataSetMetaInfos.sortBy(_.sortOrder)).getOrElse(Nil),
         typeColumns[DataSetMetaInfo](
             (None, "Name", { item: DataSetMetaInfo => editableInput("dataSetMetaInfos.name", item.name) }),
             (None, "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
@@ -72,7 +72,7 @@
 
 @dataSpaceTable = {
     @displayTable(
-        form.value.get.children.sortBy(_.sortOrder),
+        form.value.map(_.children.sortBy(_.sortOrder)).getOrElse(Nil),
         typeColumns[DataSpaceMetaInfo](
             (None, "Name", _.name),
             (None, "Time Created", _.timeCreated.format("yyyy-MM-dd HH:mm:ss")),
@@ -91,9 +91,13 @@
 }
 
 @inputText("dataSpaceMetaInfo", "name", form)
-@labelValue("dataSetsCount", "Nested Data Sets #") {
-    @badge(nestedDataSetCount)
+
+@if(id.isDefined) {
+    @labelValue("dataSetsCount", "Nested Data Sets #") {
+        @badge(nestedDataSetCount)
+    }
 }
+
 @if(nestedDataSpaceCount > 0) {
     @labelValue("dataSpacesCount", "Nested Data Spaces #") {
         @badge(nestedDataSpaceCount)
@@ -102,11 +106,15 @@
 @inputText("dataSpaceMetaInfo", "sortOrder", form)
 @value("dataSetMetaInfos", "Time Created", form.value.map(_.timeCreated.format("yyyy-MM-dd HH:mm:ss")).getOrElse("N/A"))
 
-<div class="form-group col-sm-12">
-    <hr/>
-</div>
+@if(id.isDefined) {
+    <div class="form-group col-sm-12">
+        <hr/>
+    </div>
 
-@labelValue("dataSetMetaInfos", "Data Sets"){@dataSetTable}
+    @labelValue("dataSetMetaInfos", "Data Sets") {
+        @dataSetTable
+    }
+}
 
 <script type="text/javascript">
     $(function () {
@@ -124,6 +132,8 @@
         var params = {};
         params['dataSetId'] = dataSetId;
         params['actionChoice'] = actionChoice;
-        submit('post', '@{dataSpaceMetaInfoRoutes.deleteDataSet(id.get)}', params)
+        @id.foreach { id =>
+            submit('post', '@{dataSpaceMetaInfoRoutes.deleteDataSet(id)}', params)
+        }
     }
 </script>

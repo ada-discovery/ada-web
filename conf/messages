@@ -161,3 +161,4 @@ temporalRegressionRun.displayName = Temporal Regression Run
 dataSetImport.displayName = Data Set Import
 dataSetTransformation.displayName = "Data Set Transformation
 user.displayName = User
+dataSpace.displayName = Data Space

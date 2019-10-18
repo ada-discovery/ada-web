@@ -216,15 +216,17 @@ POST        /dataSets/setting/update/:id                                        
 POST        /dataSets/setting/:id/delete                                             org.ada.web.controllers.dataset.DataSetSettingController.delete(id: BSONObjectID)
 
 # Data SpaceMeta info
-GET         /dataSets/metainfo                                                       org.ada.web.controllers.dataset.DataSpaceMetaInfoController.find(p: Int ?= 0, s: String ?= "name", filter : Seq[org.incal.core.FilterCondition] ?= Nil)
-GET         /dataSets/metainfo/all                                                   org.ada.web.controllers.dataset.DataSpaceMetaInfoController.listAll(s: String ?= "name")
-GET         /dataSets/metainfo/new                                                   org.ada.web.controllers.dataset.DataSpaceMetaInfoController.create
-POST        /dataSets/metainfo/save                                                  org.ada.web.controllers.dataset.DataSpaceMetaInfoController.save
-GET         /dataSets/metainfo/:id/get                                               org.ada.web.controllers.dataset.DataSpaceMetaInfoController.get(id: BSONObjectID)
-GET         /dataSets/metainfo/:id                                                   org.ada.web.controllers.dataset.DataSpaceMetaInfoController.edit(id: BSONObjectID)
-POST        /dataSets/metainfo/:id                                                   org.ada.web.controllers.dataset.DataSpaceMetaInfoController.update(id: BSONObjectID)
-POST        /dataSets/metainfo/:id/delete                                            org.ada.web.controllers.dataset.DataSpaceMetaInfoController.delete(id: BSONObjectID)
-POST        /dataSets/metainfo/deleteDataSet/:id                                     org.ada.web.controllers.dataset.DataSpaceMetaInfoController.deleteDataSet(id: BSONObjectID)
+GET         /dataSpaces                                                              org.ada.web.controllers.dataset.DataSpaceMetaInfoController.find(p: Int ?= 0, s: String ?= "name", filter : Seq[org.incal.core.FilterCondition] ?= Nil)
+GET         /dataSpaces/all                                                          org.ada.web.controllers.dataset.DataSpaceMetaInfoController.listAll(s: String ?= "name")
+GET         /dataSpaces/new                                                          org.ada.web.controllers.dataset.DataSpaceMetaInfoController.create
+POST        /dataSpaces/save                                                         org.ada.web.controllers.dataset.DataSpaceMetaInfoController.save
+GET         /dataSpaces/get/:id                                                      org.ada.web.controllers.dataset.DataSpaceMetaInfoController.get(id: BSONObjectID)
+GET         /dataSpaces/edit/:id                                                     org.ada.web.controllers.dataset.DataSpaceMetaInfoController.edit(id: BSONObjectID)
+POST        /dataSpaces/update/:id                                                   org.ada.web.controllers.dataset.DataSpaceMetaInfoController.update(id: BSONObjectID)
+POST        /dataSpaces/delete/:id                                                   org.ada.web.controllers.dataset.DataSpaceMetaInfoController.delete(id: BSONObjectID)
+POST        /dataSpaces/deleteDataSet/:id                                            org.ada.web.controllers.dataset.DataSpaceMetaInfoController.deleteDataSet(id: BSONObjectID)
+POST        /dataSpaces/move                                                         org.ada.web.controllers.dataset.DataSpaceMetaInfoController.move(spaceId: BSONObjectID, parentId: Option[BSONObjectID])
+GET         /dataSpaces/idAndNames                                                   org.ada.web.controllers.dataset.DataSpaceMetaInfoController.idAndNames
 
 # Standard Clasification Run
 GET         /dataSets/classificationRuns                                             org.ada.web.controllers.dataset.StandardClassificationRunDispatcher.find(p: Int ?= 0, s: String ?= "-timeCreated", filter : Seq[org.incal.core.FilterCondition] ?= Nil)
