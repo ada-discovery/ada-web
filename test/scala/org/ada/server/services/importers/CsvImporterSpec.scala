@@ -8,12 +8,14 @@ import org.ada.server.services.GuicePlayTestApp
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.io.Codec
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class CsvImporterSpec extends AsyncFlatSpec {
+class CsvImporterSpec extends FlatSpec {
 
-  implicit def executor = ExecutionContext.global
+  private val timeout = 1 minute
   private implicit val codec = Codec.UTF8
   private val irisCsv = getClass.getResource("/iris.csv").getPath
 
@@ -33,9 +35,9 @@ class CsvImporterSpec extends AsyncFlatSpec {
       inferFieldTypes = true,
       path = Some(irisCsv)
     )
-    importer(importInfo) map { _ =>
+    Await.result(importer(importInfo) map  { _ =>
       assert(true)
-    }
+    }, timeout)
 //    importer(importInfo) flatMap { _ =>
 //      dsaf(dataSetId) match {
 //        case Some(dsa) =>
