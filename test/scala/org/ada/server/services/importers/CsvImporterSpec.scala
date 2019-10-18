@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class CsvImporterSpec extends FlatSpec {
 
-  private val timeout = 1 minute
+  private val timeout = 20 minutes
   private implicit val codec = Codec.UTF8
   private val irisCsv = getClass.getResource("/iris.csv").getPath
 
@@ -35,16 +35,25 @@ class CsvImporterSpec extends FlatSpec {
       inferFieldTypes = true,
       path = Some(irisCsv)
     )
+
+    //      for {
+    //        _ <- importer(importInfo)
+    //        futureTest1 <- dsaf(dataSetId) match {
+    //          case Some(dsa) => dsa.dataSetName map { name => assert(name == dataSetName) }
+    //          case None => fail(s"Dataset '$dataSetName' not found in DB.")
+    //        }
+    //      }
+
     Await.result(importer(importInfo) map  { _ =>
       assert(true)
     }, timeout)
-//    importer(importInfo) flatMap { _ =>
-//      dsaf(dataSetId) match {
-//        case Some(dsa) =>
-//          dsa.dataSetName map { name => assert(name == dataSetName) }
-//          dsa.dataSetRepo.count() map { count => assert(count == 150)}
-//        case None => fail(s"Dataset '$dataSetName' not found in DB.")
-//      }
-//    }
+    //    importer(importInfo) flatMap { _ =>
+    //      dsaf(dataSetId) match {
+    //        case Some(dsa) =>
+    //          dsa.dataSetName map { name => assert(name == dataSetName) }
+    //          dsa.dataSetRepo.count() map { count => assert(count == 150)}
+    //        case None => fail(s"Dataset '$dataSetName' not found in DB.")
+    //      }
+    //    }
   }
 }
