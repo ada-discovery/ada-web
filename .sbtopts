@@ -1,0 +1,3 @@
+-Dscala.concurrent.context.minThreads=10
+-Dscala.concurrent.context.numThreads=10
+-Dscala.concurrent.context.maxThreads=10
