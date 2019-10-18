@@ -380,6 +380,19 @@ function populateIdNameTypeahedFromUrl(typeaheadElement, idElement, url, initSel
     });
 }
 
+function populateIdNameTypeahedsFromUrl(typeaheadElements, idElements, url, initSelectByNameElement) {
+    $.ajax({
+        url: url,
+        success: function (data) {
+            var fieldNameAndLabels = data.map(function (item, index) {
+                return {name: item._id.$oid, label: item.name};
+            });
+            populateFieldTypeaheds(typeaheadElements, idElements, fieldNameAndLabels, 1, initSelectByNameElement);
+        },
+        error: showErrorResponse
+    });
+}
+
 function registerMessageEventSource(url) {
 //  if (!!window.EventSource) {
  if (!window.messageSource)

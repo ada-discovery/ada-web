@@ -7,6 +7,7 @@ import org.ada.server.models._
 import org.ada.web.controllers.core.AdaCrudControllerImpl
 import org.ada.server.dataaccess.RepoTypes.{DataSetSettingRepo, DataSpaceMetaInfoRepo}
 import org.incal.core.dataaccess.Criterion.Infix
+import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import play.api.data.Forms._
 import play.api.mvc._
@@ -19,9 +20,10 @@ import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import org.ada.server.AdaException
 import org.ada.server.dataaccess.DataSetMetaInfoRepoFactory
-import org.incal.play.controllers.{CrudControllerImpl, HasBasicFormCreateView, HasBasicListView, SubjectPresentRestrictedCrudController}
+import org.incal.play.controllers._
 import org.ada.web.services.DataSpaceService
-import org.incal.play.security.ActionSecurity.AuthActionTransformation
+import org.incal.play.controllers
+import play.api.libs.json.{JsArray, Json}
 
 class DataSpaceMetaInfoController @Inject() (
     repo: DataSpaceMetaInfoRepo,
@@ -30,9 +32,12 @@ class DataSpaceMetaInfoController @Inject() (
     dataSpaceService: DataSpaceService,
     dataSetMetaInfoRepoFactory: DataSetMetaInfoRepoFactory
   ) extends AdaCrudControllerImpl[DataSpaceMetaInfo, BSONObjectID](repo)
-    with SubjectPresentRestrictedCrudController[BSONObjectID]
+    with AdminRestrictedCrudController[BSONObjectID]
     with HasBasicFormCreateView[DataSpaceMetaInfo]
     with HasBasicListView[DataSpaceMetaInfo] {
+
+  override protected def formatId(id: BSONObjectID) = id.stringify
+  override protected val entityNameKey = "dataSpace"
 
   override protected[controllers] val form = Form(
     mapping(
@@ -46,7 +51,7 @@ class DataSpaceMetaInfoController @Inject() (
         Some((item._id, item.name, item.sortOrder, item.timeCreated, item.dataSetMetaInfos))
   ))
 
-  override protected val homeCall = routes.DataSpaceMetaInfoController.find()
+  override protected val homeCall = org.ada.web.controllers.routes.AppController.dataSets()
 
   // create view
 
@@ -61,6 +66,11 @@ class DataSpaceMetaInfoController @Inject() (
     Boolean,
     Map[String, Int],
     Traversable[DataSpaceMetaInfo]
+  )
+
+  // get is allowed for all the logged users
+  override def get(id: BSONObjectID) = restrictSubjectPresentAny(noCaching = true) (
+    toAuthenticatedAction(super[AdaCrudControllerImpl].get(id))
   )
 
   override protected def getFormShowViewData(
@@ -131,12 +141,6 @@ class DataSpaceMetaInfoController @Inject() (
     (view.edit(_, _, _, _, _, _)).tupled
   }
 
-  override def edit(id: BSONObjectID) = restrictAdminAny(noCaching = true) (
-    toAuthenticatedAction(
-      super.edit(id)
-    )
-  )
-
   // list view
 
   override protected[controllers] def listView = { implicit ctx =>
@@ -197,9 +201,7 @@ class DataSpaceMetaInfoController @Inject() (
 
   // if update successful redirect to get/show instead of list
   override def update(id: BSONObjectID) = restrictAdminAny(noCaching = true) (
-    toAuthenticatedAction(
-      update(id, _ => Redirect(routes.DataSpaceMetaInfoController.get(id)))
-    )
+    toAuthenticatedAction(update(id, _ => Redirect(routes.DataSpaceMetaInfoController.get(id))))
   )
 
   def deleteDataSet(id: BSONObjectID) = restrictAdminAny(noCaching = true) {
@@ -304,6 +306,55 @@ class DataSpaceMetaInfoController @Inject() (
     Future.sequence(futures).map(_.toMap)
   }
 
-  //  // get is allowed for all logged users
-//  override def get(id: BSONObjectID) = deadbolt.SubjectPresent()(super.get(id))
+  def move(
+    spaceId: BSONObjectID,
+    parentId: Option[BSONObjectID]
+  ) = restrictAdminAny(noCaching = true) { implicit request =>
+    for {
+      spaceOption <- repo.get(spaceId)
+
+      spaceName <- spaceOption.map { space =>
+        parentId match {
+          case Some(parentId) => moveAux(space, parentId)
+          case None =>
+            val updatedSpace = space.copy(parentId = None)
+            repo.update(updatedSpace).map(_ => Some(space.name))
+        }
+      }.getOrElse(
+        Future(None)
+      )
+    } yield
+      spaceName.map { name =>
+        Redirect(homeCall).flashing("success" -> s"Data space '${name}' successfully relocated.")
+      }.getOrElse(
+        BadRequest(s"Data space '${spaceId.stringify}' or '${parentId.map(_.stringify).getOrElse("N/A")}' not found.")
+      )
+  }
+
+  private def moveAux(
+    space: DataSpaceMetaInfo,
+    parentId: BSONObjectID
+  ) =
+    for {
+      parentOption <- repo.get(parentId)
+      spaceName <-
+        parentOption.map { parent =>
+          val updatedSpace = space.copy(parentId = parent._id)
+          repo.update(updatedSpace).map(_ => Some(space.name))
+        }.getOrElse(
+          Future(None)
+        )
+    } yield
+      spaceName
+
+  def idAndNames = restrictAdminAny(noCaching = true) { implicit request =>
+    for {
+      spaces <- repo.find()
+    } yield {
+      val idAndNames = spaces.toSeq.sortBy(_.name).map( space =>
+        Json.obj("_id" -> space._id.get, "name" -> space.name)
+      )
+      Ok(JsArray(idAndNames))
+    }
+  }
 }
