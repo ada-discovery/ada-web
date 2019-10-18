@@ -1,5 +1,7 @@
 package scala.org.ada.server.services.importers
 
+import java.util.concurrent.Executors
+
 import com.google.inject.Injector
 import net.codingwell.scalaguice.InjectorExtensions._
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
@@ -8,13 +10,13 @@ import org.ada.server.services.GuicePlayTestApp
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
 import scala.io.Codec
 
 class CsvImporterSpec extends FlatSpec {
 
-  implicit def executor = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
   private val timeout = 20 minutes
   private implicit val codec = Codec.UTF8
   private val irisCsv = getClass.getResource("/iris.csv").getPath
