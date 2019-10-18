@@ -15,7 +15,7 @@ before_script:
   # build ada-server dependency and publish locally
   - git clone https://github.com/ada-discovery/ada-server.git
   - cd ada-server
-  - git checkout ci-testing
+  - git checkout master  # change this if you are developing against a different ada-server branch but still want CI
   - sbt publish-local
   - cd .. && rm -rf ada-server
   # configure MongoDB
