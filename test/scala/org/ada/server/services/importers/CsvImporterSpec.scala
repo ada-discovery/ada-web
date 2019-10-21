@@ -1,7 +1,5 @@
 package scala.org.ada.server.services.importers
 
-import java.util.concurrent.Executors
-
 import com.google.inject.Injector
 import net.codingwell.scalaguice.InjectorExtensions._
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
@@ -10,14 +8,11 @@ import org.ada.server.services.GuicePlayTestApp
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
-import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration._
 import scala.io.Codec
 
-class CsvImporterSpec extends FlatSpec {
+class CsvImporterSpec extends AsyncFlatSpec {
 
-  implicit val executionContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
-  private val timeout = 20 minutes
+  implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
   private implicit val codec = Codec.UTF8
   private val irisCsv = getClass.getResource("/iris.csv").getPath
 
@@ -38,24 +33,11 @@ class CsvImporterSpec extends FlatSpec {
       path = Some(irisCsv)
     )
 
-    //      for {
-    //        _ <- importer(importInfo)
-    //        futureTest1 <- dsaf(dataSetId) match {
-    //          case Some(dsa) => dsa.dataSetName map { name => assert(name == dataSetName) }
-    //          case None => fail(s"Dataset '$dataSetName' not found in DB.")
-    //        }
-    //      }
-
-    Await.result(importer(importInfo) map  { _ =>
-      assert(true)
-    }, timeout)
-    //    importer(importInfo) flatMap { _ =>
-    //      dsaf(dataSetId) match {
-    //        case Some(dsa) =>
-    //          dsa.dataSetName map { name => assert(name == dataSetName) }
-    //          dsa.dataSetRepo.count() map { count => assert(count == 150)}
-    //        case None => fail(s"Dataset '$dataSetName' not found in DB.")
-    //      }
-    //    }
+    for {
+      _ <- importer(importInfo)
+      dsa = dsaf(dataSetId).getOrElse(fail(s"Dataset '$dataSetName' not found in DB."))
+      _ <- dsa.dataSetName map { name => assert(name == dataSetName) }
+      _ <- dsa.dataSetRepo.count() map { count => assert(count == 150)}
+    } yield succeed
   }
 }
