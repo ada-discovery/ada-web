@@ -11,20 +11,26 @@ addons:
   apt:
     packages:
       - git
-before_script:
+install:
+  # install elasticsearch
+  - curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.16.deb
+  - sudo dpkg -i --force-confnew elasticsearch-5.6.16.deb
   # build ada-server dependency and publish locally
   - git clone https://github.com/ada-discovery/ada-server.git
   - cd ada-server
   - git checkout master  # change this if you are developing against a different ada-server branch but still want CI
   - sbt publish-local
   - cd .. && rm -rf ada-server
-  # configure MongoDB
+before_script:
+  - sudo service elasticsearch restart
   - mongo $ADA_MONGO_DB_NAME --eval "db.createUser({user:\"$ADA_MONGO_DB_USERNAME\", pwd:\"$ADA_MONGO_DB_PASSWORD\" , roles:[\"readWrite\"]});"
 script:
-  - sbt -Dscala.concurrent.context.minThreads=10 -Dscala.concurrent.context.numThreads=10 -Dscala.concurrent.context.maxThreads=10 "test:testOnly *Spec"
+  - sbt "test:testOnly *Spec"
 before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
 cache:
   directories:
     - $HOME/.ivy2/cache
+after_script:
+  - sudo service elasticsearch stop
