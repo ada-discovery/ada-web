@@ -25,7 +25,7 @@ class CsvImporterSpec extends AsyncFlatSpec {
     val id = "test.iris"
     val name = "iris"
     val size = 150
-    def importInfo(storageType: StorageType) = CsvDataSetImport(
+    def importInfo(storageType: StorageType.Value) = CsvDataSetImport(
       dataSpaceName = "test",
       dataSetName = name,
       dataSetId = id,
