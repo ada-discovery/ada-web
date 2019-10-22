@@ -1,21 +1,19 @@
 package scala.org.ada.server.services.importers
 
-import com.google.inject.Injector
-import net.codingwell.scalaguice.InjectorExtensions._
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
-import org.ada.server.models.{DataSetSetting, StorageType}
 import org.ada.server.models.dataimport.CsvDataSetImport
-import org.ada.server.services.GuicePlayTestApp
+import org.ada.server.models.{DataSetSetting, StorageType}
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
+
+import scala.org.ada.server.services.Injector
 
 class CsvDataSetImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
 
   implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  private val guiceInjector = GuicePlayTestApp().injector.instanceOf[Injector]
-  private val importer = guiceInjector.instance[DataSetCentralImporter]
-  private val dsaf = guiceInjector.instance[DataSetAccessorFactory]
+  private val importer = Injector.instanceOf[DataSetCentralImporter]
+  private val dsaf = Injector.instanceOf[DataSetAccessorFactory]
 
   private object Iris {
     val path = getClass.getResource("/iris.csv").getPath
