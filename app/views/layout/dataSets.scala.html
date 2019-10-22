@@ -1,10 +1,12 @@
 @import views.html.dataset.datasetMenu
 @import org.ada.server.models.DataSpaceMetaInfo
-@import be.objectify.deadbolt.scala.views.html.{subjectPresent, subjectPresentOr, restrictOr}
+@import be.objectify.deadbolt.scala.views.html.{subjectPresent, subjectPresentOr, restrictOr, restrict}
 @import org.incal.play.security.SecurityRole
+@import views.html.elements.{fieldTypeahead, typeahead}
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
 @import org.ada.web.controllers.dataset.dataimport.{routes => dataSetImportRoutes}
+@import org.ada.web.controllers.dataset.routes.{DataSpaceMetaInfoController => dataSpaceMetaInfoRoutes}
 @import org.ada.web.controllers.routes
 
 @(
@@ -39,15 +41,94 @@
     </div>
 }
 
-@main("Studies/Data Sets", Some(datasetMenu(dataSpaceMetaInfos)), extraMessages = if (dataSetsNum == 0) Some(noDataSetsErrorMessage) else None) {
+@moveSpaceModalBody = {
+    <fieldset>
+        @typeahead("dataSpaceTypeahead", "dataSpaceId", "Data Space", true)
+
+        <span>
+            Move Under
+        </span>
+
+        @typeahead("parentSpaceTypeahead", "parentSpaceId", "Parent", true)
+    </fieldset>
+}
+
+@moveSpaceModalButtons = {
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-primary" onclick="moveDataSpace(); return false;" data-dismiss="modal">OK</button>
+}
+
+@bottomRes = {
+    @helper.javascriptRouter("dataSpaceJsRoutes")(
+        org.ada.web.controllers.dataset.routes.javascript.DataSpaceMetaInfoController.move
+    )
+
+    @typeaheadJsImport()
+
+    <script type="text/javascript">
+        $(function () {
+            populateIdNameTypeahedsFromUrl(
+                [$("#dataSpaceTypeahead"), $("#parentSpaceTypeahead")],
+                [$("#dataSpaceId"), $("#parentSpaceId")],
+                '@Html(dataSpaceMetaInfoRoutes.idAndNames.url)'
+            )
+        })
+
+        function moveDataSpace() {
+            var spaceId = $("#dataSpaceId").val()
+            var parentId = $("#parentSpaceId").val()
+            var parentName = $("#parentSpaceTypeahead").val()
+            if (!parentId || !parentName)
+                parentId = null
+
+            if (spaceId != parentId) {
+                var r = dataSpaceJsRoutes.org.ada.web.controllers.dataset.DataSpaceMetaInfoController.move(spaceId, parentId);
+                submit('post', r.url, getQueryParams(r.url))
+            } else {
+                showError("Data space cannot be its own parent.")
+            }
+        }
+    </script>
+}
+
+@main(
+    "Studies/Data Sets",
+    Some(datasetMenu(dataSpaceMetaInfos)),
+    extraMessages = if (dataSetsNum == 0) Some(noDataSetsErrorMessage) else None,
+    bottomResources = Some(bottomRes)
+) {
 
     <div class="page-header">
         <h1>Studies</h1>
     </div>
 
     <div class="row-fluid">
+        @restrict(roles = List(Array(SecurityRole.admin))) {
+            <div class="pull-right">
+                <div class="dropdown">
+                    <button class="btn btn-info btn-sm dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Data Space
+                        <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="@{dataSpaceMetaInfoRoutes.create()}">
+                                Create New
+                            </a>
+                        </li>
+                        <li>
+                            <a data-toggle="modal" data-target="#moveDataSpaceModal">
+                                Relocate
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            @modal("moveDataSpaceModal", "Move/Relocate Data Space", moveSpaceModalBody, None, Some(moveSpaceModalButtons))
+        }
         <h3><i>Welcome @userName!</i></h3>
         <br/>
-        You have currently access to @badge(dataSetsNum) data sets organized into @badge(dataSpacesNum) data spaces out of which @badge(dataSpaceMetaInfos.size) are the top level ones (studies/projects).
+        You have currently access to @badge(dataSetsNum) data sets organized into @badge(dataSpacesNum) data spaces out of which @badge(dataSpaceMetaInfos.size) are the top level ones (aka studies/projects).
     </div>
 }
