@@ -9,7 +9,7 @@ import org.ada.server.services.GuicePlayTestApp
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
-class CsvImporterSpec extends AsyncFlatSpec {
+class CsvImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
 
   implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -32,6 +32,10 @@ class CsvImporterSpec extends AsyncFlatSpec {
       path = Some(path),
       setting = Some(new DataSetSetting(id, storageType))
     )
+  }
+
+  after {
+    dsaf(Iris.id) map { _.dataSetRepo.deleteAll }
   }
 
   behavior of "CsvDataSetImport"
