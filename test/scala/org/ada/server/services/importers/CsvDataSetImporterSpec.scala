@@ -20,6 +20,7 @@ class CsvDataSetImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
     val id = "test.iris"
     val name = "iris"
     val size = 150
+    val fieldNum = 5
     def importInfo(storageType: StorageType.Value) = CsvDataSetImport(
       dataSpaceName = "test",
       dataSetName = name,
@@ -45,6 +46,7 @@ class CsvDataSetImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
       _ <- dsa.dataSetRepo.flushOps
       _ <- dsa.dataSetName map { name => assert(name == Iris.name) }
       _ <- dsa.dataSetRepo.count() map { count => assert(count == Iris.size)}
+      _ <- dsa.fieldRepo.count() map { count => assert(count == Iris.fieldNum)}
     } yield succeed
   }
 
@@ -55,6 +57,7 @@ class CsvDataSetImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
       _ <- dsa.dataSetRepo.flushOps
       _ <- dsa.dataSetName map { name => assert(name == Iris.name) }
       _ <- dsa.dataSetRepo.count() map { count => assert(count == Iris.size)}
+      _ <- dsa.fieldRepo.count() map { count => assert(count == Iris.fieldNum)}
     } yield succeed
   }
 }
