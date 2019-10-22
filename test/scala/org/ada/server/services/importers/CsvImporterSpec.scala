@@ -9,12 +9,9 @@ import org.ada.server.services.GuicePlayTestApp
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
-import scala.io.Codec
-
 class CsvImporterSpec extends AsyncFlatSpec {
 
   implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
-  private implicit val codec = Codec.UTF8
 
   private val guiceInjector = GuicePlayTestApp().injector.instanceOf[Injector]
   private val importer = guiceInjector.instance[DataSetCentralImporter]
