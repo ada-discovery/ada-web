@@ -13,7 +13,7 @@ addons:
     packages:
       - git
 before_install:
-  - docker run -p 9200:9200 elasticsearch:5.6
+  - docker run -d -p 9200:9200 elasticsearch:5.6
 install:
   # build ada-server dependency and publish locally
   - git clone https://github.com/ada-discovery/ada-server.git
