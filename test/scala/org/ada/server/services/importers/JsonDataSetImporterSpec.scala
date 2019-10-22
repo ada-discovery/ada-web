@@ -1,7 +1,7 @@
 package scala.org.ada.server.services.importers
 
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
-import org.ada.server.models.dataimport.CsvDataSetImport
+import org.ada.server.models.dataimport.JsonDataSetImport
 import org.ada.server.models.{DataSetSetting, StorageType}
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
@@ -20,12 +20,10 @@ class JsonDataSetImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
     val id = "test.iris"
     val name = "iris"
     val size = 150
-    def importInfo(storageType: StorageType.Value) = CsvDataSetImport(
+    def importInfo(storageType: StorageType.Value) = JsonDataSetImport(
       dataSpaceName = "test",
       dataSetName = name,
       dataSetId = id,
-      delimiter = ",",
-      matchQuotes = false,
       inferFieldTypes = true,
       path = Some(path),
       setting = Some(new DataSetSetting(id, storageType))
