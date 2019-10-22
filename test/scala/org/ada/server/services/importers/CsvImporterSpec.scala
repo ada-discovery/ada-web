@@ -43,6 +43,7 @@ class CsvImporterSpec extends AsyncFlatSpec {
     for {
       _ <- importer(Iris.importInfo(StorageType.Mongo))
       dsa = dsaf(Iris.id).getOrElse(fail(s"Dataset '${Iris.name}' not found in Mongo."))
+      _ <- dsa.dataSetRepo.flushOps
       _ <- dsa.dataSetName map { name => assert(name == Iris.name) }
       _ <- dsa.dataSetRepo.count() map { count => assert(count == Iris.size)}
     } yield succeed
@@ -52,6 +53,7 @@ class CsvImporterSpec extends AsyncFlatSpec {
     for {
       _ <- importer(Iris.importInfo(StorageType.ElasticSearch))
       dsa = dsaf(Iris.id).getOrElse(fail(s"Dataset '${Iris.name}' not found in Elastic."))
+      _ <- dsa.dataSetRepo.flushOps
       _ <- dsa.dataSetName map { name => assert(name == Iris.name) }
       _ <- dsa.dataSetRepo.count() map { count => assert(count == Iris.size)}
     } yield succeed
