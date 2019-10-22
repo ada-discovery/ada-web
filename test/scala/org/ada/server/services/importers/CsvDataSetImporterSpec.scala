@@ -9,7 +9,7 @@ import org.ada.server.services.GuicePlayTestApp
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
-class CsvImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
+class CsvDataSetImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
 
   implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -38,7 +38,7 @@ class CsvImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
     dsaf(Iris.id) map { _.dataSetRepo.deleteAll }
   }
 
-  behavior of "CsvDataSetImport"
+  behavior of "CsvDataSetImporter"
 
   it should "import iris.csv to MongoDB" in {
     for {
