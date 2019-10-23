@@ -1,18 +1,16 @@
 language: scala
-env:
-  - ADA_MONGO_DB_NAME=ada ADA_MONGO_DB_USERNAME=ci ADA_MONGO_DB_PASSWORD=ci
 scala:
    - 2.11.12
 jdk:
   - openjdk8
 services:
   - docker
-  - mongodb
 addons:
   apt:
     packages:
       - git
 before_install:
+  - docker run -p 27017:27017 mongo:4
   - docker run -d -p 9200:9200 elasticsearch:5.6
 install:
   # build ada-server dependency and publish locally
@@ -21,8 +19,6 @@ install:
   - git checkout master  # change this if you are developing against a different ada-server branch but still want CI
   - sbt publish-local
   - cd .. && rm -rf ada-server
-before_script:
-  - mongo $ADA_MONGO_DB_NAME --eval "db.createUser({user:\"$ADA_MONGO_DB_USERNAME\", pwd:\"$ADA_MONGO_DB_PASSWORD\" , roles:[\"readWrite\"]});"
 script:
   - sbt "test:testOnly *Spec"
 before_cache:
