@@ -37,7 +37,7 @@
                 @dataSetExportDropdown(
                     dataSetName,
                     dataSetRouter.exportTableAsCsv(Nil, _, true, None, _, _, true, true, false, Nil),
-                    dataSetRouter.exportTableAsJson(Nil, _, _, true, false, Nil),
+                    dataSetRouter.exportTableAsJson(Nil, _, _, false, false, Nil),
                     setting.filterShowFieldStyle,
                     None,
                     Some(selectedOnlyElement)
