@@ -53,6 +53,7 @@
         $("#sideCategoricalTree").on('open_node.jstree', function (event, data) {
             data.instance.set_type(data.node, 'category-open');
 
+            // add drag&drop support to the new leafs that emerge when a categorical node is open
             const leafs = $(event.target).find(".jstree-leaf")
             addDragAndDropSupport(leafs)
         });
@@ -69,6 +70,11 @@
                 },
                 1000
             );
+        })
+
+        $("#sideCategoricalTree").on('ready.jstree', function (event, data) {
+            const leafs = $("#sideCategoricalTree").find(".jstree-leaf")
+            addDragAndDropSupport(leafs)
         })
 
         $("#sideCategoricalTree").jsTreeWidget('init');

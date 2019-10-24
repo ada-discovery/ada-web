@@ -21,9 +21,14 @@ function activateDataSetFilter(filterElement, jsonConditions, filterId, submitAj
     })
 
     addAllowedValuesUpdateForFilter(filterElement)
+    addDragAndDropSupportForFilter(filterElement)
+}
 
-    // add a drag-and-drop support
+function addDragAndDropSupportForFilter(filterElement) {
     $(filterElement).find(".filter-part").on('dragover', false).on('drop', function (ev) {
+        $(filterElement).find("#conditionPanel").css("border-bottom", "");
+        $(filterElement).css("opacity", 1);
+
         ev.preventDefault();
         var transfer = ev.originalEvent.dataTransfer;
         var id = transfer.getData("id");
@@ -33,7 +38,18 @@ function activateDataSetFilter(filterElement, jsonConditions, filterId, submitAj
         if (type.startsWith("field")) {
             $(filterElement).multiFilter("showAddConditionModalForField", id, text)
         }
-    });
+    }).on("dragover", function (ev) {
+        var transfer = ev.originalEvent.dataTransfer;
+        var type = transfer.getData("type");
+
+        if (type.startsWith("field")) {
+            $(filterElement).find("#conditionPanel").css("border-bottom", "2px dashed #c0c0c0");
+            $(filterElement).css("opacity", 0.6);
+        }
+    }).on("dragleave", function () {
+        $(filterElement).find("#conditionPanel").css("border-bottom", "");
+        $(filterElement).css("opacity", 1);
+    })
 }
 
 function saveFilterToView(viewId) {
@@ -71,6 +87,7 @@ function refreshViewOnFilterUpdate(viewId, filterOrId, filterElement, widgetGrid
 
             // filter
             filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+            addDragAndDropSupportForFilter(filterElement)
 
             // display count
             var countDisplayElement = filterElement.closest(".row").parent().find(".count-div")

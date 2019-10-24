@@ -171,6 +171,7 @@
                     // filter
                     var filterElement = $(".filter-div");
                     filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+                    addDragAndDropSupportForFilter(filterElement)
 
                     // widgets
                     var widgetsDiv = $("#widgetsDiv")
@@ -190,6 +191,7 @@
                     // filter
                     var filterElement = $(".filter-div");
                     filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+                    addDragAndDropSupportForFilter(filterElement)
 
                     $("#spinnerDiv").html("");
                     addSpinner($("#spinnerDiv"), "margin-bottom: 20px;");
@@ -237,6 +239,7 @@
                     // filter
                     var filterElement = $(".filter-div");
                     filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+                    addDragAndDropSupportForFilter(filterElement)
 
                     $("#spinnerDiv").html("");
                     addSpinner($("#spinnerDiv"), "margin-bottom: 20px;");
