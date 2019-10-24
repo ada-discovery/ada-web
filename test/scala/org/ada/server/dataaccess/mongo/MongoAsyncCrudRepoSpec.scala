@@ -81,8 +81,8 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
       entry <- repo.get(id)
       retrievedUser = entry.getOrElse(fail(s"User with id '$id' not found in DB."))
     } yield {
-      assert(user.email != "newEmail")
-      assert(user.email == "oldEmail")
+      assert(retrievedUser.email != "oldEmail")
+      assert(retrievedUser.email == "newEmail")
     }
   }
 
