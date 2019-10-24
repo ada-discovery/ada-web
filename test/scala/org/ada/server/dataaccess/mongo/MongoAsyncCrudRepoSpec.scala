@@ -4,7 +4,7 @@ import org.ada.server.dataaccess.mongo.MongoAsyncCrudRepo
 import org.ada.server.models.{Dictionary, User}
 import org.ada.server.models.DataSetFormattersAndIds._
 import org.incal.core.Identity
-import org.incal.core.dataaccess.{Criterion, EqualsCriterion, LessEqualCriterion}
+import org.incal.core.dataaccess.Criterion.Infix
 import org.scalatest._
 import play.api.libs.json.Format
 import play.modules.reactivemongo.ReactiveMongoApi
@@ -66,7 +66,7 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
     for {
       _ <- repo.save(user)
       _ <- repo.flushOps
-      entry <- repo.find(List(EqualsCriterion("email", user.email)))
+      entry <- repo.find(List("email" #== user.email))
     } yield assert(entry.nonEmpty)
   }
 
