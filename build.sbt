@@ -50,7 +50,7 @@ libraryDependencies ++= Seq(
   "org.webjars.bower" % "d3" % "3.5.16",
   "org.webjars.bower" % "Autolinker.js" % "0.25.0",      // to convert links to a-href elements
   "org.webjars" % "jquery-ui" % "1.11.1",
-  "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.+" % "test"
 )
 
 // Because of Spark (turning janino logging to warn: https://github.com/janino-compiler/janino/issues/13)
