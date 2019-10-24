@@ -30,6 +30,16 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
 
   behavior of "MongoAsyncCrudRepo"
 
+  it should "save User and check if it exists" in withMongoAsyncCrudRepo[User, BSONObjectID] { repo =>
+    val id = BSONObjectID.generate()
+    val user = User(Some(id), "testUser", "testUser@testEmail.org", List("FOO_ROLE"), List("FOO_PERMISSION"))
+    for {
+      _ <- repo.save(user)
+      _ <- repo.flushOps
+      exists <- repo.exists(id)
+    } yield assert(exists)
+  }
+
   it should "save and get User" in withMongoAsyncCrudRepo[User, BSONObjectID] { repo =>
     val id = BSONObjectID.generate()
     val user = User(Some(id), "testUser", "testUser@testEmail.org", List("FOO_ROLE"), List("FOO_PERMISSION"))
