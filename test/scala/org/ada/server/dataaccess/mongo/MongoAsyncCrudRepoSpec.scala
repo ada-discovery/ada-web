@@ -1,7 +1,8 @@
 package scala.org.ada.server.dataaccess.mongo
 
 import org.ada.server.dataaccess.mongo.MongoAsyncCrudRepo
-import org.ada.server.models.User
+import org.ada.server.models.{Dictionary, User}
+import org.ada.server.models.DataSetFormattersAndIds._
 import org.incal.core.Identity
 import org.scalatest._
 import play.api.libs.json.Format
@@ -20,18 +21,17 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
                                                    (implicit identity: Identity[E, ID]) = {
     val repo = new MongoAsyncCrudRepo[E, ID]("testCollection")
     repo.reactiveMongoApi = Injector.instanceOf[ReactiveMongoApi]
-    try {
-      testCode(repo)
-    } finally {
-      repo.deleteAll
-    }
+    for {
+      _ <- testCode(repo)
+      _ <- repo.deleteAll
+    } yield succeed
   }
 
   behavior of "MongoAsyncCrudRepo"
 
   it should "can save User" in withMongoAsyncCrudRepo[User, BSONObjectID] { repo =>
     val id = BSONObjectID.generate()
-    val user = User(Some(id), "testUser", "testUser@testEmail.org", Nil)
+    val user = User(Some(id), "testUser", "testUser@testEmail.org", List("FOO_ROLE"), List("FOO_PERMISSION"))
     for {
       _ <- repo.save(user)
       _ <- repo.flushOps
@@ -39,8 +39,29 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
       retrievedUser = entry.getOrElse(fail(s"User with id '$id' not found in DB."))
     } yield {
       assert(retrievedUser._id.contains(id))
-      assert(retrievedUser.ldapDn == "testUser")
-      assert(retrievedUser.email == "testUser@testEmail.org")
+      assert(retrievedUser.ldapDn == user.ldapDn)
+      assert(retrievedUser.email == user.email)
+      assert(retrievedUser.locked == user.locked)
+      assert(retrievedUser.permissions == user.permissions)
+      assert(retrievedUser.roles == user.roles)
+    }
+  }
+
+  it should "can save Dictionary" in withMongoAsyncCrudRepo[Dictionary, BSONObjectID] { repo =>
+    val id = BSONObjectID.generate()
+    val dictionary = Dictionary(Some(id), "test", Nil, Nil, Nil, Nil)  // #TODO: Get a bit more creative here
+    for {
+      _ <- repo.save(dictionary)
+      _ <- repo.flushOps
+      entry <- repo.get(id)
+      retrievedDictionary = entry.getOrElse(fail(s"Dictionary with id '$id' not found in DB."))
+    } yield {
+      assert(retrievedDictionary._id.contains(id))
+      assert(retrievedDictionary.dataSetId == dictionary.dataSetId)
+      assert(retrievedDictionary.categories == dictionary.categories)
+      assert(retrievedDictionary.dataviews == dictionary.dataviews)
+      assert(retrievedDictionary.fields == dictionary.fields)
+      assert(retrievedDictionary.filters == dictionary.filters)
     }
   }
 }
