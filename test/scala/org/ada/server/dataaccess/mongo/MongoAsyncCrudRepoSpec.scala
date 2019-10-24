@@ -4,6 +4,7 @@ import org.ada.server.dataaccess.mongo.MongoAsyncCrudRepo
 import org.ada.server.models.{Dictionary, User}
 import org.ada.server.models.DataSetFormattersAndIds._
 import org.incal.core.Identity
+import org.incal.core.dataaccess.{Criterion, EqualsCriterion, LessEqualCriterion}
 import org.scalatest._
 import play.api.libs.json.Format
 import play.modules.reactivemongo.ReactiveMongoApi
@@ -45,6 +46,28 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
       assert(retrievedUser.permissions == user.permissions)
       assert(retrievedUser.roles == user.roles)
     }
+  }
+
+  it should "delete a created User" in withMongoAsyncCrudRepo[User, BSONObjectID] { repo =>
+    val id = BSONObjectID.generate()
+    val user = User(Some(id), "", "", Nil)
+    for {
+      _ <- repo.save(user)
+      _ <- repo.flushOps
+      _ <- repo.delete(id)
+      _ <- repo.flushOps
+      entry <- repo.get(id)
+    } yield assert(entry.isEmpty)
+  }
+
+  it should "find a created User by criteria" in withMongoAsyncCrudRepo[User, BSONObjectID] { repo =>
+    val id = BSONObjectID.generate()
+    val user = User(Some(id), "testUser", "testUser@testEmail.org", List("FOO_ROLE"), List("FOO_PERMISSION"))
+    for {
+      _ <- repo.save(user)
+      _ <- repo.flushOps
+      entry <- repo.find(List(EqualsCriterion("email", user.email)))
+    } yield assert(entry.nonEmpty)
   }
 
   it should "save and get Dictionary" in withMongoAsyncCrudRepo[Dictionary, BSONObjectID] { repo =>
