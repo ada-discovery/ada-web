@@ -29,7 +29,7 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
 
   behavior of "MongoAsyncCrudRepo"
 
-  it should "can save User" in withMongoAsyncCrudRepo[User, BSONObjectID] { repo =>
+  it should "save User" in withMongoAsyncCrudRepo[User, BSONObjectID] { repo =>
     val id = BSONObjectID.generate()
     val user = User(Some(id), "testUser", "testUser@testEmail.org", List("FOO_ROLE"), List("FOO_PERMISSION"))
     for {
@@ -47,7 +47,7 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
     }
   }
 
-  it should "can save Dictionary" in withMongoAsyncCrudRepo[Dictionary, BSONObjectID] { repo =>
+  it should "save Dictionary" in withMongoAsyncCrudRepo[Dictionary, BSONObjectID] { repo =>
     val id = BSONObjectID.generate()
     val dictionary = Dictionary(Some(id), "test", Nil, Nil, Nil, Nil)  // #TODO: Get a bit more creative here
     for {
