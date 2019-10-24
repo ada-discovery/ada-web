@@ -70,6 +70,39 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
     } yield assert(entry.nonEmpty)
   }
 
+  it should "update a created User" in withMongoAsyncCrudRepo[User, BSONObjectID] { repo =>
+    val id = BSONObjectID.generate()
+    val user = User(Some(id), "testUser", "oldEmail", Nil, Nil)
+    for {
+      _ <- repo.save(user)
+      _ <- repo.flushOps
+      _ <- repo.update(user.copy(email = "newEmail"))
+      _ <- repo.flushOps
+      entry <- repo.get(id)
+      retrievedUser = entry.getOrElse(fail(s"User with id '$id' not found in DB."))
+    } yield {
+      assert(user.email != "newEmail")
+      assert(user.email == "oldEmail")
+    }
+  }
+
+  it should "can count created Users" in withMongoAsyncCrudRepo[User, BSONObjectID] { repo =>
+    val user1 = User(Some(BSONObjectID.generate()), "testUser1", "testUser1@testEmail.org", Nil)
+    val user2 = User(Some(BSONObjectID.generate()), "testUser2", "testUser2@testEmail.org", Nil)
+    val user3 = User(Some(BSONObjectID.generate()), "testUser3", "testUser3@testEmail.org", Nil)
+    val user4 = User(Some(BSONObjectID.generate()), "testUser4", "", Nil)
+    val user5 = User(Some(BSONObjectID.generate()), "testUser5", "", Nil)
+    for {
+      _ <- repo.save(user1)
+      _ <- repo.save(user2)
+      _ <- repo.save(user3)
+      _ <- repo.save(user4)
+      _ <- repo.save(user5)
+      _ <- repo.flushOps
+      count <- repo.count(List("email" #!= ""))
+    } yield assert(count == 3)
+  }
+
   it should "save and get Dictionary" in withMongoAsyncCrudRepo[Dictionary, BSONObjectID] { repo =>
     val id = BSONObjectID.generate()
     val dictionary = Dictionary(Some(id), "test", Nil, Nil, Nil, Nil)  // #TODO: Get a bit more creative here
