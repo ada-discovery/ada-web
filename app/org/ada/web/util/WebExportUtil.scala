@@ -7,8 +7,8 @@ import org.apache.commons.lang3.StringEscapeUtils
 import play.api.libs.json.JsObject
 import play.api.http.HeaderNames._
 import org.ada.server.dataaccess.JsonUtil.{jsonToDelimitedString, jsonsToCsv}
-import play.api.http.HttpEntity
-import play.api.mvc.{ResponseHeader, Result}
+import play.api.http.{HttpChunk, HttpEntity}
+import play.api.mvc.{ResponseHeader, Result, Results}
 import akka.stream.scaladsl.StreamConverters
 
 object WebExportUtil {
@@ -68,7 +68,7 @@ object WebExportUtil {
     charset: String = DEFAULT_CHARSET
   ): Result = {
     val byteStream = source.map(ByteString(_, charset))
-    streamToFile(byteStream, filename)
+    streamToFileChunked(byteStream, filename)
   }
 
   def streamToFile(
@@ -79,4 +79,16 @@ object WebExportUtil {
       header = ResponseHeader(200, Map(CONTENT_DISPOSITION -> s"attachment; filename=${filename}")),
       body = HttpEntity.Streamed(source, None, Some("application/x-download")) // source.via(Compression.gzip) Some(content.length)
     )
+
+  def streamToFileChunked(
+    source: Source[ByteString, _],
+    filename: String
+  ): Result = {
+    val chunked = source.map(HttpChunk.Chunk.apply(_))
+
+    Result(
+      header = ResponseHeader(200, Map(CONTENT_DISPOSITION -> s"attachment; filename=${filename}")), // TRANSFER_ENCODING -> "identity"
+      body = HttpEntity.Chunked(chunked, Some("application/x-download")) // source.via(Compression.gzip) Some(content.length)
+    )
+  }
 }

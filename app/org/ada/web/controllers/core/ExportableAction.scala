@@ -5,8 +5,8 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.api.mvc._
 import org.ada.web.util.WebExportUtil._
-import akka.stream.Materializer
-import akka.stream.scaladsl.Source
+import akka.stream.{Materializer, OverflowStrategy}
+import akka.stream.scaladsl.{Flow, Source}
 import org.ada.server.models.FieldTypeId
 import org.incal.core.FilterCondition
 import org.incal.core.dataaccess.Criterion
@@ -18,6 +18,8 @@ import scala.concurrent.Future
 trait ExportableAction[E] {
 
   this: ReadonlyControllerImpl[E, _] =>
+
+  private val preDisplayStreamBuffer = 10
 
   protected def exportToCsv(
     filename: String,
@@ -101,28 +103,37 @@ trait ExportableAction[E] {
       (fieldName, fieldTypeId == FieldTypeId.String || fieldTypeId == FieldTypeId.Enum || fieldTypeId == FieldTypeId.Boolean)
     }
 
-    source.map { item =>
-      val displayJsonFields = item.fields.map { case (fieldName, jsValue) =>
-        val isCategorical = nameIsCategoricalMap(fieldName)
+    val toDisplayJson = toDisplayJsonAux(nameFieldTypeMap, nameIsCategoricalMap, escapeStringValues)(_)
+    source.async.buffer(preDisplayStreamBuffer, OverflowStrategy.backpressure).map(toDisplayJson) // mapAsync(2)(toDisplayJson)
+  }
 
-        val displayJson = jsValue match {
-          case JsNull => JsNull
-          case _ =>
-            nameFieldTypeMap.get(fieldName).map { fieldType =>
-              val stringValue = fieldType.jsonToDisplayString(jsValue)
+  private def toDisplayJsonAux(
+    nameFieldTypeMap: Map[String, FieldType[_]],
+    nameIsCategoricalMap: Map[String, Boolean],
+    escapeStringValues: Boolean = false)(
+    json: JsObject
+  ): JsObject = {
+    val displayJsonFields = json.fields.map { case (fieldName, jsValue) =>
+      val isCategorical = nameIsCategoricalMap.get(fieldName).getOrElse(false)
 
-              if (isCategorical && escapeStringValues)
-                JsString("\"" + stringValue + "\"")
-              else
-                JsString(stringValue)
+      val displayJson = jsValue match {
+        case JsNull => JsNull
+        case _ =>
+          nameFieldTypeMap.get(fieldName).map { fieldType =>
+            val stringValue = fieldType.jsonToDisplayString(jsValue)
 
-            }.getOrElse(jsValue)
-        }
-
-        (fieldName, displayJson)
+            if (isCategorical && escapeStringValues)
+              JsString("\"" + stringValue + "\"")
+            else
+              JsString(stringValue)
+          }.getOrElse(
+            jsValue // if not recognized (e.g. _id)
+          )
       }
-      JsObject(displayJsonFields)
+
+      (fieldName, displayJson)
     }
+    JsObject(displayJsonFields)
   }
 
   private def escapeStrings(
