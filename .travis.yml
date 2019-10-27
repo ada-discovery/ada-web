@@ -10,7 +10,7 @@ addons:
     packages:
       - git
 env:
-  - ADA_MONGO_DB_URI = "mongodb://127.0.0.1:27017/syscid?rm.nbChannelsPerNode=20"
+  - ADA_MONGO_DB_URI = "mongodb://127.0.0.1:27017/ada?rm.nbChannelsPerNode=20"
 before_install:
   - docker run -d -p 27017:27017 mongo:4
   - docker run -d -p 9200:9200 elasticsearch:5.6
