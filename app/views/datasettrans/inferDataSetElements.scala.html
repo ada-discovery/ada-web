@@ -1,5 +1,5 @@
-@import org.ada.server.models.datatrans.CopyDataSetTransformation
-@import views.html.elements.{inputText, labelValue}
+@import org.ada.server.models.datatrans.InferDataSetTransformation
+@import views.html.elements.{inputText, labelValue, checkbox}
 @import views.html.datasettrans.dataSetTypeahead
 @import play.api.i18n.Messages
 @import org.incal.play.controllers.WebContext
@@ -9,9 +9,16 @@
 
 @(
     id: Option[BSONObjectID],
-    form: Form[CopyDataSetTransformation]
+    form: Form[InferDataSetTransformation]
 )(
     implicit webContext: WebContext
 )
 
-@dataSetTypeahead("copyDataSetTransformation", "sourceDataSetId", form, id, Some("Copy"))
+@dataSetTypeahead("inferDataSetTransformation", "sourceDataSetId", form, id, Some("Infer"))
+
+@inputText("inferDataSetTransformation", "maxEnumValuesCount", form)
+@inputText("inferDataSetTransformation", "minAvgValuesPerEnum", form)
+@checkbox("inferDataSetTransformation", "booleanIncludeNumbers", form)
+
+@inputText("inferDataSetTransformation", "inferenceGroupSize", form)
+@inputText("inferDataSetTransformation", "inferenceGroupsInParallel", form)
