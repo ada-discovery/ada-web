@@ -981,6 +981,7 @@ function getSelectedRowIds(tableElement) {
 
 function enableFieldDragover(fieldNameElement, fieldTypeahedElement, execFun, acceptedTypes) {
     fieldTypeahedElement.on('dragover', false).on('drop', function (ev) {
+        $(this).removeClass("dragged-over")
         ev.preventDefault();
         var transfer = ev.originalEvent.dataTransfer;
         var id = transfer.getData("id");
@@ -992,5 +993,44 @@ function enableFieldDragover(fieldNameElement, fieldTypeahedElement, execFun, ac
             $(fieldTypeahedElement).val(text)
             execFun();
         }
-    });
+    }).on("dragover", function (ev) {
+        var transfer = ev.originalEvent.dataTransfer;
+        var type = transfer.getData("type");
+
+        if (type.startsWith("field")) {
+            $(this).addClass("dragged-over")
+        }
+    }).on("dragleave", function () {
+        $(this).removeClass("dragged-over")
+    })
+}
+
+function enableFieldTableDragover(fieldTableElement, execFun, acceptedTypes) {
+    fieldTableElement.on('dragover', false).on('drop', function (ev) {
+        $(this).removeClass("dragged-over")
+        ev.preventDefault();
+        var transfer = ev.originalEvent.dataTransfer;
+        var id = transfer.getData("id");
+        var text = transfer.getData("text");
+        var type = transfer.getData("type");
+
+        if (id && (!acceptedTypes || acceptedTypes.includes(type))) {
+            var values = {};
+            values["fieldName"] = id;
+            values["fieldTypeahead"] = text ? text : id;
+
+            fieldTableElement.dynamicTable('addTableRow', values)
+
+            if (execFun) execFun();
+        }
+    }).on("dragover", function (ev) {
+        var transfer = ev.originalEvent.dataTransfer;
+        var type = transfer.getData("type");
+
+        if (type.startsWith("field")) {
+            $(this).addClass("dragged-over")
+        }
+    }).on("dragleave", function () {
+        $(this).removeClass("dragged-over")
+    })
 }

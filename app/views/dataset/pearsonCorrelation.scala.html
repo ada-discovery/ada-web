@@ -56,6 +56,14 @@
 
             $("#heatmapDiv").ada_charts({chartType: 'heatmap'})
 
+            // drag-and-drop funs
+
+            enableFieldTableDragover(
+                $('#fieldNameDiv'),
+                calcCorrelations,
+                ["field-Date", "field-Integer", "field-Double"]
+            );
+
             $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
                 if(["field-Date", "field-Integer", "field-Double"].includes(data.type)) {
                     var newRow = {

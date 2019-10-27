@@ -21,9 +21,13 @@ function activateDataSetFilter(filterElement, jsonConditions, filterId, submitAj
     })
 
     addAllowedValuesUpdateForFilter(filterElement)
+    addDragAndDropSupportForFilter(filterElement)
+}
 
-    // add a drag-and-drop support
+function addDragAndDropSupportForFilter(filterElement) {
     $(filterElement).find(".filter-part").on('dragover', false).on('drop', function (ev) {
+        $(filterElement).find("#conditionPanel").removeClass("dragged-over")
+
         ev.preventDefault();
         var transfer = ev.originalEvent.dataTransfer;
         var id = transfer.getData("id");
@@ -33,7 +37,16 @@ function activateDataSetFilter(filterElement, jsonConditions, filterId, submitAj
         if (type.startsWith("field")) {
             $(filterElement).multiFilter("showAddConditionModalForField", id, text)
         }
-    });
+    }).on("dragover", function (ev) {
+        var transfer = ev.originalEvent.dataTransfer;
+        var type = transfer.getData("type");
+
+        if (type.startsWith("field")) {
+            $(filterElement).find("#conditionPanel").addClass("dragged-over")
+        }
+    }).on("dragleave", function () {
+        $(filterElement).find("#conditionPanel").removeClass("dragged-over")
+    })
 }
 
 function saveFilterToView(viewId) {
@@ -71,6 +84,7 @@ function refreshViewOnFilterUpdate(viewId, filterOrId, filterElement, widgetGrid
 
             // filter
             filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+            addDragAndDropSupportForFilter(filterElement)
 
             // display count
             var countDisplayElement = filterElement.closest(".row").parent().find(".count-div")

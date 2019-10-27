@@ -82,7 +82,10 @@
             addTableColumnsAndSelectedBeforeModalSubmit("exportFilteredTableCsvModal")
             addTableColumnsAndSelectedBeforeModalSubmit("exportFilteredTableJsonModal")
 
-            // enable an interaction with the side categorical tree
+            // drag-and-drop funs from the side categorical tree
+
+            enableFieldTableDragover($('#fieldNameDiv'));
+
             $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
                 var newRow = {
                     "fieldName": data.id,
