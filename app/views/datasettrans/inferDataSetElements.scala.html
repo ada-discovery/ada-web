@@ -1,0 +1,17 @@
+@import org.ada.server.models.datatrans.CopyDataSetTransformation
+@import views.html.elements.{inputText, labelValue}
+@import views.html.datasettrans.dataSetTypeahead
+@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.web.controllers.dataset.datatrans.OptionalIdForm
+
+@(
+    id: Option[BSONObjectID],
+    form: Form[CopyDataSetTransformation]
+)(
+    implicit webContext: WebContext
+)
+
+@dataSetTypeahead("copyDataSetTransformation", "sourceDataSetId", form, id, Some("Copy"))

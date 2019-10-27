@@ -589,6 +589,14 @@ a.carousel-control.right{
 .jstree-anchor {
     margin-left : -10px !important;
 }
+
 .jstree-node {
     margin-left : 10px !important;
+}
+
+.dragged-over {
+    border: 2px dotted #A9A9A9 !important;
+    /*border-bottom: 2px dotted #A9A9A9 !important;*/
+    background-color: #F5F5F5 !important;
+    opacity: 0.6;
 }

@@ -26,8 +26,7 @@ function activateDataSetFilter(filterElement, jsonConditions, filterId, submitAj
 
 function addDragAndDropSupportForFilter(filterElement) {
     $(filterElement).find(".filter-part").on('dragover', false).on('drop', function (ev) {
-        $(filterElement).find("#conditionPanel").css("border-bottom", "");
-        $(filterElement).css("opacity", 1);
+        $(filterElement).find("#conditionPanel").removeClass("dragged-over")
 
         ev.preventDefault();
         var transfer = ev.originalEvent.dataTransfer;
@@ -43,12 +42,10 @@ function addDragAndDropSupportForFilter(filterElement) {
         var type = transfer.getData("type");
 
         if (type.startsWith("field")) {
-            $(filterElement).find("#conditionPanel").css("border-bottom", "2px dashed #c0c0c0");
-            $(filterElement).css("opacity", 0.6);
+            $(filterElement).find("#conditionPanel").addClass("dragged-over")
         }
     }).on("dragleave", function () {
-        $(filterElement).find("#conditionPanel").css("border-bottom", "");
-        $(filterElement).css("opacity", 1);
+        $(filterElement).find("#conditionPanel").removeClass("dragged-over")
     })
 }
 
