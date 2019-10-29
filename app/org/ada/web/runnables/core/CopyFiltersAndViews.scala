@@ -1,11 +1,10 @@
 package org.ada.web.runnables.core
 
+import java.util.Date
 import javax.inject.Inject
 import org.ada.server.AdaException
 import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import org.incal.core.runnables.InputFutureRunnableExt
-import org.ada.server.models.Filter.FilterIdentity
-import org.ada.server.models.DataView.DataViewIdentity
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class CopyFiltersAndViews @Inject()(dsaf: DataSetAccessorFactory) extends InputFutureRunnableExt[CopyFiltersAndViewsSpec] {
@@ -41,17 +40,29 @@ class CopyFiltersAndViews @Inject()(dsaf: DataSetAccessorFactory) extends InputF
       // get views
       views <- sourceDsa.dataViewRepo.find()
 
-      // clear ids and save the filters
-      _ <- {
-        val clearedFilters = filters.map(FilterIdentity.clear)
-        targetDsa.filterRepo.save(clearedFilters)
+      // clear id and date and save filters
+      newFilterIds <- targetDsa.filterRepo.save(
+        filters.map(_.copy(_id = None, timeCreated = Some(new Date())))
+      )
+
+      // old -> new filter id map
+      oldNewFilterIdMap = filters.toSeq.map(_._id.get).zip(newFilterIds.toSeq).toMap
+
+      // clear id and date and replace filter ids
+      viewsToSave = views.map { view =>
+
+        val newFilterOrIds = view.filterOrIds.map(
+          _ match {
+            case Left(conditions) => Left(conditions)
+            case Right(filterId) => Right(oldNewFilterIdMap.get(filterId).get)
+          }
+        )
+
+        view.copy(_id = None, timeCreated = new Date(), filterOrIds = newFilterOrIds)
       }
 
-      // clear ids and save the views
-      _ <- {
-        val clearedViews = views.map(DataViewIdentity.clear)
-        targetDsa.dataViewRepo.save(clearedViews)
-      }
+      // save the views
+      _ <- targetDsa.dataViewRepo.save(viewsToSave)
     } yield
       ()
   }
