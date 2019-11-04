@@ -13,7 +13,7 @@ import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
 
 import scala.concurrent.Future
-import scala.org.ada.server.services.Injector
+import scala.org.ada.server.services.InjectorWrapper
 
 class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
 
@@ -23,7 +23,7 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
   (testCode: MongoAsyncCrudRepo[E, ID] => Future[Assertion])
   (implicit identity: Identity[E, ID]) = {
     val repo = new MongoAsyncCrudRepo[E, ID]("testCollection")
-    repo.reactiveMongoApi = Injector.instanceOf[ReactiveMongoApi]
+    repo.reactiveMongoApi = InjectorWrapper.instanceOf[ReactiveMongoApi]
     for {
       _ <- testCode(repo)
       _ <- repo.deleteAll

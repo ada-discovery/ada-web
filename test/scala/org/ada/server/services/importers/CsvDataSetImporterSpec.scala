@@ -6,14 +6,14 @@ import org.ada.server.models.{DataSetSetting, StorageType}
 import org.ada.server.services.ServiceTypes.DataSetCentralImporter
 import org.scalatest._
 
-import scala.org.ada.server.services.Injector
+import scala.org.ada.server.services.InjectorWrapper
 
 class CsvDataSetImporterSpec extends AsyncFlatSpec with BeforeAndAfter {
 
   implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  private val importer = Injector.instanceOf[DataSetCentralImporter]
-  private val dsaf = Injector.instanceOf[DataSetAccessorFactory]
+  private val importer = InjectorWrapper.instanceOf[DataSetCentralImporter]
+  private val dsaf = InjectorWrapper.instanceOf[DataSetAccessorFactory]
 
   private object Iris {
     val path = getClass.getResource("/iris.csv").getPath
