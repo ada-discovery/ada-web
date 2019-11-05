@@ -1,13 +1,11 @@
 package scala.org.ada.server.dataaccess.mongo
 
+import org.ada.server.dataaccess.BSONObjectIdentity
 import org.ada.server.dataaccess.mongo.MongoAsyncCrudRepo
-import org.ada.server.models.DataSetFormattersAndIds._
-import org.ada.server.models.{Category, Dictionary, User}
 import org.incal.core.Identity
-import org.incal.core.dataaccess.Criterion
-import org.incal.core.dataaccess.Criterion.Infix
-import org.scalatest._
-import play.api.libs.json.Format
+import org.incal.core.dataaccess.Criterion._
+import org.scalatest.{Filter => _, _}
+import play.api.libs.json.{Format, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
@@ -19,7 +17,21 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
 
   implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def withMongoAsyncCrudRepo[E: Format, ID: Format]
+  case class Entity(id: Option[BSONObjectID] = Some(BSONObjectID.generate()),
+                            str: String = "ABC",
+                            int: Int = 123,
+                            strSeq: Seq[String] = List("A", "B", "C"),
+                            intSeq: Seq[Int] = List(1, 2, 3),
+                            bool: Boolean = true)
+
+  implicit object EntityIdentity extends BSONObjectIdentity[Entity] {
+    override def of(entity: Entity): Option[BSONObjectID] = entity.id
+    override protected def set(entity: Entity, id: Option[BSONObjectID]): Entity = entity.copy(id = id)
+  }
+
+  implicit val entityFormat = Json.format[Entity]
+
+  private def withMongoAsyncCrudRepo[E: Format, ID: Format]
   (testCode: MongoAsyncCrudRepo[E, ID] => Future[Assertion])
   (implicit identity: Identity[E, ID]) = {
     val repo = new MongoAsyncCrudRepo[E, ID]("testCollection")
@@ -30,10 +42,11 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
     } yield succeed
   }
 
-  def assertEntityCanBeSavedAndExists[E: Format, ID: Format]
-  (entity: E, repo: MongoAsyncCrudRepo[E, ID])
-  (implicit identity: Identity[E, ID]) = {
-    val id = identity of entity getOrElse fail
+  behavior of "MongoAsyncCrudRepo"
+
+  it should "save Entity and check if it exists" in withMongoAsyncCrudRepo[Entity, BSONObjectID] { repo =>
+    val entity = Entity()
+    val id = EntityIdentity of entity getOrElse fail
     for {
       _ <- repo.save(entity)
       _ <- repo.flushOps
@@ -41,22 +54,28 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
     } yield assert(exists)
   }
 
-  def assertEntityCanBeSavedAndRetrieved[E: Format, ID: Format]
-  (entity: E, repo: MongoAsyncCrudRepo[E, ID])
-  (implicit identity: Identity[E, ID]) = {
-    val id = identity of entity getOrElse fail
+  it should "save and get Entity" in withMongoAsyncCrudRepo[Entity, BSONObjectID] { repo =>
+    val entity = Entity()
+    val id = EntityIdentity of entity getOrElse fail
     for {
       _ <- repo.save(entity)
       _ <- repo.flushOps
       entry <- repo.get(id)
       retrievedEntity = entry getOrElse fail
-    } yield assert(entity == retrievedEntity)
+    } yield {
+      assert(entity == retrievedEntity)
+      assert(retrievedEntity.id.getOrElse(fail).stringify == id.stringify)
+      assert(retrievedEntity.bool)
+      assert(retrievedEntity.int == 123)
+      assert(retrievedEntity.str == "ABC")
+      assert(retrievedEntity.intSeq == List(1, 2, 3))
+      assert(retrievedEntity.strSeq == List("A", "B", "C"))
+    }
   }
 
-  def assertCreatedEntityCanBeDeleted[E: Format, ID: Format]
-  (entity: E, repo: MongoAsyncCrudRepo[E, ID])
-  (implicit identity: Identity[E, ID]) = {
-    val id = identity of entity getOrElse fail
+  it should "delete a created Entity" in withMongoAsyncCrudRepo[Entity, BSONObjectID] { repo =>
+    val entity = Entity()
+    val id = EntityIdentity of entity getOrElse fail
     for {
       _ <- repo.save(entity)
       _ <- repo.flushOps
@@ -66,20 +85,29 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
     } yield assert(entry.isEmpty)
   }
 
-  def assertCanFindCreatedEntity[E: Format, ID: Format, T]
-  (entity: E, criterion: Seq[Criterion[T]], repo: MongoAsyncCrudRepo[E, ID])
-  (implicit identity: Identity[E, ID]) = {
+  it should "find a created Entity by criteria" in withMongoAsyncCrudRepo[Entity, BSONObjectID] { repo =>
+    val entity1 = Entity(int = 1, str = "A")
+    val entity2 = Entity(int = 2, str = "B")
     for {
-      _ <- repo.save(entity)
+      _ <- repo.save(entity1)
+      _ <- repo.save(entity2)
       _ <- repo.flushOps
-      entry <- repo.find(criterion)
-    } yield assert(entry.nonEmpty)
+      entry1 <- repo.find(List("int" #== 1))
+      entry2 <- repo.find(List("int" #== 2))
+      entry3 <- repo.find(List("int" #== 3))
+    } yield {
+      assert(entry1.size == 1)
+      assert(entry2.size == 1)
+      assert(entry3.isEmpty)
+      assert(entry1.head.str == "A")
+      assert(entry2.head.str == "B")
+    }
   }
 
-  def assertCanUpdateCreatedEntity[E: Format, ID: Format]
-  (oldEntity: E, newEntity: E, repo: MongoAsyncCrudRepo[E, ID])
-  (implicit identity: Identity[E, ID]) = {
-    val id = identity of oldEntity getOrElse fail
+  it should "update a created Entity" in withMongoAsyncCrudRepo[Entity, BSONObjectID] { repo =>
+    val oldEntity = Entity()
+    val newEntity = oldEntity.copy(strSeq = List("D", "E", "F"))
+    val id = EntityIdentity of oldEntity getOrElse fail
     for {
       _ <- repo.save(oldEntity)
       _ <- repo.flushOps
@@ -90,64 +118,16 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
     } yield {
       assert(oldEntity != retrievedEntity)
       assert(newEntity == retrievedEntity)
+      assert(retrievedEntity == newEntity.strSeq)
+      assert(retrievedEntity != oldEntity.strSeq)
     }
   }
 
-  def assertCanCountCreatedEntities[E: Format, ID: Format, T]
-  (entities: Seq[E], criterion: Seq[Criterion[T]], expectedHits: Int, repo: MongoAsyncCrudRepo[E, ID])
-  (implicit identity: Identity[E, ID]) = {
+  it should "can count created Entities" in withMongoAsyncCrudRepo[Entity, BSONObjectID] { repo =>
+    val entities = List(Entity(int = 1), Entity(int = 2), Entity(int = 3), Entity(int = 4), Entity(int = 5))
     for {
       _ <- Future.sequence(entities map repo.save)
-      count <- repo count criterion
-    } yield assert(count == expectedHits)
-  }
-
-  behavior of "MongoAsyncCrudRepo"
-
-  it should "save User and check if it exists" in withMongoAsyncCrudRepo[User, BSONObjectID] {
-    assertEntityCanBeSavedAndExists(User(Some(BSONObjectID.generate()), "testUser", "testUser@testEmail.org", Nil), _)
-  }
-
-  it should "save Dictionary and check if it exists" in withMongoAsyncCrudRepo[Dictionary, BSONObjectID] {
-    assertEntityCanBeSavedAndExists(Dictionary(Some(BSONObjectID.generate()), "test", Nil, Nil, Nil, Nil), _)
-  }
-
-  it should "save Category and check if it exists" in withMongoAsyncCrudRepo[Category, BSONObjectID] {
-    assertEntityCanBeSavedAndExists(Category(Some(BSONObjectID.generate()), "fooCat"), _)
-  }
-
-
-  it should "save and get User" in withMongoAsyncCrudRepo[User, BSONObjectID] {
-    assertEntityCanBeSavedAndRetrieved(User(Some(BSONObjectID.generate()), "testUser", "testUser@testEmail.org", Nil), _)
-  }
-
-
-  it should "delete a created User" in withMongoAsyncCrudRepo[User, BSONObjectID] {
-    assertCreatedEntityCanBeDeleted(User(Some(BSONObjectID.generate()), "", "", Nil), _)
-  }
-
-
-  it should "find a created User by criteria" in withMongoAsyncCrudRepo[User, BSONObjectID] {
-    assertCanFindCreatedEntity(
-      User(Some(BSONObjectID.generate()), "testUser", "testUser@testEmail.org", Nil),
-      List("email" #== "testUser@testEmail.org"),
-      _
-    )
-  }
-
-
-  it should "update a created User" in withMongoAsyncCrudRepo[User, BSONObjectID] {
-    val user = User(Some(BSONObjectID.generate()), "testUser", "oldEmail", Nil, Nil)
-    assertCanUpdateCreatedEntity(user, user.copy(email = "newEmail"), _)
-  }
-
-
-  it should "can count created Users" in withMongoAsyncCrudRepo[User, BSONObjectID] {
-    val user1 = User(Some(BSONObjectID.generate()), "testUser1", "testUser1@testEmail.org", Nil)
-    val user2 = User(Some(BSONObjectID.generate()), "testUser2", "testUser2@testEmail.org", Nil)
-    val user3 = User(Some(BSONObjectID.generate()), "testUser3", "testUser3@testEmail.org", Nil)
-    val user4 = User(Some(BSONObjectID.generate()), "testUser4", "", Nil)
-    val user5 = User(Some(BSONObjectID.generate()), "testUser5", "", Nil)
-    assertCanCountCreatedEntities(List(user1, user2, user3, user4, user5), List("email" #!= ""), 3, _)
+      count <- repo.count(List("int" #> 2))
+    } yield assert(count == 3)
   }
 }
