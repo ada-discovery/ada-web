@@ -2,6 +2,7 @@ import PlayKeys._
 import com.typesafe.config._
 import com.typesafe.sbt.license.{DepModuleInfo, LicenseInfo}
 import com.typesafe.sbt.pgp.PgpKeys._
+import sbt.ExclusionRule
 
 organization := "org.adada"
 
@@ -50,13 +51,10 @@ libraryDependencies ++= Seq(
   "org.webjars.bower" % "d3" % "3.5.16",
   "org.webjars.bower" % "Autolinker.js" % "0.25.0",      // to convert links to a-href elements
   "org.webjars" % "jquery-ui" % "1.11.1",
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.+" % "test" excludeAll ExclusionRule(organization = "org.slf4j")
-)
-
-// Because of Spark (turning janino logging to warn: https://github.com/janino-compiler/janino/issues/13)
-libraryDependencies ++= Seq(
+  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.+" % "test",
+  // Because of Spark (turning janino logging to warn: https://github.com/janino-compiler/janino/issues/13)
   "ch.qos.logback" % "logback-classic" % "1.2.3"
-)
+) map { _.excludeAll(ExclusionRule(organization = "org.slf4j")) }
 
 val jacksonVersion = "2.8.8"
 
