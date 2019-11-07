@@ -87,6 +87,8 @@
 
             activateAllFilters(function(filterOrId) {calcDistribution()})
 
+            // drag-and-drop funs
+
             $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
                 $('#inputDiv #fieldName').val(data.id)
                 $('#inputDiv #fieldTypeahead').val(data.text)

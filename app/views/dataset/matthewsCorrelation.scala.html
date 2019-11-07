@@ -60,6 +60,14 @@
 
             $("#heatmapDiv").ada_charts({chartType: 'heatmap'})
 
+            // drag-and-drop funs
+
+            enableFieldTableDragover(
+                $('#fieldNameDiv'),
+                calcCorrelations,
+                ["field-Boolean"]
+            );
+
             $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
                 if("field-Boolean" == data.type) {
                     var newRow = {

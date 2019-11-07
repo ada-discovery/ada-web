@@ -132,7 +132,7 @@
         var params = {};
         params['dataSetId'] = dataSetId;
         params['actionChoice'] = actionChoice;
-        @id.foreach { id =>
+        @id.map { id =>
             submit('post', '@{dataSpaceMetaInfoRoutes.deleteDataSet(id)}', params)
         }
     }

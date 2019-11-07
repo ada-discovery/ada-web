@@ -9,6 +9,8 @@ addons:
   apt:
     packages:
       - git
+env:
+  - ADA_MONGO_DB_URI="mongodb://127.0.0.1:27017/ada"
 before_install:
   - docker load -i docker_images/images.tar || true
   - docker run -d -p 27017:27017 mongo:4

@@ -58,6 +58,13 @@
 
             activateAllFilters(function(filterOrId) {testIndependence()});
 
+            // drag-and-drop funs from the side categorical tree
+
+            enableFieldTableDragover(
+                $('#inputFieldNameDiv'),
+                testIndependence
+            );
+
             $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
                 var row = {
                     "fieldName": data.id,
@@ -102,6 +109,7 @@
                         // filter
                         var filterElement = $(".filter-div");
                         filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+                        addDragAndDropSupportForFilter(filterElement)
 
                         // table with results
                         var table = createIndependenceTestTable(data.results, true)

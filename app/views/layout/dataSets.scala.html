@@ -59,36 +59,40 @@
 }
 
 @bottomRes = {
-    @helper.javascriptRouter("dataSpaceJsRoutes")(
-        org.ada.web.controllers.dataset.routes.javascript.DataSpaceMetaInfoController.move
-    )
 
-    @typeaheadJsImport()
+    @restrict(roles = List(Array(SecurityRole.admin))) {
 
-    <script type="text/javascript">
-        $(function () {
-            populateIdNameTypeahedsFromUrl(
-                [$("#dataSpaceTypeahead"), $("#parentSpaceTypeahead")],
-                [$("#dataSpaceId"), $("#parentSpaceId")],
-                '@Html(dataSpaceMetaInfoRoutes.idAndNames.url)'
-            )
-        })
+        @helper.javascriptRouter("dataSpaceJsRoutes")(
+            org.ada.web.controllers.dataset.routes.javascript.DataSpaceMetaInfoController.move
+        )
 
-        function moveDataSpace() {
-            var spaceId = $("#dataSpaceId").val()
-            var parentId = $("#parentSpaceId").val()
-            var parentName = $("#parentSpaceTypeahead").val()
-            if (!parentId || !parentName)
-                parentId = null
+        @typeaheadJsImport()
 
-            if (spaceId != parentId) {
-                var r = dataSpaceJsRoutes.org.ada.web.controllers.dataset.DataSpaceMetaInfoController.move(spaceId, parentId);
-                submit('post', r.url, getQueryParams(r.url))
-            } else {
-                showError("Data space cannot be its own parent.")
+        <script type="text/javascript">
+            $(function () {
+                populateIdNameTypeahedsFromUrl(
+                    [$("#dataSpaceTypeahead"), $("#parentSpaceTypeahead")],
+                    [$("#dataSpaceId"), $("#parentSpaceId")],
+                    '@Html(dataSpaceMetaInfoRoutes.idAndNames.url)'
+                )
+            })
+
+            function moveDataSpace() {
+                var spaceId = $("#dataSpaceId").val()
+                var parentId = $("#parentSpaceId").val()
+                var parentName = $("#parentSpaceTypeahead").val()
+                if (!parentId || !parentName)
+                    parentId = null
+
+                if (spaceId != parentId) {
+                    var r = dataSpaceJsRoutes.org.ada.web.controllers.dataset.DataSpaceMetaInfoController.move(spaceId, parentId);
+                    submit('post', r.url, getQueryParams(r.url))
+                } else {
+                    showError("Data space cannot be its own parent.")
+                }
             }
-        }
-    </script>
+        </script>
+    }
 }
 
 @main(
