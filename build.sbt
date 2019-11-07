@@ -243,3 +243,5 @@ publishTo := Some(
   else
     Opts.resolver.sonatypeStaging
 )
+
+fork in Test := true

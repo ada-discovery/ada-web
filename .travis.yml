@@ -21,7 +21,8 @@ install:
   - sbt publish-local
   - cd .. && rm -rf ada-server
 script:
-  - sbt "test:testOnly *Spec"
+  - sbt clean
+  - sbt "testOnly *Spec"
   - sbt jacocoReport
 before_cache:
   - docker save -o docker_images/images.tar $(docker images -a -q)
