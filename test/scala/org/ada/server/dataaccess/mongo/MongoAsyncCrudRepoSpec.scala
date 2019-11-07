@@ -17,7 +17,7 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
 
   implicit override def executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  case class Entity(id: Option[BSONObjectID] = Some(BSONObjectID.generate()),
+  case class Entity(_id: Option[BSONObjectID] = Some(BSONObjectID.generate()),
                             str: String = "ABC",
                             int: Int = 123,
                             strSeq: Seq[String] = List("A", "B", "C"),
@@ -25,8 +25,8 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
                             bool: Boolean = true)
 
   implicit object EntityIdentity extends BSONObjectIdentity[Entity] {
-    override def of(entity: Entity): Option[BSONObjectID] = entity.id
-    override protected def set(entity: Entity, id: Option[BSONObjectID]): Entity = entity.copy(id = id)
+    override def of(entity: Entity): Option[BSONObjectID] = entity._id
+    override protected def set(entity: Entity, id: Option[BSONObjectID]): Entity = entity.copy(_id = id)
   }
 
   implicit val entityFormat = Json.format[Entity]
@@ -64,7 +64,7 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
       retrievedEntity = entry getOrElse fail
     } yield {
       assert(entity == retrievedEntity)
-      assert(retrievedEntity.id.getOrElse(fail).stringify == id.stringify)
+      assert(retrievedEntity._id.getOrElse(fail).stringify == id.stringify)
       assert(retrievedEntity.bool)
       assert(retrievedEntity.int == 123)
       assert(retrievedEntity.str == "ABC")
@@ -118,8 +118,8 @@ class MongoAsyncCrudRepoSpec extends AsyncFlatSpec {
     } yield {
       assert(oldEntity != retrievedEntity)
       assert(newEntity == retrievedEntity)
-      assert(retrievedEntity == newEntity.strSeq)
-      assert(retrievedEntity != oldEntity.strSeq)
+      assert(retrievedEntity.strSeq == newEntity.strSeq)
+      assert(retrievedEntity.strSeq != oldEntity.strSeq)
     }
   }
 
