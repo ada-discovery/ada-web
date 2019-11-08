@@ -58,7 +58,9 @@
             (Some("name"), "Name", _.name),
             (Some("default"), "Default?", _.default.toString),
             (Some("timeCreated"), "Time Created", _.timeCreated.toString),
-            (Some("createdById"), "Created By", _.createdBy.map(_.ldapDn).getOrElse("") )
+            (Some("createdById"), "Created By", view => view.createdBy.map(_.ldapDn).getOrElse(
+                view.createdById.map(_ => "<i>Not Found</i>").getOrElse(""))
+            )
         ),
         Some({ item : Any => dataViewRouter.get(item.asInstanceOf[DataView]._id.get)})
     )

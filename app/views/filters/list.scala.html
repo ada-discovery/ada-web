@@ -44,8 +44,10 @@
         filterRouter.list(_, _, conditions),
         typeColumns[Filter](
             (Some("name"), "Name", _.name.getOrElse("")),
-            (Some("createdById"), "Created By", _.createdBy.map(_.ldapDn).getOrElse("") ),
-            (Some("timeCreated"), "Time Created", _.timeCreated.map(_.format("yyyy-MM-dd HH:mm:ss")).getOrElse(""))
+            (Some("timeCreated"), "Time Created", _.timeCreated.map(_.format("yyyy-MM-dd HH:mm:ss")).getOrElse("")),
+            (Some("createdById"), "Created By", view => view.createdBy.map(_.ldapDn).getOrElse(
+                view.createdById.map(_ => "<i>Not Found</i>").getOrElse(""))
+            )
         ),
         Some({ item : Any => filterRouter.get(item.asInstanceOf[Filter]._id.get)})
     )
