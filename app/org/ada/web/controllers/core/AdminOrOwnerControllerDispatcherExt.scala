@@ -18,22 +18,22 @@ trait AdminOrOwnerControllerDispatcherExt[C] {
   override type USER = DeadboltUser
 
   protected def dispatchIsAdminOrOwnerOrPublicAux(
-    objectOwnerIdAndIsPublic: Request[AnyContent] => Future[Option[(BSONObjectID, Boolean)]],
+    objectOwnerIdAndIsPublic: Request[AnyContent] => Future[(Option[BSONObjectID], Boolean)],
     outputHandler: DeadboltHandler = handlerCache()
   ): DispatchActionTransformation = { cAction =>
     AuthAction { implicit request =>
       val checkOwner = restrictUserCustomAny(
         { (user, request) =>
           for {
-            objectOwnerIdIsPublicOption <- objectOwnerIdAndIsPublic(request)
+            (objectOwnerIdOption, isPublic) <- objectOwnerIdAndIsPublic(request)
           } yield
-            objectOwnerIdIsPublicOption match {
-              case Some((createdById, isPublic)) =>
+            objectOwnerIdOption match {
+              case Some(createdById) =>
                 // is public or the user accessing the data view is the owner => all is ok
                 isPublic || user.id.get.equals(createdById)
 
-              // if the owner (and public flag) not specified then non-authorized
-              case None => false
+              // if the owner not specified then check only if it is public
+              case None => isPublic
             }
         },
         noCaching,
@@ -50,7 +50,7 @@ trait AdminOrOwnerControllerDispatcherExt[C] {
     objectOwnerId: Request[AnyContent] => Future[Option[BSONObjectID]],
     outputHandler: DeadboltHandler = handlerCache()
   ) = dispatchIsAdminOrOwnerOrPublicAux(
-    request => objectOwnerId(request).map(_.map((_, false))),
+    request => objectOwnerId(request).map((_, false)),
     outputHandler
   )
 

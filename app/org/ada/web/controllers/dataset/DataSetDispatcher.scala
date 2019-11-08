@@ -302,10 +302,12 @@ class DataSetDispatcher @Inject() (
     request: Request[AnyContent] =>
       val dataSetId = getControllerId(request)
       val dsa = dsaf(dataSetId).getOrElse(throw new AdaException(s"Data set id $dataSetId not found."))
-      dsa.dataViewRepo.get(id).map {
-        _.flatMap(dataView =>
-          dataView.createdById.map((_, !dataView.isPrivate))
-        )
+
+      for {
+        dataView <- dsa.dataViewRepo.get(id)
+      } yield dataView match {
+        case Some(dataView) => (dataView.createdById, !dataView.isPrivate)
+        case None => (None, false) // no data view found we say it is NOT public
       }
   }
 }
