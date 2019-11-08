@@ -1,26 +1,28 @@
 @import play.api.i18n.Messages
 @import views.html.elements._
-@import org.ada.server.models.datatrans.ChangeFieldEnumsTransformation
+@import org.ada.server.models.datatrans.SwapFieldsDataSetTransformation
 @import views.html.datasettrans.dataSetTypeahead
 @import org.ada.web.util.typeColumns
 @import views.html.table.dynamicTableJsImport
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
+@import reactivemongo.bson.BSONObjectID
 @import views.html.table.dynamicThreeColumnTable
 
 @(
-    form: Form[ChangeFieldEnumsTransformation]
+    id: Option[BSONObjectID],
+    form: Form[SwapFieldsDataSetTransformation]
 )(
     implicit webContext: WebContext
 )
 
-@dataSetTypeahead("changeFieldEnumsTransformation", "sourceDataSetId", form)
+@dataSetTypeahead("swapFieldsDataSetTransformation", "sourceDataSetId", form, id, Some("Swap Fields"))
 
 @dynamicThreeColumnTable(
-    "fieldNameOldNewEnum",
-    "Old->New Enum Mappings",
-    "Field Name",
-    "Old Enum Value",
-    "New Enum Value",
-    form.value.map(_.fieldNameOldNewEnums).getOrElse(Nil)
+    "newField",
+    "New Fields",
+    "Name",
+    "Label",
+    "Type",
+    form.value.map(_.newFields.map(field => (field.name, field.label.getOrElse(""), field.fieldType.toString))).getOrElse(Nil)
 )

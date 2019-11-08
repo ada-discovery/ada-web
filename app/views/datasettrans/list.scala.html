@@ -91,7 +91,7 @@
         page,
         dataSetTransformationRoutes.find(_, _, conditions),
         typeColumns[DataSetMetaTransformation](
-            (Some("sourceDataSetIds"), "Source Data Set(s)", _.sourceDataSetIds.mkString(", ")),
+            (Some("sourceDataSetIds"), "Source Data Set(s)", _.sourceDataSetIds.map(shorten(_)).mkString(", ")),
             (Some("resultDataSetSpec.id"), "Result Data Set", _ match {
                 case x: DataSetTransformation => shorten(x.resultDataSetId, 35)
                 case _ => ""
