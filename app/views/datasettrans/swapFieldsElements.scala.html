@@ -1,0 +1,26 @@
+@import play.api.i18n.Messages
+@import views.html.elements._
+@import org.ada.server.models.datatrans.ChangeFieldEnumsTransformation
+@import views.html.datasettrans.dataSetTypeahead
+@import org.ada.web.util.typeColumns
+@import views.html.table.dynamicTableJsImport
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import views.html.table.dynamicThreeColumnTable
+
+@(
+    form: Form[ChangeFieldEnumsTransformation]
+)(
+    implicit webContext: WebContext
+)
+
+@dataSetTypeahead("changeFieldEnumsTransformation", "sourceDataSetId", form)
+
+@dynamicThreeColumnTable(
+    "fieldNameOldNewEnum",
+    "Old->New Enum Mappings",
+    "Field Name",
+    "Old Enum Value",
+    "New Enum Value",
+    form.value.map(_.fieldNameOldNewEnums).getOrElse(Nil)
+)
