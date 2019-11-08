@@ -37,3 +37,6 @@ addSbtPlugin("net.ground5hark.sbt" % "sbt-css-compress" % "0.1.3")
 addSbtPlugin("net.ground5hark.sbt" % "sbt-closure" % "0.1.3")
 
 // addSbtPlugin("me.lessis" % "bintray-sbt" % "0.1.1")
+
+// code coverage
+addSbtPlugin("com.github.sbt" % "sbt-jacoco" % "3.1.+")
