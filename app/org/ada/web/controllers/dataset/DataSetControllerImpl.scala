@@ -739,7 +739,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
         val pageHeader = messagesApi.apply("list.count.title", oldCountDiff.getOrElse(0) + viewResponse.count, itemName(dataSetName, setting))
 
-        val table = dataset.view.viewTable(newPage, Some(viewResponse.filter), viewResponse.tableFields, true)(request, router)
+        val table = dataset.dataSetTable(newPage, Some(viewResponse.filter), viewResponse.tableFields, true)(request, router)
         val conditionPanel = views.html.filter.conditionPanel(Some(viewResponse.filter))
         val filterModel = Json.toJson(viewResponse.filter.conditions)
 
@@ -808,7 +808,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
         val pageHeader = messagesApi.apply("list.count.title", totalCount + viewResponse.count, itemName(dataSetName, setting))
 
-        val table = dataset.view.viewTable(newPage, None, viewResponse.tableFields, true)(request, router)
+        val table = dataset.dataSetTable(newPage, None, viewResponse.tableFields, true)(request, router)
         val countFilter = dataset.view.viewCountFilter(None, viewResponse.count, setting.filterShowFieldStyle, false)
 
         val jsonResponse = Ok(Json.obj(
@@ -1826,7 +1826,8 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     page: Int,
     orderBy: String,
     fieldNames: Seq[String],
-    filterOrId: FilterOrId
+    filterOrId: FilterOrId,
+    tableSelection: Boolean
   ) = Action.async { implicit request =>
     val filterFuture = filterRepo.resolve(filterOrId)
     val fieldsFuture = getFields(fieldNames)
@@ -1854,7 +1855,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         val tablePage = Page(tableItems, page, page * pageLimit, count, orderBy)
         val fieldsInOrder = fieldNames.map(nameFieldMap.get).flatten
 
-        Ok(dataset.view.viewTable(tablePage, Some(resolvedFilter), fieldsInOrder, true, true)(request, router))
+        Ok(dataset.dataSetTable(tablePage, Some(resolvedFilter), fieldsInOrder, true, tableSelection)(request, router))
       }
     }.recover(handleExceptionsWithErrorCodes("a generateTable"))
   }
@@ -1885,7 +1886,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         // table
         val tablePage = Page(tableItems, page, page * pageLimit, count, orderBy)
         val fieldsInOrder = fieldNames.map(nameFieldMap.get).flatten
-        val table = dataset.view.viewTable(tablePage, Some(resolvedFilter), fieldsInOrder, true, true)(request, router)
+        val table = dataset.dataSetTable(tablePage, Some(resolvedFilter), fieldsInOrder, true, true)(request, router)
 
         // filter model / condition panel
         val newFilter = setFilterLabels(resolvedFilter, nameFieldMap)
@@ -1976,8 +1977,15 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       // add a target-field-undefined criterion if needed
       finalCriteria = if (independenceTestKeepUndefined) criteria else criteria ++ Seq(NotEqualsNullCriterion(targetFieldName))
 
-      // jsons and fields
-      (jsons, fields) <- dataSetService.loadDataAndFields(dsa, explFieldNamesToLoads, finalCriteria)
+      // fields
+      fields <- dsa.fieldRepo.find(Seq(FieldIdentity.name #-> explFieldNamesToLoads))// explFieldNamesToLoads, finalCriteria)
+
+      // run independence tests
+      resultsSorted <- {
+        val inputFields = fields.filterNot(_.name.equals(targetFieldName)).toSeq
+        val outputField = fields.find(_.name.equals(targetFieldName)).get
+        statsService.testIndependenceSorted(dsa.dataSetRepo, finalCriteria, inputFields, outputField, independenceTestKeepUndefined)
+      }
     } yield {
       val fieldNameLabelMap = fields.map(field => (field.name, field.labelOrElseName)).toMap
       val nameFieldMap = fields.map(field => (field.name, field)).toMap
@@ -1986,11 +1994,6 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       val newFilter = setFilterLabels(resolvedFilter, nameFieldMap)
       val conditionPanel = views.html.filter.conditionPanel(Some(newFilter))
       val filterModel = Json.toJson(newFilter.conditions)
-
-      // run independence tests
-      val inputFields = fields.filterNot(_.name.equals(targetFieldName))
-      val outputField = fields.find(_.name.equals(targetFieldName)).get
-      val resultsSorted = statsService.testIndependenceSorted(jsons, inputFields, outputField, independenceTestKeepUndefined)
 
       // label results and serialize to jsons
       val labelResults = resultsSorted.flatMap { case (field, result) =>
@@ -2203,7 +2206,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
           val clusterClassField = Field("cluster_class", Some("Cluster Class"), FieldTypeId.Enum, false, numValues)
           val fieldNameLabelMap = fields.map(field => (field.name, field.labelOrElseName)).toMap
 
-          val testResults = statsService.testIndependenceSorted(jsonsWithClasses, fields, clusterClassField)
+          val testResults = statsService.testIndependenceSortedJson(jsonsWithClasses, fields, clusterClassField)
 
           implicit val stringTestTupleFormat = TupleFormat[String, IndependenceTestResult]
 

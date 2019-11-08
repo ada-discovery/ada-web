@@ -126,24 +126,32 @@ class TemporalClassificationRunControllerImpl @Inject()(
       } else
         ioSpec.orderedStringValues.map(x => orderFieldType.displayStringToValue(x).get)
 
+      // ordered values criteria
+      orderedValuesOnlyCriteria =
+        if (orderedValues.nonEmpty)
+          Seq(ioSpec.orderFieldName #-> orderedValues)
+        else
+          Nil
+
       // main data
       mainData <- find(criteria, orderedValues)
 
       // replication data
       replicationData <- if (replicationCriteria.nonEmpty) find(replicationCriteria, orderedValues) else Future(Nil)
 
+      // select features
+      selectedInputFieldNames <- runSpec.learningSetting.core.featuresSelectionNum.map { featuresSelectionNum =>
+        val inputFields = fields.filter(field => ioSpec.inputFieldNames.contains(field.name))
+        val outputField = fields.find(_.name == ioSpec.outputFieldName).getOrElse(throw new AdaException(s"Output field ${ioSpec.outputFieldName} not found."))
+        statsService.selectFeaturesAsAnovaChiSquare(dsa.dataSetRepo, criteria ++ orderedValuesOnlyCriteria, inputFields.toSeq, outputField, featuresSelectionNum).map {
+          _.map(_.name)
+        }
+      }.getOrElse(
+        Future(ioSpec.inputFieldNames)
+      )
+
       // run the selected classifier (ML model)
       resultsHolder <- mlModel.map { mlModel =>
-
-        val selectedInputFieldNames = runSpec.learningSetting.core.featuresSelectionNum.map { featuresSelectionNum =>
-          val inputFields = fields.filter(field => ioSpec.inputFieldNames.contains(field.name))
-          val outputField = fields.find(_.name == ioSpec.outputFieldName).getOrElse(throw new AdaException(s"Output field ${ioSpec.outputFieldName} not found."))
-          val selectedInputFields = statsService.selectFeaturesAsAnovaChiSquare(mainData, inputFields.toSeq, outputField, featuresSelectionNum)
-          selectedInputFields.map(_.name)
-        }.getOrElse(
-          ioSpec.inputFieldNames
-        )
-
         val actualFieldNames = ioSpec.copy(inputFieldNames = selectedInputFieldNames).allFieldNames
 
         val fieldNameAndSpecs = fields.toSeq.filter(field => actualFieldNames.contains(field.name)).map(field => (field.name, field.fieldTypeSpec))

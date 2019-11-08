@@ -9,6 +9,25 @@ import org.incal.spark_ml.models.VectorScalerType
 import org.incal.play.PageOrder
 import org.incal.play.controllers.ReadonlyController
 
+/**
+  * The most important controller trait in Ada defining functionality of each data set, in particular its "data" presentation part.
+  *
+  * It contains actions to handle:
+  * views (<code>getView</code>, <code>getViewElementsAndWidgetsCallback</code>),
+  * analytics (<code>getDistribution</code>, <code>calcDistribution</code>, <code>calcPearsonCorrelations</code>),
+  * and exporting (<code>exportViewRecordsAsCsv</code>, <code>exportTableRecordsAsJson</code>).
+  *
+  * To access/call the actions two routes are available: <code>DataSetRouter</code> and <code>DataSetJsRouter</code>.
+  * These can be used typically through the web context passed around as an implicit (<code>DataSetWebContext</code>).
+  *
+  * Handling of the access permissions and dispatching based on a provided data set id is done in <code>DataSetDispatcher</code>,
+  * which by default uses a default implementation <code>DataSetControllerImpl</code> unless specified otherwise.
+  *
+  * Note that each associated meta-data type has its own controller such as <code>CategoryController</code> and <code>DictionaryController</code>,
+  * which are linked to the data set controller by a data set id.
+  *
+  * @since 2016
+  */
 trait DataSetController extends ReadonlyController[BSONObjectID] {
 
   def getView(
@@ -45,7 +64,8 @@ trait DataSetController extends ReadonlyController[BSONObjectID] {
     page: Int,
     orderBy: String,
     fieldNames: Seq[String],
-    filterOrId: FilterOrId
+    filterOrId: FilterOrId,
+    tableSelection: Boolean
   ): Action[AnyContent]
 
   def generateTableWithFilter(
@@ -141,12 +161,16 @@ trait DataSetController extends ReadonlyController[BSONObjectID] {
     pcaDims: Option[Int]
   ): Action[AnyContent]
 
+  @Deprecated // turn into a transformation
   def getSeriesProcessingSpec: Action[AnyContent]
 
+  @Deprecated // turn into a transformation
   def runSeriesProcessing: Action[AnyContent]
 
+  @Deprecated // turn into a transformation
   def getSeriesTransformationSpec: Action[AnyContent]
 
+  @Deprecated // turn into a transformation
   def runSeriesTransformation: Action[AnyContent]
 
   def getFieldNamesAndLabels(

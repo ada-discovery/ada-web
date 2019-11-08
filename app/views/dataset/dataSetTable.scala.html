@@ -18,9 +18,12 @@
     @jsonTable(
         page,
         tableFields,
-        dataSetRouter.generateTable(_, _,
+        dataSetRouter.generateTable(
+            _,
+            _,
             tableFields.map(_.name).toSeq,
-            filter.map(_.conditionsOrId).getOrElse(Left(Nil))
+            filter.map(_.conditionsOrId).getOrElse(Left(Nil)),
+            tableSelection
         ),
         Some(dataSetRouter.get),
         withRowClickableJs,
