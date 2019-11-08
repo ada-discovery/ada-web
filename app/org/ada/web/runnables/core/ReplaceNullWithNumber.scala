@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Replaces null values with a given number. Works only for numeric (int, double, and date) and enum fields.
   *
-  * @since 2019git
+  * @since 2019
   */
 class ReplaceNullWithNumber extends DsaInputFutureRunnable[ReplaceNullWithNumberSpec] {
 
