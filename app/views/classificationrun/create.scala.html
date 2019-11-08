@@ -201,7 +201,7 @@
                 return
             }
 
-            classificationRunJsRoutes.org.ada.web.controllers.dataset.ClassificationRunDispatcher.selectFeaturesAsAnovaChiSquare(inputFieldNames, outputFieldName, filterId, featuresToSelectNum).ajax( {
+            classificationRunJsRoutes.org.ada.web.controllers.dataset.StandardClassificationRunDispatcher.selectFeaturesAsAnovaChiSquare(inputFieldNames, outputFieldName, filterId, featuresToSelectNum).ajax( {
                 success: function(selectedFieldNames) {
                     showMessage("ANOVA/Chi-Square feature selection finished.")
                     var tableBody = $("#inputFieldNameDiv").find("table tbody")
