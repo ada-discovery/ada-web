@@ -19,6 +19,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * @param dsaf The Guice-injected data set accessor factory.
   * @since 2019
   */
+// TODO: move to ada-server
 class CopyFiltersAndViews @Inject()(dsaf: DataSetAccessorFactory) extends InputFutureRunnableExt[CopyFiltersAndViewsSpec] {
 
   override def runAsFuture(input: CopyFiltersAndViewsSpec) = {

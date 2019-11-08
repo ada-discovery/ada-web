@@ -3,8 +3,6 @@ package org.ada.web.runnables.core
 import scala.concurrent.ExecutionContext.Implicits.global
 import runnables.DsaInputFutureRunnable
 import org.incal.core.runnables.RunnableHtmlOutput
-import org.incal.core.dataaccess.Criterion._
-import org.incal.core.dataaccess._
 import reactivemongo.bson.BSONObjectID
 import play.api.libs.json._
 

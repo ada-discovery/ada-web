@@ -19,6 +19,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   *
   * @since 2019
   */
+// TODO: move to ada-server
 class ReplaceNullWithNumber extends DsaInputFutureRunnable[ReplaceNullWithNumberSpec] {
 
   private implicit val system = ActorSystem()
