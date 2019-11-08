@@ -92,9 +92,6 @@ class StandardClassificationRunControllerImpl @Inject()(
     val fieldNames = runSpec.ioSpec.allFieldNames
     val fieldsFuture = dsa.fieldRepo.find(Seq(FieldIdentity.name #-> fieldNames))
 
-    def find(criteria: Seq[Criterion[Any]]) =
-      dsa.dataSetRepo.find(criteria, projection = fieldNames)
-
     for {
       // load a ML model
       mlModel <- mlModelFuture
@@ -105,26 +102,29 @@ class StandardClassificationRunControllerImpl @Inject()(
       // replication criteria
       replicationCriteria <- replicationCriteriaFuture
 
-      // main data
-      mainData <- find(criteria)
-
       // fields
       fields <- fieldsFuture
 
       // replication data
-      replicationData <- if (replicationCriteria.nonEmpty) find(replicationCriteria) else Future(Nil)
+      replicationData <- if (replicationCriteria.nonEmpty) dsa.dataSetRepo.find(replicationCriteria, projection = fieldNames) else Future(Nil)
+
+      // selected fields
+      selectedFields <-
+        runSpec.learningSetting.featuresSelectionNum.map { featuresSelectionNum =>
+          val inputFields = fields.filter(!_.name.equals(runSpec.ioSpec.outputFieldName))
+          val outputField = fields.find(_.name.equals(runSpec.ioSpec.outputFieldName)).get
+          statsService.selectFeaturesAsAnovaChiSquare(dsa.dataSetRepo, criteria, inputFields.toSeq, outputField, featuresSelectionNum).map {
+            selectedInputFields => selectedInputFields ++ Seq(outputField)
+          }
+        }.getOrElse(
+          Future(fields)
+        )
+
+      // main data
+      mainData <- dsa.dataSetRepo.find(replicationCriteria, projection = selectedFields.map(_.name))
 
       // run the selected classifier (ML model)
       resultsHolder <- mlModel.map { mlModel =>
-        val selectedFields = runSpec.learningSetting.featuresSelectionNum.map { featuresSelectionNum =>
-          val inputFields = fields.filter(!_.name.equals(runSpec.ioSpec.outputFieldName))
-          val outputField = fields.find(_.name.equals(runSpec.ioSpec.outputFieldName)).get
-          val selectedInputFields = statsService.selectFeaturesAsAnovaChiSquare(mainData, inputFields.toSeq, outputField, featuresSelectionNum)
-          selectedInputFields ++ Seq(outputField)
-        }.getOrElse(
-          fields
-        )
-
         val fieldNameAndSpecs = selectedFields.toSeq.map(field => (field.name, field.fieldTypeSpec))
         val results = mlService.classifyStatic(mainData, fieldNameAndSpecs, runSpec.ioSpec.outputFieldName, mlModel, runSpec.learningSetting, replicationData)
         results.map(Some(_))
@@ -176,11 +176,13 @@ class StandardClassificationRunControllerImpl @Inject()(
 
     for {
       criteria <- criteriaFuture
-      (jsons, fields) <- dataSetService.loadDataAndFields(dsa, explFieldNamesToLoads, criteria)
+      fields <- dsa.fieldRepo.find(Seq(FieldIdentity.name #-> explFieldNamesToLoads))
+      selectedFields <- {
+        val inputFields = fields.filter(!_.name.equals(outputFieldName)).toSeq
+        val outputField = fields.find(_.name.equals(outputFieldName)).get
+        statsService.selectFeaturesAsAnovaChiSquare(dsa.dataSetRepo, criteria, inputFields, outputField, featuresToSelectNum)
+      }
     } yield {
-      val inputFields = fields.filter(!_.name.equals(outputFieldName))
-      val outputField = fields.find(_.name.equals(outputFieldName)).get
-      val selectedFields = statsService.selectFeaturesAsAnovaChiSquare(jsons, inputFields, outputField, featuresToSelectNum)
       val json = JsArray(selectedFields.map(field => JsString(field.name)))
       Ok(json)
     }
