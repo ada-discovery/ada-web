@@ -61,8 +61,9 @@ class DataSetDispatcher @Inject() (
     page: Int,
     orderBy: String,
     fieldNames: Seq[String],
-    filterOrId: FilterOrId
-  ) = dispatchAjax(_.generateTable(page, orderBy, fieldNames, filterOrId))
+    filterOrId: FilterOrId,
+    tableSelection: Boolean
+  ) = dispatchAjax(_.generateTable(page, orderBy, fieldNames, filterOrId, tableSelection))
 
   def generateTableWithFilter(
     page: Int,

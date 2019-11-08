@@ -1,5 +1,5 @@
 @import views.html.dataset.{fixedTableRow, jsonModal, lineChartArrayModal}
-@import views.html.dataset.view.viewTable
+@import views.html.dataset.dataSetTable
 @import reactivemongo.bson.BSONObjectID
 @import org.ada.web.controllers.dataset.TableViewData
 @import org.ada.web.controllers.dataset.DataSetRouter
@@ -15,7 +15,7 @@
     @viewParts.map { viewPart =>
         <td style="padding-left: 10px; padding-right: 10px; vertical-align:top">
             <div class="table-div">
-                @viewTable(
+                @dataSetTable(
                     viewPart.page,
                     viewPart.filter,
                     viewPart.tableFields,

@@ -64,7 +64,8 @@ trait DataSetController extends ReadonlyController[BSONObjectID] {
     page: Int,
     orderBy: String,
     fieldNames: Seq[String],
-    filterOrId: FilterOrId
+    filterOrId: FilterOrId,
+    tableSelection: Boolean
   ): Action[AnyContent]
 
   def generateTableWithFilter(
