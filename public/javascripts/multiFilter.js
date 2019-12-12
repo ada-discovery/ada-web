@@ -320,6 +320,11 @@ $.widget("custom.multiFilter", {
     _updateModalFromModel: function (condition, fields) {
         var that = this;
 
+        $.each(fields,  function( i, field ) {
+            that.addEditConditionModalElement.find("#" + field).first().val(condition[field]);
+        })
+
+        // handle field name typeahead selection
         var fieldNameTypeahead = this.addEditConditionModalElement.find("#fieldNameTypeahead").first();
 
         var elementToSelect = condition["fieldName"];
@@ -328,10 +333,6 @@ $.widget("custom.multiFilter", {
     //        var elementToSelect = {name: condition["fieldName"], label: condition["fieldLabel"], isLabel: true};
 
         fieldNameTypeahead.typeahead('val', elementToSelect)
-
-        $.each(fields,  function( i, field ) {
-            that.addEditConditionModalElement.find("#" + field).first().val(condition[field]);
-        })
         selectShortestSuggestion(fieldNameTypeahead)
     },
 
