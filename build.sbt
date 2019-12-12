@@ -36,8 +36,8 @@ PlayKeys.devSettings := Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.8.1.RC.15",
-  "org.in-cal" %% "incal-play" % "0.2.3",
+  "org.adada" %% "ada-server" % "0.8.1.RC.16",
+  "org.in-cal" %% "incal-play" % "0.2.4",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
   "jp.t2v" %% "play2-auth" % "0.14.1",
@@ -47,7 +47,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "respond" % "1.4.2",
   "org.webjars" % "highcharts" % "5.0.14",               // highcharts for plotting
   "org.webjars.npm" % "bootstrap-select" % "1.13.2",     // bootstrap select element
-  "org.webjars.bower" % "plotly.js" % "1.5.1",           // not used - can be removed
+  "org.webjars.bower" % "plotly.js" % "1.5.1",           // Plotly
   "org.webjars.bower" % "d3" % "3.5.16",
   "org.webjars.bower" % "Autolinker.js" % "0.25.0",      // to convert links to a-href elements
   "org.webjars" % "jquery-ui" % "1.11.1",

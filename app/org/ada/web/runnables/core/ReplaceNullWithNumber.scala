@@ -8,8 +8,8 @@ import org.ada.server.field.FieldUtil.FieldOps
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Flow
-import org.ada.server.dataaccess.JsonCrudRepoExtra._
-import org.ada.server.dataaccess.StreamSpec
+import org.incal.core.dataaccess.CrudRepoExtra._
+import org.incal.core.dataaccess.StreamSpec
 import org.incal.core.dataaccess.{EqualsNullCriterion, NotEqualsNullCriterion}
 
 import scala.concurrent.ExecutionContext.Implicits.global
