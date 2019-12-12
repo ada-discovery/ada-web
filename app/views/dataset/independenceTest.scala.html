@@ -60,26 +60,28 @@
 
             // drag-and-drop funs from the side categorical tree
 
+            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
+                if(["field-Boolean", "field-Enum", "field-String", "field-Double", "field-Integer", "field-Date"].includes(data.type)) {
+                    var row = {
+                        "fieldName": data.id,
+                        "fieldTypeahead": data.text
+                    }
+                    $('#inputFieldNameDiv').dynamicTable('addTableRow', row)
+                    testIndependence()
+                }
+            });
+
             enableFieldTableDragover(
                 $('#inputFieldNameDiv'),
-                testIndependence
+                testIndependence,
+                ["field-Boolean", "field-Enum", "field-String", "field-Double", "field-Integer", "field-Date"]
             );
-
-            $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
-                var row = {
-                    "fieldName": data.id,
-                    "fieldTypeahead": data.text
-                }
-
-                $('#inputFieldNameDiv').dynamicTable('addTableRow', row)
-
-                testIndependence()
-            });
 
             enableFieldDragover(
                 $('#inputDiv #targetFieldName'),
                 $('#inputDiv #targetFieldTypeahead'),
-                testIndependence
+                testIndependence,
+                ["field-Boolean", "field-Enum", "field-String"]
             )
         });
 

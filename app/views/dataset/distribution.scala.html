@@ -90,16 +90,19 @@
             // drag-and-drop funs
 
             $('#sideCategoricalTree').on('nodeSelected', function (event, data) {
-                $('#inputDiv #fieldName').val(data.id)
-                $('#inputDiv #fieldTypeahead').val(data.text)
+                if(["field-Boolean", "field-Enum", "field-String", "field-Double", "field-Integer", "field-Date"].includes(data.type)) {
+                    $('#inputDiv #fieldName').val(data.id)
+                    $('#inputDiv #fieldTypeahead').val(data.text)
 
-                calcDistribution();
+                    calcDistribution();
+                }
             });
 
             enableFieldDragover(
                 $('#inputDiv #fieldName'),
                 $('#inputDiv #fieldTypeahead'),
-                calcDistribution
+                calcDistribution,
+                ["field-Boolean", "field-Enum", "field-String", "field-Double", "field-Integer", "field-Date"]
             )
 
             enableFieldDragover(
