@@ -4,8 +4,8 @@ import javax.inject.Inject
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import org.ada.server.AdaException
-import org.ada.server.dataaccess.StreamSpec
-import org.ada.server.dataaccess.JsonCrudRepoExtra._
+import org.incal.core.dataaccess.StreamSpec
+import org.incal.core.dataaccess.CrudRepoExtra._
 import org.ada.server.dataaccess.RepoTypes.DataSpaceMetaInfoRepo
 import org.ada.server.models._
 import org.ada.server.models.datatrans.RenameFieldsTransformation

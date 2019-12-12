@@ -169,20 +169,20 @@ class DataSetDispatcher @Inject() (
     tablePages: Seq[PageOrder],
     filterOrIds: Seq[FilterOrId],
     filterChanged: Boolean
-  ) = dispatchIsAdminOrOwnerOrPublic(dataViewId, _.getView(dataViewId, tablePages, filterOrIds, filterChanged))
+  ) = dispatchIsAdminOrPermissionAndOwnerOrPublic(dataViewId, _.getView(dataViewId, tablePages, filterOrIds, filterChanged))
 
   override def getViewElementsAndWidgetsCallback(
     dataViewId: BSONObjectID,
     tableOrder: String,
     filterOrId: FilterOrId,
     oldCountDiff: Option[Int]
-  ) = dispatchIsAdminOrOwnerOrPublicAjax(dataViewId, _.getViewElementsAndWidgetsCallback(dataViewId, tableOrder, filterOrId, oldCountDiff))
+  ) = dispatchIsAdminOrPermissionAndOwnerOrPublicAjax(dataViewId, _.getViewElementsAndWidgetsCallback(dataViewId, tableOrder, filterOrId, oldCountDiff))
 
   override def getNewFilterViewElementsAndWidgetsCallback(
     dataViewId: BSONObjectID,
     tableOrder: String,
     totalCount: Int
-  ) = dispatchIsAdminOrOwnerOrPublicAjax(dataViewId, _.getNewFilterViewElementsAndWidgetsCallback(dataViewId, tableOrder, totalCount))
+  ) = dispatchIsAdminOrPermissionAndOwnerOrPublicAjax(dataViewId, _.getNewFilterViewElementsAndWidgetsCallback(dataViewId, tableOrder, totalCount))
 
   // series processing
 
@@ -287,17 +287,17 @@ class DataSetDispatcher @Inject() (
 
   // aux function for access control
 
-  protected def dispatchIsAdminOrOwnerOrPublic(
+  protected def dispatchIsAdminOrPermissionAndOwnerOrPublic(
     id: BSONObjectID,
     action: DataSetController => Action[AnyContent]
   ): Action[AnyContent] =
-    dispatchIsAdminOrOwnerOrPublicAux(dataViewOwnerOrPublicFun(id))(action)
+    dispatchIsAdminOrPermissionAndOwnerOrPublicAux(dataViewOwnerOrPublicFun(id))(action)
 
-  protected def dispatchIsAdminOrOwnerOrPublicAjax(
+  protected def dispatchIsAdminOrPermissionAndOwnerOrPublicAjax(
     id: BSONObjectID,
     action: DataSetController => Action[AnyContent]
   ): Action[AnyContent] =
-    dispatchIsAdminOrOwnerOrPublicAux(dataViewOwnerOrPublicFun(id), unauthorizedDeadboltHandler)(action)
+    dispatchIsAdminOrPermissionAndOwnerOrPublicAux(dataViewOwnerOrPublicFun(id), unauthorizedDeadboltHandler)(action)
 
   private def dataViewOwnerOrPublicFun(id: BSONObjectID) = {
     request: Request[AnyContent] =>

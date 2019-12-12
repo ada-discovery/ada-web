@@ -24,7 +24,7 @@ class FilterDispatcher @Inject()(
 
   override def controllerFactory = factory(_)
 
-  override def get(id: BSONObjectID) = dispatchIsAdminOrOwner(id, _.get(id))
+  override def get(id: BSONObjectID) = dispatchIsAdminOrPermissionAndOwner(id, _.get(id))
 
   override def find(page: Int, orderBy: String, filter: Seq[FilterCondition]) = dispatch(_.find(page, orderBy, filter))
 
@@ -32,11 +32,11 @@ class FilterDispatcher @Inject()(
 
   override def create = dispatch(_.create)
 
-  override def update(id: BSONObjectID) = dispatchIsAdminOrOwner(id, _.update(id))
+  override def update(id: BSONObjectID) = dispatchIsAdminOrPermissionAndOwner(id, _.update(id))
 
-  override def edit(id: BSONObjectID) = dispatchIsAdminOrOwner(id, _.edit(id))
+  override def edit(id: BSONObjectID) = dispatchIsAdminOrPermissionAndOwner(id, _.edit(id))
 
-  override def delete(id: BSONObjectID) = dispatchIsAdminOrOwner(id, _.delete(id))
+  override def delete(id: BSONObjectID) = dispatchIsAdminOrPermissionAndOwner(id, _.delete(id))
 
   override def save = dispatch(_.save)
 
@@ -46,21 +46,19 @@ class FilterDispatcher @Inject()(
 
   override def idAndNamesAccessible  = dispatchAjax(_.idAndNamesAccessible)
 
-  protected def dispatchIsAdminOrOwner(
+  protected def dispatchIsAdminOrPermissionAndOwner(
     id: BSONObjectID,
     action: FilterController => Action[AnyContent],
     outputHandler: DeadboltHandler = handlerCache()
-  ): Action[AnyContent] = {
+  ): Action[AnyContent] =
+    dispatchIsAdminOrPermissionAndOwnerAux(filterOwner(id), outputHandler)(action)
 
-    val objectOwnerFun = {
-      request: Request[AnyContent] =>
-        val dataSetId = getControllerId(request)
-        val dsa = dsaf(dataSetId).getOrElse(throw new AdaException(s"Data set id $dataSetId not found."))
-        dsa.filterRepo.get(id).map { filter =>
-          filter.flatMap(_.createdById)
-        }
-    }
-
-    dispatchIsAdminOrOwnerAux(objectOwnerFun, outputHandler)(action)
+  private def filterOwner(id: BSONObjectID) = {
+    request: Request[AnyContent] =>
+      val dataSetId = getControllerId(request)
+      val dsa = dsaf(dataSetId).getOrElse(throw new AdaException(s"Data set id $dataSetId not found."))
+      dsa.filterRepo.get(id).map { filter =>
+        filter.flatMap(_.createdById)
+      }
   }
 }

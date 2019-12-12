@@ -19,7 +19,7 @@ import org.ada.web.services.widgetgen._
 import org.ada.server.calc.CalculatorTypePack
 import org.ada.server.services.StatsService
 import org.ada.server.calc.CalculatorHelper._
-import org.ada.server.akka.AkkaStreamUtil
+import org.incal.core.akka.AkkaStreamUtil
 import org.ada.server.field.FieldUtil._
 
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -2355,7 +2355,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       item <- repo.get(id)
     } yield
       item match {
-        case Some(item) => Ok((item \ fieldName).get)
+        case Some(item) => Ok((item \ fieldName).getOrElse(JsNull))
         case None => BadRequest(s"Item '${id.stringify}' not found.")
       }
   }

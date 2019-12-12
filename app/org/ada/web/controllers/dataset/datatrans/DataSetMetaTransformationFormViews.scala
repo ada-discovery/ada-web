@@ -2,7 +2,7 @@ package org.ada.web.controllers.dataset.datatrans
 
 import java.util.Date
 
-import org.ada.server.dataaccess.StreamSpec
+import org.incal.core.dataaccess.StreamSpec
 import org.ada.server.models._
 import org.ada.server.models.datatrans.{DataSetMetaTransformation, ResultDataSetSpec}
 import org.ada.web.controllers.core.GenericMapping
