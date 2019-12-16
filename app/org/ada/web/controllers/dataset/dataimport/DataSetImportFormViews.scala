@@ -136,7 +136,8 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
         editViews(filledForm),
         routes.DataSetImportController.save,
         routes.DataSetImportController.listAll(),
-        'enctype -> "multipart/form-data"
+        None,
+        Seq('enctype -> "multipart/form-data")
       )
   }
 

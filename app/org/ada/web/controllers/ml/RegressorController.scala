@@ -146,7 +146,8 @@ class RegressorController @Inject()(
           viewElements(form, ctx.msg),
           regressorRoutes.save,
           regressorRoutes.listAll(),
-          'enctype -> "multipart/form-data"
+          None,
+          Seq('enctype -> "multipart/form-data")
         )
     }
 

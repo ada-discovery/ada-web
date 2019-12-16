@@ -174,7 +174,8 @@ class ClassifierController @Inject()(
           viewElements(form, ctx.msg),
           routes.ClassifierController.save,
           routes.ClassifierController.listAll(),
-          'enctype -> "multipart/form-data"
+          None,
+          Seq('enctype -> "multipart/form-data")
         )
     }
 
