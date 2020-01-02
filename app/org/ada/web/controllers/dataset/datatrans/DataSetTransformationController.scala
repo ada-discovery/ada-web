@@ -114,6 +114,8 @@ class DataSetTransformationController @Inject()(
       transformation._id, transformation.timeCreated, transformation.timeLastExecuted, transformation.scheduled, transformation.scheduledTime.map(fillZeroes)
     )
 
+    println(transformationWithFixedScheduledTime)
+
     super.saveCall(transformationWithFixedScheduledTime).map { id =>
       scheduleOrCancel(id, transformationWithFixedScheduledTime); id
     }
