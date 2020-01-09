@@ -65,11 +65,11 @@
 
             $('#fieldNameDiv #addRowButton').focus();
 
-            activateAllFilters(function(filterOrId) {generateTable()});
+            activateAllFilters(function(filterOrId) {generateTableAux()});
 
-            $("#fieldNameDiv").on("rowAdded", generateTable)
-            $("#fieldNameDiv").on("rowsAdded", generateTable)
-            $("#fieldNameDiv").on("rowsRemoved", generateTable)
+            $("#fieldNameDiv").on("rowAdded", generateTableAux)
+            $("#fieldNameDiv").on("rowsAdded", generateTableAux)
+            $("#fieldNameDiv").on("rowsRemoved", generateTableAux)
 
             // add filter
             var filterElement = $(".filter-div")
@@ -94,7 +94,7 @@
 
                 $('#fieldNameDiv').dynamicTable('addTableRow', newRow)
 
-                // generateTable()
+                // generateTableAux()
             });
         });
 
@@ -117,41 +117,9 @@
             });
         }
 
-        function generateTable() {
-            var fieldNames = getFieldNames()
-
-            var filterOrId = $(".filter-div").multiFilter('getIdOrModel')
-            var filterOrIdJson = JSON.stringify(filterOrId);
-
-            if (fieldNames.length == 0) {
-                showError("Table generation cannot be launched. No fields specified.");
-            } else if (fieldNames.length > 50) {
-                showError("Table generation cannot be launched. The maximum number of fields allowed is 50 but " + fieldNames.length + " were given.");
-            } else {
-                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.generateTableWithFilter(0, "", fieldNames, filterOrIdJson).ajax({
-                    success: function (data) {
-                        // filter
-                        var filterElement = $(".filter-div");
-                        filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
-
-                        // table
-                        var tableDiv = $("#widgetsDiv .table-div")
-                        if (tableDiv.length == 0) {
-                            $("#widgetsDiv").html("<div class='table-div'></div>")
-                            tableDiv = $("#widgetsDiv .table-div")
-                        }
-                        tableDiv.html(data.table)
-                        showMessage("Table generation finished.")
-                    },
-                    error: function (data) {
-                        $("#widgetsDiv").html("")
-                        showErrorResponse(data);
-                    }
-                })
-
-                hideErrors();
-                showMessage("Table generation for " + fieldNames.length + " fields launched.")
-            }
+        function generateTableAux() {
+            var fieldNames = getFieldNames();
+            generateTable($("#widgetsDiv"), $(".filter-div"), fieldNames)
         }
 
         function addTableToView() {

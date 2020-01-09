@@ -127,9 +127,10 @@ protected[controllers] class DataSetControllerImpl @Inject() (
   private val doubleFieldType = ftf(FieldTypeSpec(FieldTypeId.Double)).asValueOf[Double]
 
   private implicit def dataSetWebContext(implicit context: WebContext) = DataSetWebContext(dataSetId)
+
   override protected def formatId(id: BSONObjectID) = id.stringify
 
-  private implicit val storageTypeFormatter =  EnumFormatter(StorageType)
+  private implicit val storageTypeFormatter = EnumFormatter(StorageType)
   private implicit val seriesProcessingSpec = JsonFormatter[SeriesProcessingSpec]
   private implicit val seriesTransformationSpec = JsonFormatter[SeriesTransformationSpec]
 
@@ -178,11 +179,11 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
   override protected type ListViewData = (
     String,
-    Page[JsObject],
-    Seq[FilterCondition],
-    Map[String, String],
-    Seq[String]
-  )
+      Page[JsObject],
+      Seq[FilterCondition],
+      Map[String, String],
+      Seq[String]
+    )
 
   override protected def getListViewData(
     page: Page[JsObject],
@@ -200,7 +201,10 @@ protected[controllers] class DataSetControllerImpl @Inject() (
       (itemName(dataSetName, setting), page, conditions, fieldLabelMap, listViewColumns.get)
   }
 
-  private def itemName(dataSetName: String, setting: DataSetSetting) =
+  private def itemName(
+    dataSetName: String,
+    setting: DataSetSetting
+  ) =
     setting.displayItemName.getOrElse(dataSetName + " Item")
 
   override protected[controllers] def listView = { implicit ctx =>
@@ -221,7 +225,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     val settingFuture = dsa.setting
 
     for {
-    // get the data set name
+      // get the data set name
       dataSetName <- dataSetNameFuture
 
       // get the data space name
@@ -302,9 +306,9 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     val exportFieldNames = if (tableColumnsOnly) tableColumnNames else Nil
 
     val extraCriteria = if (selectedOnly)
-        Seq(JsObjectIdentity.name #-> selectedIds)
-      else
-        Nil
+      Seq(JsObjectIdentity.name #-> selectedIds)
+    else
+      Nil
 
     exportTableRecordsAsCsvAux(
       exportFieldNames, delimiter, replaceEolWithSpace, eol, filter, extraCriteria, useDisplayValues, escapeStringValues
@@ -319,9 +323,11 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     filter: Seq[FilterCondition],
     extraCriteria: Seq[Criterion[Any]] = Nil,
     useDisplayValues: Boolean = false,
-    escapeStringValues: Boolean = false)(
-    implicit request: Request[AnyContent]
-  ): Future[Result] = {
+    escapeStringValues: Boolean = false
+  )
+    (
+      implicit request: Request[AnyContent]
+    ): Future[Result] = {
     val eolToUse = eol match {
       case Some(eol) => if (eol.trim.nonEmpty) eol.trim else csvEOL
       case None => csvEOL
@@ -407,9 +413,11 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     tableFieldNames: Seq[String],
     filter: Seq[FilterCondition],
     extraCriteria: Seq[Criterion[Any]] = Nil,
-    useDisplayValues: Boolean = false)(
-    implicit request: Request[AnyContent]
-  ): Future[Result] = {
+    useDisplayValues: Boolean = false
+  )
+    (
+      implicit request: Request[AnyContent]
+    ): Future[Result] = {
     for {
       // get the setting
       setting <- dsa.setting
@@ -458,14 +466,14 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
   override def getDefaultView = Action.async { implicit request =>
     for {
-    //      // get the default view
-    //      defaultView <- dataViewRepo.find(criteria = Seq("default" #== "true"), limit = Some(1)).map(_.headOption)
-    //
-    //      // if not available pick any view
-    //      selectedView <- defaultView match {
-    //        case Some(view) => Future(Some(view))
-    //        case None => dataViewRepo.find(limit = Some(1)).map(_.headOption)
-    //      }
+      //      // get the default view
+      //      defaultView <- dataViewRepo.find(criteria = Seq("default" #== "true"), limit = Some(1)).map(_.headOption)
+      //
+      //      // if not available pick any view
+      //      selectedView <- defaultView match {
+      //        case Some(view) => Future(Some(view))
+      //        case None => dataViewRepo.find(limit = Some(1)).map(_.headOption)
+      //      }
       selectedView <- dataViewRepo.find(sort = Seq(DescSort("default")), limit = Some(1)).map(
         _.headOption
       )
@@ -508,25 +516,25 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
         // initialize filters
         filterOrIdsToUse: Seq[FilterOrId] =
-          if (!filterChanged) {
-            dataView.map(_.filterOrIds) match {
-              case Some(viewFilterOrIds) =>
-                val initViewFilterOrIds = if (viewFilterOrIds.nonEmpty) viewFilterOrIds else Seq(Left(Nil))
+        if (!filterChanged) {
+          dataView.map(_.filterOrIds) match {
+            case Some(viewFilterOrIds) =>
+              val initViewFilterOrIds = if (viewFilterOrIds.nonEmpty) viewFilterOrIds else Seq(Left(Nil))
 
-                val padding = Seq.fill(Math.max(initViewFilterOrIds.size - filterOrIds.size, 0))(Left(Nil))
+              val padding = Seq.fill(Math.max(initViewFilterOrIds.size - filterOrIds.size, 0))(Left(Nil))
 
-                (filterOrIds ++ padding).zip(initViewFilterOrIds).map { case (filterOrId, viewFilterOrId) =>
-                  if (filterOrId.isLeft && filterOrId.left.get.isEmpty) {
-                    viewFilterOrId
-                  } else
-                    filterOrId
-                }
+              (filterOrIds ++ padding).zip(initViewFilterOrIds).map { case (filterOrId, viewFilterOrId) =>
+                if (filterOrId.isLeft && filterOrId.left.get.isEmpty) {
+                  viewFilterOrId
+                } else
+                  filterOrId
+              }
 
-              case None =>
-                filterOrIds
-            }
-          } else
-            filterOrIds
+            case None =>
+              filterOrIds
+          }
+        } else
+          filterOrIds
 
         // initialize table pages
         tablePagesToUse = {
@@ -614,16 +622,16 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     widgetSpecs: Traversable[WidgetSpec],
     tableColumnNames: Traversable[String]
   ) = {
-      // filters' field names
-      val filterFieldNames = conditions.flatMap(_.map(_.fieldName.trim))
+    // filters' field names
+    val filterFieldNames = conditions.flatMap(_.map(_.fieldName.trim))
 
-      // widgets' field names
-      val widgetFieldNames = widgetSpecs.flatMap(_.fieldNames)
+    // widgets' field names
+    val widgetFieldNames = widgetSpecs.flatMap(_.fieldNames)
 
-      getFields((tableColumnNames ++ filterFieldNames ++ widgetFieldNames).toSet).map { fields =>
-        fields.map(field => (field.name, field)).toMap
-      }
+    getFields((tableColumnNames ++ filterFieldNames ++ widgetFieldNames).toSet).map { fields =>
+      fields.map(field => (field.name, field)).toMap
     }
+  }
 
   private def widgetsToJsons(
     widgets: Seq[Widget],
@@ -652,9 +660,11 @@ protected[controllers] class DataSetControllerImpl @Inject() (
   }
 
   private def canEditView(
-    dataView: DataView)(
-    implicit request: AuthenticatedRequest[_]
-  ): Future[Boolean] = for {
+    dataView: DataView
+  )
+    (
+      implicit request: AuthenticatedRequest[_]
+    ): Future[Boolean] = for {
     user <- currentUser()
   } yield
     user.map { user =>
@@ -673,7 +683,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     val callbackId = request.body.asFormUrlEncoded.flatMap(_.get("callbackId").map(_.head))
 
     callbackId match {
-      case None =>  Future(BadRequest("No callback id provided."))
+      case None => Future(BadRequest("No callback id provided."))
       case Some(callbackId) =>
         jsonWidgetResponseCache.get(callbackId).map { jsonWidgets =>
           jsonWidgetResponseCache.remove(callbackId)
@@ -722,7 +732,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         // get the init response data
         viewResponse <- getInitViewResponse(tablePage, tableOrder, resolvedFilter, criteria, nameFieldMap, tableColumnNames)
       } yield {
-//        Logger.info(s"Data loading of a widget panel and a table for the data set '${dataSetId}' finished in ${new ju.Date().getTime - start.getTime} ms")
+        //        Logger.info(s"Data loading of a widget panel and a table for the data set '${dataSetId}' finished in ${new ju.Date().getTime - start.getTime} ms")
 
         // create a widgets-future calculation and register with a callback id
         val method = dataView.map(_.generationMethod).getOrElse(WidgetGenerationMethod.Auto)
@@ -774,7 +784,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
 
     {
       for {
-      // data set name
+        // data set name
         dataSetName <- dataSetNameFuture
 
         // load the view
@@ -791,7 +801,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         // get the init response data
         viewResponse <- getInitViewResponse(tablePage, tableOrder, new Filter(), criteria, nameFieldMap, tableColumnNames)
       } yield {
-//        Logger.info(s"Data loading of a widget panel and a table for the data set '${dataSetId}' finished in ${new ju.Date().getTime - start.getTime} ms")
+        //        Logger.info(s"Data loading of a widget panel and a table for the data set '${dataSetId}' finished in ${new ju.Date().getTime - start.getTime} ms")
 
         // create a widgets-future calculation and register with a callback id
         val method = dataView.map(_.generationMethod).getOrElse(WidgetGenerationMethod.Auto)
@@ -826,13 +836,12 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     }.recover(handleExceptionsWithErrorCodes("a getNewFilterViewElementsAndWidgetsCallback"))
   }
 
-  override def getNewFilter = AuthAction { implicit request =>
-    {
-      dsa.setting.map { setting =>
-        val filter = dataset.filter.dataSetFilter(None, setting.filterShowFieldStyle)
-        Ok(filter.toString())
-      }
-    }.recover(handleExceptionsWithErrorCodes("a getNewFilter"))
+  override def getNewFilter = AuthAction { implicit request => {
+    dsa.setting.map { setting =>
+      val filter = dataset.filter.dataSetFilter(None, setting.filterShowFieldStyle)
+      Ok(filter.toString())
+    }
+  }.recover(handleExceptionsWithErrorCodes("a getNewFilter"))
   }
 
   private def getFilterAndWidgetsCallbackAux(
@@ -1164,7 +1173,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
             getFilterAndWidgetsCallbackAux(widgetSpecs, genMethod, filterOrId)
 
           case None =>
-            Future(BadRequest(s"Field $fieldName not found."))
+            Future(BadRequest(s"Field '$fieldName' not found."))
         }
       } yield
         response
@@ -1547,7 +1556,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     } yield
 
       render {
-        case Accepts.Html() => Ok(dataset.table(
+        case Accepts.Html() => Ok(dataset.exportTable(
           dataSetName,
           filter,
           setting,
