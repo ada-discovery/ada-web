@@ -837,11 +837,11 @@ protected[controllers] class DataSetControllerImpl @Inject() (
   }
 
   override def getNewFilter = AuthAction { implicit request => {
-    dsa.setting.map { setting =>
-      val filter = dataset.filter.dataSetFilter(None, setting.filterShowFieldStyle)
-      Ok(filter.toString())
-    }
-  }.recover(handleExceptionsWithErrorCodes("a getNewFilter"))
+      dsa.setting.map { setting =>
+        val filter = dataset.filter.dataSetFilter(None, setting.filterShowFieldStyle)
+        Ok(filter.toString())
+      }
+    }.recover(handleExceptionsWithErrorCodes("a getNewFilter"))
   }
 
   private def getFilterAndWidgetsCallbackAux(
@@ -1409,7 +1409,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
     filterOrId: FilterOrId
   ) = AuthAction { implicit request => {
     for {
-    // get the filter (with labels), data set name, the data space tree, and the setting
+      // get the filter (with labels), data set name, the data space tree, and the setting
       (filter, dataSetName, dataSpaceTree, setting) <- getFilterAndEssentials(filterOrId)
     } yield
 
@@ -1422,8 +1422,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
         ))
         case Accepts.Json() => BadRequest("The function getMatthewsCorrelations function doesn't support JSON response.")
       }
-
-  }.recover(handleExceptions("a Matthews correlation"))
+    }.recover(handleExceptions("a Matthews correlation"))
   }
 
   override def calcMatthewsCorrelations(
@@ -2198,7 +2197,7 @@ protected[controllers] class DataSetControllerImpl @Inject() (
             val widgetSpec = ScatterWidgetSpec(xField.name, yField.name, Some(clusterClassField.name), None, displayOptions)
 
             // generate a scatter widget
-            widgetService.genFromFullData(widgetSpec, jsonsWithClasses, Seq(xField, yField, clusterClassField)).head
+            widgetService.genFromFullData(widgetSpec, jsonsWithClasses, Nil, Seq(xField, yField, clusterClassField)).head
           }
 
           // Transform Scatters into JSONs

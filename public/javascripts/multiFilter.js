@@ -212,6 +212,23 @@ $.widget("custom.multiFilter", {
         this._submitFilter();
     },
 
+    replaceWithConditionAndSubmit: function(condition) {
+        this._addModelToHistoryAndClearFilterId();
+
+        var that = this;
+
+        var fieldName = condition.fieldName
+
+        var other = that.jsonConditions.filter(function(jsonCondition) {
+            return jsonCondition.fieldName != fieldName
+        })
+
+        that.jsonConditions = other;
+        that.jsonConditions.push(condition)
+
+        this._submitFilter();
+    },
+
     _deleteCondition: function (index) {
         this._addModelToHistoryAndClearFilterId();
 

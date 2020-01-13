@@ -730,19 +730,22 @@ function getRowValue(row, elementId) {
     return value;
 }
 
-function createTable(columnNames, rows) {
-    var table = $("<table class='table table-striped'>")
+function createTable(columnNames, rows, nonStriped) {
+    var clazz = nonStriped ? "" : "table-striped"
+    var table = $("<table class='table " + clazz + "'>")
 
     // head
-    var thead = $("<thead>")
-    var theadTr = $("<tr>")
+    if (columnNames) {
+        var thead = $("<thead>")
+        var theadTr = $("<tr>")
 
-    $.each(columnNames, function(index, columnName) {
-        var th = "<th class='col header'>" + columnName + "</th>"
-        theadTr.append(th)
-    })
-    thead.append(theadTr)
-    table.append(thead)
+        $.each(columnNames, function (index, columnName) {
+            var th = "<th class='col header'>" + columnName + "</th>"
+            theadTr.append(th)
+        })
+        thead.append(theadTr)
+        table.append(thead)
+    }
 
     // body
     var tbody = $("<tbody>")

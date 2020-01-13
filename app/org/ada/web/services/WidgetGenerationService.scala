@@ -50,6 +50,7 @@ trait WidgetGenerationService {
   def genFromFullData(
     widgetSpec: WidgetSpec,
     items: Traversable[JsObject],
+    criteria: Seq[Criterion[Any]],
     fields: Traversable[Field]
   ): Seq[Option[Widget]]
 
@@ -106,6 +107,8 @@ class WidgetGenerationServiceImpl @Inject() (
     genMethod: WidgetGenerationMethod.Value
   ): Future[Traversable[Option[(Widget, Seq[String])]]] = {
     // TODO: if auto decide which method to use intelligently
+    // check the number of rows x fields - if < threshold (e.g. 200k) do RepoAndFullData otherwise RepoAndStreamedFull
+    // can take the repo type (Mongo vs Elastic) into account
     val initGenMethod =
       if (genMethod == WidgetGenerationMethod.Auto)
         WidgetGenerationMethod.RepoAndFullData
@@ -132,6 +135,7 @@ class WidgetGenerationServiceImpl @Inject() (
       if (genMethod.isRepoBased) {
         widgetSpecs.collect {
           case p: DistributionWidgetSpec => if (isScalar(p.fieldName)) Left(p) else Right(p)
+          case p: CategoricalCheckboxWidgetSpec => if (isScalar(p.fieldName)) Left(p) else Right(p)
           case p: BoxWidgetSpec => if (isScalar(p.fieldName)) Left(p) else Right(p)
           case p: CumulativeCountWidgetSpec => if (p.numericBinCount.isDefined && isScalar(p.fieldName)) Left(p) else Right(p)
           case p: CustomHtmlWidgetSpec => Left(p)
@@ -301,7 +305,7 @@ class WidgetGenerationServiceImpl @Inject() (
 
     // create (loaded) generators
     val specGenerators = widgetSpecs.map { widgetSpec =>
-      val generators = createGenerator(widgetSpec, nameFieldMap, fieldNameSubFilterIdMinMaxes)
+      val generators = createGenerator(widgetSpec, criteria, nameFieldMap, fieldNameSubFilterIdMinMaxes)
       (widgetSpec, generators)
     }.toSeq
 
@@ -403,7 +407,7 @@ class WidgetGenerationServiceImpl @Inject() (
           projection = fieldNames
         ).map { jsons =>
           widgetSpecs.par.map { widgetSpec =>
-            val widgets = genFromFullDataAux(widgetSpec, jsons, nameFieldMap)
+            val widgets = genFromFullDataAux(widgetSpec, jsons, criteria, nameFieldMap)
             (widgetSpec, widgets)
           }.toList
         }
@@ -442,6 +446,8 @@ class WidgetGenerationServiceImpl @Inject() (
 
     widgetSpec match {
 
+      // distribution
+
       case spec: DistributionWidgetSpec if spec.groupFieldName.isEmpty && fields(0).isNumeric && !fields(0).isArray =>
         val field = getField(spec.fieldName)
         calcNumericDistributionCountsFromRepo(repo, criteria, field, spec.numericBinCount).map(
@@ -467,6 +473,16 @@ class WidgetGenerationServiceImpl @Inject() (
         calcGroupedUniqueDistributionCountsFromRepo(repo, criteria, field, groupField).map(
           GroupCategoricalDistributionWidgetGenerator(spec)(nameFieldMap)
         )
+
+      // categorical checkbox count
+
+      case spec: CategoricalCheckboxWidgetSpec if !fields(0).isArray =>
+        val field = getField(spec.fieldName)
+        calcUniqueDistributionCountsFromRepo(repo, criteria, field).map(
+          CategoricalCheckboxCountWidgetGenerator(criteria).apply(spec)(nameFieldMap)
+        )
+
+      // cumulative count
 
       case spec: CumulativeCountWidgetSpec if spec.numericBinCount.isDefined && spec.groupFieldName.isEmpty && fields(0).isNumeric && !fields(0).isArray =>
         val field = getField(spec.fieldName)
@@ -494,6 +510,8 @@ class WidgetGenerationServiceImpl @Inject() (
           GroupUniqueCumulativeCountWidgetGenerator(spec)(nameFieldMap)
         )
 
+      // box plot
+
       case spec: BoxWidgetSpec if spec.groupFieldName.isEmpty =>
         val field = getField(spec.fieldName)
         calcQuartilesFromRepo(repo, criteria, field).map(
@@ -507,12 +525,16 @@ class WidgetGenerationServiceImpl @Inject() (
           GroupBoxWidgetGenerator(spec)(nameFieldMap)
         )
 
+      // grid distribution count
+
       case spec: GridDistributionCountWidgetSpec =>
         calcSeqNumericDistributionCountsFromRepo(
           repo, criteria, Seq((getField(spec.xFieldName), Some(spec.xBinCount)), (getField(spec.yFieldName), Some(spec.yBinCount)))
         ).map(
           GridDistributionCountWidgetGenerator(0, 1, 0, 1)(spec)(nameFieldMap)
         )
+
+      // custom HTML
 
       case spec: CustomHtmlWidgetSpec =>
         val widget = HtmlWidget("", spec.content, spec.displayOptions)
@@ -533,15 +555,17 @@ class WidgetGenerationServiceImpl @Inject() (
   override def genFromFullData(
     widgetSpec: WidgetSpec,
     items: Traversable[JsObject],
+    criteria: Seq[Criterion[Any]],
     fields: Traversable[Field]
   ): Seq[Option[Widget]] = {
     val nameFieldMap = fields.map(field => (field.name, field)).toMap
-    genFromFullDataAux(widgetSpec, items, nameFieldMap)
+    genFromFullDataAux(widgetSpec, items, criteria, nameFieldMap)
   }
 
   private def genFromFullDataAux(
     widgetSpec: WidgetSpec,
     jsons: Traversable[JsObject],
+    criteria: Seq[Criterion[Any]],
     nameFieldMap: Map[String, Field]
   ): Seq[Option[Widget]] = {
     val fields = widgetSpec.fieldNames.flatMap(nameFieldMap.get).toSeq
@@ -549,7 +573,7 @@ class WidgetGenerationServiceImpl @Inject() (
     // we don't use streaming (flows) here hence we can feed any min/max flow option values
     val dummyFlowMinMaxMap = fields.map( field => ((field.name, widgetSpec.subFilterId) -> (0d, 1d))).toMap
 
-    val generators = createGenerator(widgetSpec, nameFieldMap, dummyFlowMinMaxMap)
+    val generators = createGenerator(widgetSpec, criteria, nameFieldMap, dummyFlowMinMaxMap)
 
     generators match {
       case Nil => Seq(genStaticWidget(widgetSpec))
@@ -607,7 +631,7 @@ class WidgetGenerationServiceImpl @Inject() (
     nameFieldMap: Map[String, Field],
     fieldNameSubFilterIdMinMaxes: Map[(String, Option[BSONObjectID]), (Double, Double)]
   ): Future[Seq[Option[Widget]]] = {
-    val generators = createGenerator(widgetSpec, nameFieldMap, fieldNameSubFilterIdMinMaxes)
+    val generators = createGenerator(widgetSpec, criteria, nameFieldMap, fieldNameSubFilterIdMinMaxes)
 
     generators match {
       case Nil => Future(Seq(genStaticWidget(widgetSpec)))
@@ -628,6 +652,7 @@ class WidgetGenerationServiceImpl @Inject() (
 
   private def createGenerator(
     widgetSpec: WidgetSpec,
+    criteria: Seq[Criterion[Any]],
     nameFieldMap: Map[String, Field],
     fieldNameSubFilterIdMinMaxes: Map[(String, Option[BSONObjectID]), (Double, Double)]
   ): Seq[CalculatorWidgetGeneratorLoaded[_, Widget,_]] = {
@@ -637,12 +662,13 @@ class WidgetGenerationServiceImpl @Inject() (
       logger.warn(s"Cannot generate a widget ${widgetSpec.getClass.getSimpleName} because some of its fields do not exist : ${widgetSpec.fieldNames.mkString(", ")}.")
       Nil
     } else
-      createGenerator(widgetSpec, fields.flatten, nameFieldMap, fieldNameSubFilterIdMinMaxes)
+      createGenerator(widgetSpec, fields.flatten, criteria, nameFieldMap, fieldNameSubFilterIdMinMaxes)
   }
 
   private def createGenerator(
     widgetSpec: WidgetSpec,
     fields: Seq[Field],
+    criteria: Seq[Criterion[Any]],
     nameFieldMap: Map[String, Field],
     fieldNameSubFilterIdMinMaxes: Map[(String, Option[BSONObjectID]), (Double, Double)]
   ): Seq[CalculatorWidgetGeneratorLoaded[_, Widget,_]] = {
@@ -655,6 +681,8 @@ class WidgetGenerationServiceImpl @Inject() (
       Seq(CalculatorWidgetGeneratorLoaded[S, W, C](generator, widgetSpec.asInstanceOf[S], fields))
 
     widgetSpec match {
+
+      // distribution
 
       case spec: DistributionWidgetSpec if spec.groupFieldName.isEmpty && !fields(0).isNumeric =>
         aux(CategoricalDistributionWidgetGenerator)
@@ -674,6 +702,13 @@ class WidgetGenerationServiceImpl @Inject() (
       case spec: DistributionWidgetSpec if spec.groupFieldName.isDefined && fields(1).isInteger && spec.numericBinCount.isEmpty =>
         aux(GroupUniqueIntDistributionWidgetGenerator)
 
+      // categorical checkbox count
+
+      case spec: CategoricalCheckboxWidgetSpec =>
+        aux(CategoricalCheckboxCountWidgetGenerator(criteria))
+
+      // cumulative count
+
       case spec: CumulativeCountWidgetSpec if spec.numericBinCount.isDefined && spec.groupFieldName.isEmpty =>
         aux(CumulativeNumericBinCountWidgetGenerator(minMax))
 
@@ -686,11 +721,15 @@ class WidgetGenerationServiceImpl @Inject() (
       case spec: CumulativeCountWidgetSpec if spec.numericBinCount.isEmpty && spec.groupFieldName.isDefined =>
         aux(GroupCumulativeCountWidgetGenerator)
 
+      // box plot
+
       case spec: BoxWidgetSpec if spec.groupFieldName.isEmpty =>
         aux(BoxWidgetGenerator)
 
       case spec: BoxWidgetSpec if spec.groupFieldName.isDefined =>
         aux(GroupBoxWidgetGenerator)
+
+      // scatter
 
       case spec: ScatterWidgetSpec if spec.groupFieldName.isEmpty =>
         aux(ScatterWidgetGenerator[Any, Any])
@@ -698,16 +737,22 @@ class WidgetGenerationServiceImpl @Inject() (
       case spec: ScatterWidgetSpec if spec.groupFieldName.isDefined =>
         aux(GroupScatterWidgetGenerator[Any, Any])
 
-      case spec: ValueScatterWidgetSpec =>
+      case _: ValueScatterWidgetSpec =>
         aux(ValueScatterWidgetGenerator[Any, Any, Any])
+
+      // heatmap aggregation
 
       case spec: HeatmapAggWidgetSpec =>
         val minMaxValues = minMaxes
         aux(HeatmapAggWidgetGenerator.apply(spec.aggType, minMaxValues(0), minMaxValues(1)))
 
-      case spec: GridDistributionCountWidgetSpec =>
+      // grid distribution count
+
+      case _: GridDistributionCountWidgetSpec =>
         val minMaxValues = minMaxes
         aux(GridDistributionCountWidgetGenerator(minMaxValues(0), minMaxValues(1)))
+
+      // correlation
 
       case spec: CorrelationWidgetSpec if spec.correlationType == CorrelationType.Pearson =>
         aux(PearsonCorrelationWidgetGenerator(Some(streamedCorrelationCalcParallelism)))
@@ -715,8 +760,12 @@ class WidgetGenerationServiceImpl @Inject() (
       case spec: CorrelationWidgetSpec if spec.correlationType == CorrelationType.Matthews =>
         aux(MatthewsCorrelationWidgetGenerator(Some(streamedCorrelationCalcParallelism)))
 
-      case spec: BasicStatsWidgetSpec =>
+      // basic stats
+
+      case _: BasicStatsWidgetSpec =>
         aux(BasicStatsWidgetGenerator)
+
+      // independence test
 
       case spec: IndependenceTestWidgetSpec if spec.keepUndefined =>
         aux(ChiSquareTestWidgetGenerator) ++ aux(OneWayAnovaTestWidgetGenerator)
