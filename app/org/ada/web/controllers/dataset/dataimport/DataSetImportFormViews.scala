@@ -151,10 +151,7 @@ abstract protected[controllers] class DataSetImportFormViews[E <: DataSetImport:
         routes.DataSetImportController.update(data.id),
         routes.DataSetImportController.listAll(),
         Some(routes.DataSetImportController.delete(data.id)),
-        None,
-        None,
-        None,
-        Seq('enctype -> "multipart/form-data")
+        formArgs = Seq('enctype -> "multipart/form-data")
       )
   }
 }
