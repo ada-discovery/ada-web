@@ -140,6 +140,8 @@ dataSetSeriesTransformation.core.saveBatchSize.label = Save Batch Size
 filter.createdBy.label = Created By
 filter.timeCreated.label = Time Created
 
+user.permission-dataSetId.label = Data Set
+
 login.id = User Id
 login.password = Password
 

@@ -34,6 +34,7 @@ GET         /ldap/:id/get                                                       
 POST        /admin/importLdapUsers                                                  org.ada.web.controllers.AdminController.importLdapUsers
 POST        /admin/purgeMissingLdapUsers                                            org.ada.web.controllers.AdminController.purgeMissingLdapUsers
 POST        /admin/lockMissingLdapUsers                                             org.ada.web.controllers.AdminController.lockMissingLdapUsers
+GET         /admin/dataSetIds                                                       org.ada.web.controllers.AdminController.dataSetIds
 
 # Runnable
 GET         /runnables/select                                                       org.ada.web.controllers.RunnableController.selectRunnable
@@ -65,7 +66,6 @@ POST        /admin/dataSetTransformation/:id                                    
 POST        /admin/dataSetTransformation/:id/delete                                 org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.delete(id: BSONObjectID)
 GET         /admin/dataSetTransformation/copy                                       org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.copy(dataSetTransformationId: BSONObjectID)
 GET         /admin/dataSetTransformation/idAndNames                                 org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.idAndNames
-GET         /admin/dataSetTransformation/dataSetIds                                 org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.dataSetIds
 GET         /admin/dataSetTransformation/resultDataSetIdAndName                     org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.resultDataSetIdAndName(sourceDataSetId: String, resultNameSuffix: String, transformationId: Option[BSONObjectID])
 
 # User Management
