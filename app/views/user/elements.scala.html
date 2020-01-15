@@ -1,5 +1,6 @@
 @import views.html.elements.{inputText, labelValue}
 @import views.html.table.{dynamicStringTable, dynamicTableJsImport}
+@import views.html.user.dataSetTypeahead
 @import play.api.i18n.Messages
 @import org.ada.server.models.DataSpaceMetaInfo
 @import org.ada.server.models.User
@@ -8,33 +9,29 @@
 @import views.html.elements._
 @import org.ada.web.controllers.routes
 @import org.ada.server.models.FilterShowFieldStyle
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
 
 @(
     form: Form[User],
     metaInfos: Traversable[DataSpaceMetaInfo],
     controllerActionNames: DataSetControllerActionNames
 )(
-    implicit msg: Messages, webJarAssets: WebJarAssets
+    implicit context: WebContext
 )
 
 @dynamicTableJsImport()
 
 @typeaheadJsImport()
 
-@dataSetSelection = {
-    @labelValue("dataSetPermission", "DS Id") {
-        <select id="permission-dataSetId" name="permission-dataSetId" class="form-control">
-        @metaInfos.flatMap(_.dataSetMetaInfos).toSeq.sortBy(_.id).map { dataSet =>
-            <option value="@{dataSet.id}">@{dataSet.id}</option>
-        }
-        </select>
-    }
+@dataSetSelection(parentId: String) = {
+    @dataSetTypeahead(parentId, form)
 }
 
 @addCustomDataSetPermissionModalBody = {
     <div class="row">
 
-        @dataSetSelection
+        @dataSetSelection("addCustomDataSetPermissionModal")
 
         @labelValue("dataSetPermission", "Controller") {
             <select id="permission-controller" name="permission-controller" class="form-control" onchange="updateActionItems()">
@@ -63,13 +60,13 @@
 
 @addViewOnlyDataSetPermissionsModalBody = {
     <div class="row">
-        @dataSetSelection
+        @dataSetSelection("addViewOnlyDataSetPermissionsModal")
     </div>
 }
 
 @addStandardDataSetPermissionsModalBody = {
     <div class="row">
-        @dataSetSelection
+        @dataSetSelection("addStandardDataSetPermissionsModal")
     </div>
 }
 
@@ -83,22 +80,22 @@
 
 @addCustomDataSetPermissionModalButtons = {
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="button" class="btn btn-primary" id="addCustomDataSetPermissionSubmitButton" data-dismiss="modal">OK</button>
+    <button type="button" class="btn btn-primary" id="addCustomDataSetPermissionSubmitButton">OK</button>
 }
 
 @addViewOnlyDataSetPermissionsModalButtons = {
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="button" class="btn btn-primary" onclick="addViewOnlyPermissions(); return false;" data-dismiss="modal">OK</button>
+    <button type="button" class="btn btn-primary" onclick="addViewOnlyPermissions(); return false;">OK</button>
 }
 
 @addStandardDataSetPermissionsModalButtons = {
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="button" class="btn btn-primary" onclick="addStandardPermissions(); return false;" data-dismiss="modal">OK</button>
+    <button type="button" class="btn btn-primary" onclick="addStandardPermissions(); return false;">OK</button>
 }
 
 @addRunnablePermissionModalButtons = {
     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="button" class="btn btn-primary" onclick="addRunnablePermission(); return false;" data-dismiss="modal">OK</button>
+    <button type="button" class="btn btn-primary" onclick="addRunnablePermission(); return false;">OK</button>
 }
 
 @extraButtons = {
@@ -227,32 +224,38 @@
         var permissions = [@{Html(UserDataSetPermissions.viewOnly.map("\"" + _ + "\"").mkString(","))}]
 
         var dataSetId = $('#addViewOnlyDataSetPermissionsModal #permission-dataSetId').val()
-        var dsPermissionPrefix = "DS:" + dataSetId + "."
 
-        var values = $.map(permissions, function(permission, index) {
-            var entry = {};
-            entry["newItem"] = dsPermissionPrefix + permission;
+        if (dataSetId) {
+            var dsPermissionPrefix = "DS:" + dataSetId + "."
 
-            return entry;
-        });
+            var values = $.map(permissions, function (permission, index) {
+                var entry = {};
+                entry["newItem"] = dsPermissionPrefix + permission;
 
-        $('#permissionDiv').dynamicTable('addTableRows', values)
+                return entry;
+            });
+
+            $('#permissionDiv').dynamicTable('addTableRows', values)
+        }
     }
 
     function addStandardPermissions() {
         var permissions = [@{Html(UserDataSetPermissions.standard.map("\"" + _ + "\"").mkString(","))}]
 
         var dataSetId = $('#addStandardDataSetPermissionsModal #permission-dataSetId').val()
-        var dsPermissionPrefix = "DS:" + dataSetId + "."
 
-        var values = $.map(permissions, function(permission, index) {
-            var entry = {};
-            entry["newItem"] = dsPermissionPrefix + permission;
+        if (dataSetId) {
+            var dsPermissionPrefix = "DS:" + dataSetId + "."
 
-            return entry;
-        });
+            var values = $.map(permissions, function (permission, index) {
+                var entry = {};
+                entry["newItem"] = dsPermissionPrefix + permission;
 
-        $('#permissionDiv').dynamicTable('addTableRows', values)
+                return entry;
+            });
+
+            $('#permissionDiv').dynamicTable('addTableRows', values)
+        }
     }
 
     function addCustomDataSetPermission() {
@@ -260,21 +263,26 @@
         var controller = $('#addCustomDataSetPermissionModal #permission-controller').val()
         var action = $('#addCustomDataSetPermissionModal #permission-action').val()
 
-        var dsPermission = "DS:" + dataSetId
-        if (controller) {
-            dsPermission = dsPermission + "." + controller
-            if (action)
-                dsPermission = dsPermission + "." + action
-        }
+        if (dataSetId) {
+            var dsPermission = "DS:" + dataSetId
+            if (controller) {
+                dsPermission = dsPermission + "." + controller
+                if (action)
+                    dsPermission = dsPermission + "." + action
+            }
 
-        var values = {};
-        values["newItem"] = dsPermission;
-        $('#permissionDiv').dynamicTable('addTableRow', values)
+            var values = {};
+            values["newItem"] = dsPermission;
+            $('#permissionDiv').dynamicTable('addTableRow', values)
+        }
     }
 
     function addRunnablePermission() {
         var className = $('#addRunnablePermissionModal #className').val()
-        $('#permissionDiv').dynamicTable('addTableRow', {"newItem": "RN:" + className})
+
+        if (className) {
+            $('#permissionDiv').dynamicTable('addTableRow', {"newItem": "RN:" + className})
+        }
     }
 
     function populateActions(values) {

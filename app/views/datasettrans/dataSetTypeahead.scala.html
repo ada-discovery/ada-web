@@ -57,7 +57,7 @@
         populateFieldTypeahedFromUrl(
             $('#@{fieldName}Typeahead'),
             $('#@{fieldName}'),
-            '@Html(routes.DataSetTransformationController.dataSetIds().url)',
+            '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
             @FilterShowFieldStyle.LabelsOnly.id,
             addSelectedListener,
             true

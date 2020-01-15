@@ -150,17 +150,6 @@ class DataSetTransformationController @Inject()(
       }
   }
 
-  def dataSetIds = restrictAny { implicit request =>
-    for {
-      dataSpaces <- dataSpaceMetaInfoRepo.find()
-    } yield {
-      val dataSetNameLabels = dataSpaces.flatMap(_.dataSetMetaInfos).toSeq.sortBy(_.id).map { dataSetInfo =>
-        Json.obj("name" -> dataSetInfo.id , "label" -> dataSetInfo.id)
-      }
-      Ok(Json.toJson(dataSetNameLabels))
-    }
-  }
-
   def copy(id: BSONObjectID) = restrictAny {
     implicit request =>
       repo.get(id).flatMap(_.fold(
