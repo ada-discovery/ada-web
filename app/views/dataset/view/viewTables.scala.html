@@ -6,7 +6,8 @@
 
 @(
     dataViewId: BSONObjectID,
-    viewParts: Seq[TableViewData]
+    viewParts: Seq[TableViewData],
+    tableRowSelection: Boolean = false
 )(
     implicit request: Request[_], dataSetRouter: DataSetRouter
 )
@@ -19,7 +20,8 @@
                     viewPart.page,
                     viewPart.filter,
                     viewPart.tableFields,
-                    false
+                    false,
+                    tableRowSelection
                 )
             </div>
         </td>

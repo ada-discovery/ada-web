@@ -1,0 +1,77 @@
+@import views.html.dataset.view.coreView
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.server.models.DataSpaceMetaInfo
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.{DataSetWebContext, TableViewData}
+@import org.ada.server.models.DataSetSetting
+@import org.incal.play.Page
+@import play.api.libs.json.JsObject
+@import org.ada.server.models.Filter
+
+@(
+    submitCall: Call,
+    actionLabel: String,
+    title: String,
+    itemName: String,
+    dataViewId: BSONObjectID,
+    tableViewParts: Seq[TableViewData],
+    widgetGridElementWidth: Int,
+    dataSetSetting: DataSetSetting,
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@actions = {
+    <button class="btn btn-info btn-sm" type="button" onclick="selectAndSubmit();">
+        @actionLabel
+    </button>
+}
+
+@extraBottomResources = {
+
+    <script type="text/javascript">
+         $(function () {
+             // get all the filters available
+             var filters = $("#filtersTr").find(".filter-div")
+
+             $("#widgetsTr").html("")
+             $.each(filters, function (i, filter) {
+                 var td = $("<td style='vertical-align:top'>")
+                 var row = $("<div class='row'>")
+                 td.append(row)
+                 $("#widgetsTr").append(td)
+             })
+
+             // generate (refresh) a view for each filter
+            $.each(filters, function (index, filter) {
+                $(filter).multiFilter('submitFilter');
+            })
+        })
+
+        function selectAndSubmit() {
+            var params = {}
+
+            const ids = getSelectedRowIds($('#tablesTr .table-div'))
+            $.each(ids, function (index, id) {
+                params["selectedIds[" + index + "]"] = id
+            })
+
+
+            submit("post", '@submitCall', params)
+        }
+    </script>
+}
+
+@coreView(
+    title,
+    itemName,
+    dataViewId,
+    tableViewParts,
+    widgetGridElementWidth,
+    dataSetSetting,
+    actions,
+    Some(extraBottomResources),
+    tableRowSelection = true,
+    dataSpaceMetaInfos
+)

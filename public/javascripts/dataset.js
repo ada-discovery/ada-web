@@ -67,7 +67,7 @@ function saveFilterToView(viewId) {
     });
 }
 
-function refreshViewOnFilterUpdate(viewId, filterOrId, filterElement, widgetGridElementWidth, enforceWidth) {
+function refreshViewForFilter(viewId, filterOrId, filterElement, widgetGridElementWidth, enforceWidth, tableSelection) {
     var index = $("#filtersTr").find(".filter-div").index(filterElement);
 
     var counts = $("#filtersTr").find(".count-hidden").map(function(index, element) {
@@ -78,7 +78,7 @@ function refreshViewOnFilterUpdate(viewId, filterOrId, filterElement, widgetGrid
     var totalCount = counts.reduce(function (a, b) {return a + b;}, 0);
     var oldCountDiff = totalCount - counts[index];
 
-    dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getViewElementsAndWidgetsCallback(viewId, "", filterOrId, oldCountDiff).ajax( {
+    dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getViewElementsAndWidgetsCallback(viewId, "", filterOrId, oldCountDiff, tableSelection).ajax( {
         success: function(data) {
             hideErrors();
 

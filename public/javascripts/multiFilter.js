@@ -185,7 +185,7 @@ $.widget("custom.multiFilter", {
 
         this.jsonConditions.push(condition);
 
-        this._submitFilter();
+        this.submitFilter();
     },
 
     _editAndSubmitConditionFromModal: function (index) {
@@ -198,7 +198,7 @@ $.widget("custom.multiFilter", {
         var fields = this.conditionFields.concat(["fieldLabel"])
         this._updateFilterFromModel(index, condition, fields);
 
-        this._submitFilter();
+        this.submitFilter();
     },
 
     addConditionsAndSubmit: function(conditions) {
@@ -209,7 +209,7 @@ $.widget("custom.multiFilter", {
             that.jsonConditions.push(condition);
         });
 
-        this._submitFilter();
+        this.submitFilter();
     },
 
     replaceWithConditionAndSubmit: function(condition) {
@@ -226,14 +226,14 @@ $.widget("custom.multiFilter", {
         that.jsonConditions = other;
         that.jsonConditions.push(condition)
 
-        this._submitFilter();
+        this.submitFilter();
     },
 
     _deleteCondition: function (index) {
         this._addModelToHistoryAndClearFilterId();
 
         this.jsonConditions.splice(index, 1);
-        this._submitFilter();
+        this.submitFilter();
     },
 
     getModel: function () {
@@ -263,7 +263,7 @@ $.widget("custom.multiFilter", {
     _rollbackModelAndSubmit: function () {
         if (this.modelHistory.length > 0) {
             this.rollbackModelOnError();
-            this._submitFilter();
+            this.submitFilter();
         }
     },
 
@@ -283,7 +283,7 @@ $.widget("custom.multiFilter", {
         this.saveFilterButtonElement.show();
     },
 
-    _submitFilter: function () {
+    submitFilter: function () {
         this._submitFilterOrId(this.jsonConditions, null);
     },
 

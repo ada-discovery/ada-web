@@ -1,0 +1,199 @@
+@import views.html.layout
+@import views.html.dataset.{fixedTableRow, dataSetFullMenu, datasetMenu, datasetSubNav, datasetSubNavJs, bootstrapSelectImport, datasetJsImport}
+@import views.html.chart.highcharts.{highchartsJsImport, highchartsJsImportForBulkExport}
+@import views.html.dataset.view.{viewExportDropdown, viewTables, viewCountFilters}
+@import views.html.dataset.filter.dataSetFilterJs
+@import views.html.filter.{filter, filterJs, filterJsImport, jsTreeImport}
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.server.models.{DataSpaceMetaInfo,Filter,FilterShowFieldStyle}
+@import org.ada.web.util.toJsonHtml
+@import org.ada.web.controllers.FilterConditionExtraFormats.coreFilterConditionFormat
+@import org.ada.web.controllers.dataset.DataSetWebContext._
+@import org.ada.web.controllers.dataset.{DataSetWebContext, TableViewData}
+@import org.ada.server.models.DataSetSetting
+
+@(
+    title: String,
+    itemName: String,
+    dataViewId: BSONObjectID,
+    tableViewParts: Seq[TableViewData],
+    widgetGridElementWidth: Int,
+    dataSetSetting: DataSetSetting,
+    actions: Html,
+    extraBottomResources: Option[Html],
+    tableRowSelection: Boolean,
+    dataSpaceMetaInfos: Traversable[DataSpaceMetaInfo]
+)(
+    implicit context: DataSetWebContext
+)
+
+@actionsDiv = {
+    <div class="row">
+        <div id="singleFilterDiv" class="col-md-10">
+            @if(tableViewParts.size == 1) {
+                @viewCountFilters(tableViewParts, dataSetSetting.filterShowFieldStyle, true)
+            }
+        </div>
+        <div class="pull-right">
+            @actions
+        </div>
+    </div>
+}
+
+@widgets = {
+    @fixedTableRow("widgetsTr")()
+}
+
+@filtersAndWidgets = {
+    <div id="multiFilterDiv">
+        @if(tableViewParts.size > 1) {
+            @viewCountFilters(tableViewParts, dataSetSetting.filterShowFieldStyle, false)
+        }
+    </div>
+    <hr class="multi-filter-divider" @if(tableViewParts.size < 2) { style="display:none" } />
+    @widgets
+}
+
+@jsonConditions(filter: Option[Filter]) = @{
+    toJsonHtml(filter.map(_.conditions).getOrElse(Nil))
+}
+
+@stringFilterId(filter: Option[Filter]) = @{
+    filter.flatMap(_._id.map(_.stringify)).getOrElse("")
+}
+
+@bottomResources = {
+
+    @helper.javascriptRouter("dataSetJsRoutes")(
+        dataSetJsRouter.getWidgets,
+        dataSetJsRouter.getFieldValue,
+        dataSetJsRouter.getViewElementsAndWidgetsCallback,
+        dataSetJsRouter.getNewFilterViewElementsAndWidgetsCallback
+    )
+
+    @helper.javascriptRouter("dataViewJsRoutes")(
+        dataViewJsRouter.saveFilter
+    )
+
+    @highchartsJsImport()
+
+    @dataSetFilterJs()
+
+    @datasetSubNavJs()
+
+    @highchartsJsImportForBulkExport()
+
+    <script type="text/javascript">
+        var defaultWidgetWidth = @widgetGridElementWidth;
+        var enforceWidth = false;
+
+        $(function () {
+            // activate filters
+            var conditions = [@tableViewParts.map { viewPart => JSON.parse('@jsonConditions(viewPart.filter)'), }]
+            var filterIds = [@tableViewParts.map { viewPart => '@stringFilterId(viewPart.filter)', }]
+
+            var filters = $("#filtersTr").find(".filter-div")
+            $.each(filters, function (index, filter) {
+                var filterId = filterIds[index]
+                if (!filterId)
+                    filterId = null
+
+                activateFilter($(filter), conditions[index], filterId);
+            })
+
+            // link the first filter to export modals
+            var firstFilter = filters.first()
+            addFilterModelBeforeModalSubmit("exportFilteredCsvModal", firstFilter, "filter");
+            addFilterModelBeforeModalSubmit("exportFilteredTableCsvModal", firstFilter, "filter");
+            addFilterModelBeforeModalSubmit("exportFilteredJsonModal", firstFilter, "filter");
+            addFilterModelBeforeModalSubmit("exportFilteredTableJsonModal", firstFilter, "filter");
+        })
+
+        function activateFilter(filterElement, jsonConditions, filterId) {
+            var submitAjaxFun = function(filterOrId) {
+                refreshViewForFilter('@{dataViewId.stringify}', filterOrId, filterElement, defaultWidgetWidth, enforceWidth, @tableRowSelection);
+            }
+
+            activateDataSetFilterAux(
+                filterElement,
+                jsonConditions,
+                filterId,
+                submitAjaxFun
+            )
+        }
+
+        function setFullWidth() {
+            var widgets = $("#widgetsTr .chart-holder")
+            $.each(widgets, function (index, widget) {
+                $(widget).parent().attr("class", "col-md-12");
+            })
+
+            defaultWidgetWidth = 12;
+            enforceWidth = true;
+
+            refreshHighcharts();
+        }
+
+        function addNewColumn() {
+            if($("#filtersTr>td").length == 1) {
+                $(".filter-count-div").show()
+                $("#multiFilterDiv").append($("#singleFilterDiv>table"));
+                $(".multi-filter-divider").show();
+            }
+            addNewViewColumn('@{dataViewId.stringify}', defaultWidgetWidth, enforceWidth, activateFilter)
+        }
+
+        function removeColumnRight() {
+            if($("#filtersTr>td").length > 1) {
+                $("#filtersTr td:last-child").remove();
+                $("#widgetsTr td:last-child").remove();
+                $("#tablesTr td:last-child").remove();
+
+                if($("#filtersTr>td").length == 1) {
+                    $(".filter-count-div").hide();
+                    $("#singleFilterDiv").append($("#multiFilterDiv>table"));
+                    $(".multi-filter-divider").hide();
+                }
+
+                var totalCount = getViewTotalCount();
+                var oldHeader = $(".page-header>h3").html().trim()
+                var oldHeaderText = oldHeader.substr(oldHeader.indexOf(" "))
+                $(".page-header").html("<h3>" + totalCount + oldHeaderText + "</h3>");
+
+                refreshHighcharts();
+
+                showMessage("The right-most column/filter successfully removed from the view.")
+            } else {
+                hideMessages();
+                showError("No more columns/filters to remove.")
+            }
+        }
+    </script>
+
+    @extraBottomResources.getOrElse(Html(""))
+}
+
+@sideMenu = @{
+    if(dataSetSetting.showSideCategoricalTree) {
+        dataSetFullMenu(dataSpaceMetaInfos, dataSetRouter)
+    } else {
+        datasetMenu(dataSpaceMetaInfos)
+    }
+}
+
+@layout.list(
+    itemName,
+    Some(title),
+    tableViewParts.map(_.page.total).sum,
+    Some(actionsDiv),
+    if(tableViewParts.exists(_.tableFields.nonEmpty)) {
+        Some(viewTables(dataViewId, tableViewParts, tableRowSelection))
+    } else {
+        None
+    },
+    Some(filtersAndWidgets),
+    Some(sideMenu),
+    Some(datasetSubNav(dataSetSetting)),
+    None,
+    Some(bottomResources)
+)
