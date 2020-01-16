@@ -22,7 +22,9 @@
 
 @deleteSureButtons = {
     <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-    <button type="button" class="btn btn-default" onclick="submit('post', '@deleteCall.get'); return false;">Yes</button>
+    @if(deleteCall.isDefined) {
+        <button type="button" class="btn btn-default" onclick="submit('post', '@deleteCall.get'); return false;">Yes</button>
+    }
 }
 
 @deleteSureModalInner = {
