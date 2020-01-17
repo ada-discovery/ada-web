@@ -6,6 +6,7 @@
 GET         /                                                                       org.ada.web.controllers.AppController.index
 GET         /dataSets                                                               org.ada.web.controllers.AppController.dataSets
 GET         /contact                                                                org.ada.web.controllers.AppController.contact
+GET         /issues                                                                 org.ada.web.controllers.AppController.issues
 
 # User profiles
 GET         /profile                                                                org.ada.web.controllers.UserProfileController.profile
