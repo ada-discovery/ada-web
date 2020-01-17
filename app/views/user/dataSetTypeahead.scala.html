@@ -1,0 +1,37 @@
+@import views.html.layout.main
+@import play.api.mvc.Flash
+@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import org.incal.core.util.nonAlphanumericToUnderscore
+@import views.html.elements.inputTypeahead
+@import org.ada.web.controllers.dataset.datatrans.routes
+@import org.ada.server.models.FilterShowFieldStyle
+@import reactivemongo.bson.BSONObjectID
+
+@(
+    parentId: String,
+    form: Form[_]
+)(
+    implicit context: WebContext
+)
+
+@inputTypeahead(
+    "user",
+    "permission-dataSetId",
+    "permission-dataSetTypeahead",
+    form,
+    "Data Set"
+)
+
+<script type="text/javascript">
+    $(function () {
+
+        populateFieldTypeahedFromUrl(
+            $('#@{parentId} #permission-dataSetTypeahead'),
+            $('#@{parentId} #permission-dataSetId'),
+            '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
+            @FilterShowFieldStyle.LabelsOnly.id
+        )
+    })
+</script>

@@ -175,8 +175,9 @@ class DataSetDispatcher @Inject() (
     dataViewId: BSONObjectID,
     tableOrder: String,
     filterOrId: FilterOrId,
-    oldCountDiff: Option[Int]
-  ) = dispatchIsAdminOrPermissionAndOwnerOrPublicAjax(dataViewId, _.getViewElementsAndWidgetsCallback(dataViewId, tableOrder, filterOrId, oldCountDiff))
+    oldCountDiff: Option[Int],
+    tableSelection: Boolean
+  ) = dispatchIsAdminOrPermissionAndOwnerOrPublicAjax(dataViewId, _.getViewElementsAndWidgetsCallback(dataViewId, tableOrder, filterOrId, oldCountDiff, tableSelection))
 
   override def getNewFilterViewElementsAndWidgetsCallback(
     dataViewId: BSONObjectID,

@@ -31,6 +31,13 @@ case class CategoricalCountWidget(
   displayOptions: MultiChartDisplayOptions = MultiChartDisplayOptions()
 ) extends Widget
 
+case class CategoricalCheckboxCountWidget(
+  title: String,
+  fieldName: String,
+  data: Seq[(Boolean, Count[String])], // Boolean - means checked / unchecked
+  displayOptions: DisplayOptions = BasicDisplayOptions()
+) extends Widget
+
 case class NumericalCountWidget[T](
   title: String,
   fieldName: String,
@@ -317,6 +324,11 @@ object Widget {
 
   implicit val stringCountTupleFormat = TupleFormat[String, Traversable[Count[String]]]
 
+  implicit val booleanStringCountTupleFormat = TupleFormat[Boolean, Count[String]]
+
+  implicit val categoricalCheckboxWidgetFormat = Json.format[CategoricalCheckboxCountWidget]
+
+
   class WidgetWrites[T](
     fieldTypes: Seq[FieldType[T]],
     defaultDoubleFieldType: Option[FieldType[Double]] = None
@@ -366,6 +378,9 @@ object Widget {
 
         case e: HtmlWidget =>
           Json.format[HtmlWidget].writes(e)
+
+        case e: CategoricalCheckboxCountWidget =>
+          categoricalCheckboxWidgetFormat.writes(e)
       }
 
       // field type(s) as json

@@ -59,6 +59,10 @@
                     ("fieldNameTypeahead", x.fieldName)) ++
                     x.groupFieldName.map( ("groupFieldNameTypeahead", _)
                 ))
+            case x: CategoricalCheckboxWidgetSpec =>
+                fieldLabelElements(Seq(
+                    ("fieldNameTypeahead", x.fieldName))
+                )
             case x: CumulativeCountWidgetSpec =>
                 fieldLabelElements(Seq(
                     ("fieldNameTypeahead", x.fieldName)) ++
@@ -238,6 +242,7 @@
 
         var isDefined = true
         var isDistributionType = concreteClass == "@{classOf[DistributionWidgetSpec].getName}"
+        var isCategoricalChecboxType = concreteClass == "@{classOf[CategoricalCheckboxWidgetSpec].getName}"
         var isCumulativeCountType = concreteClass == "@{classOf[CumulativeCountWidgetSpec].getName}"
         var isBoxType = concreteClass == "@{classOf[BoxWidgetSpec].getName}"
         var isScatterType = concreteClass == "@{classOf[ScatterWidgetSpec].getName}"
@@ -250,7 +255,7 @@
 
         var xyFieldsDefined = values["xFieldName"] != null && values["xFieldName"].length > 0 && values["yFieldName"] != null && values["yFieldName"].length > 0
 
-        if (isDistributionType || isCumulativeCountType || isBoxType) {
+        if (isDistributionType || isCumulativeCountType || isBoxType || isCategoricalChecboxType) {
             isDefined = values["fieldName"] != null && values["fieldName"].length > 0
         }
 
@@ -819,6 +824,9 @@
         switch (concreteClass) {
             case "@{classOf[DistributionWidgetSpec].getName}" :
                 labelFields = ["fieldNameTypeahead", "groupFieldNameTypeahead"];
+                break;
+            case "@{classOf[CategoricalCheckboxWidgetSpec].getName}" :
+                labelFields = ["fieldNameTypeahead"];
                 break;
             case "@{classOf[CumulativeCountWidgetSpec].getName}" :
                 labelFields = ["fieldNameTypeahead", "groupFieldNameTypeahead"];

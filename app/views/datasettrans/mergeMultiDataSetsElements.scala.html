@@ -1,0 +1,73 @@
+@import org.ada.server.models.datatrans.MergeMultiDataSetsTransformation
+@import org.ada.web.util.typeColumns
+@import views.html.datasetimport.schedulePanel
+@import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead, dynamicDataSetTable}
+@import views.html.table.{displayTable, dynamicTable, dynamicTwoColumnTable, dynamicStringTable}
+@import views.html.table.dynamicTableJsImport
+@import views.html.elements.{labelValue, checkbox}
+@import views.html.elements._
+@import play.api.i18n.Messages
+@import org.incal.play.controllers.WebContext
+@import org.incal.play.controllers.WebContext._
+@import reactivemongo.bson.BSONObjectID
+@import org.ada.server.models.FilterShowFieldStyle
+@import org.ada.web.controllers.dataset.datatrans.routes
+
+@(
+    id: Option[BSONObjectID],
+    form: Form[MergeMultiDataSetsTransformation]
+)(
+    implicit webContext: WebContext
+)
+
+@dynamicTableJsImport()
+
+@labelValue("sourceDataSetIds", "Source Data Sets"){
+    @dynamicDataSetTable(
+        "sourceDataSetId",
+        form.value.map(_.sourceDataSetIds).getOrElse(Nil)
+    )
+}
+
+@labelValue("fieldNameMappings", "Field Mappings"){
+    @dynamicStringTable(
+        "fieldNameMapping",
+        form.value.map(_.fieldNameMappings.map(_.map(_.getOrElse("")).mkString(","))).getOrElse(Nil)
+    )
+}
+
+@checkbox("mergeMultiDataSetsTransformation", "addSourceDataSetId", form)
+
+@typeaheadJsImport()
+
+@helper.javascriptRouter("dataSetTransformationJsRoutes")(
+    routes.javascript.DataSetTransformationController.resultDataSetIdAndName
+)
+
+<script type="text/javascript">
+    $(function () {
+        populateFieldTypeahedFromUrl(
+            $('#add_sourceDataSetIdModal').find('#dataSetTypeahead'),
+            $('#add_sourceDataSetIdModal').find('#dataSetId'),
+            '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
+            @FilterShowFieldStyle.LabelsOnly.id
+        )
+
+        $("#sourceDataSetIdDiv").on("rowAdded", refreshResultDataSetInfo)
+        $("#sourceDataSetIdDiv").on("rowsRemoved", refreshResultDataSetInfo)
+    })
+
+    function refreshResultDataSetInfo() {
+        $('#sourceDataSetIdDiv').dynamicTable('updateModelFromTable');
+        const dataSetIds = $('#sourceDataSetIdDiv').dynamicTable('getModel');
+        var transformationId = @if(id.isDefined) { '@id.get.stringify' } else { null }
+
+        dataSetTransformationJsRoutes.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.resultDataSetIdAndName(dataSetIds[0], 'Merged', transformationId).ajax({
+            success: function (data) {
+                $('#resultDataSetSpec_id').val(data.id)
+                $('#resultDataSetSpec_name').val(data.name)
+            },
+            error: showErrorResponse
+        })
+    }
+</script>

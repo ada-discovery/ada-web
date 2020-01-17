@@ -5,7 +5,7 @@ import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
 import org.ada.server.dataaccess.DataSetMetaInfoRepoFactory
 import org.ada.server.dataaccess.RepoTypes.DataSpaceMetaInfoRepo
-import org.ada.server.models.{DataSpaceMetaInfo, User}
+import org.ada.server.models.{DataSetMetaInfo, DataSpaceMetaInfo, User}
 import org.ada.web.models.security.DeadboltUser
 import org.incal.core.dataaccess.Criterion.Infix
 import org.incal.play.security.{ActionSecurity, SecurityRole}
@@ -15,6 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 @ImplementedBy(classOf[DataSpaceServiceImpl])
+// TODO: move access/permissions functions outside and create DataSpacePermissionService
 trait DataSpaceService {
 
   def allAsTree: Future[Traversable[DataSpaceMetaInfo]]
@@ -31,6 +32,10 @@ trait DataSpaceService {
   def getTreeForUser(
     user: User
   ): Future[Traversable[DataSpaceMetaInfo]]
+
+  def getDataSetMetaInfosForCurrentUser(
+    implicit request: AuthenticatedRequest[_]
+  ): Future[Traversable[DataSetMetaInfo]]
 
   def unregister(
     dataSpaceInfo: DataSpaceMetaInfo,
@@ -87,7 +92,7 @@ class DataSpaceServiceImpl @Inject() (
         if (isAdmin)
           allAsTreeAux
         else {
-          val dataSetIds = getUsersDataSetIds(user)
+          val dataSetIds = getUsersPermissionDataSetIds(user)
           allAsTreeAux.map(_.map(filterRecursively(dataSetIds)).flatten)
         }
       }
@@ -110,12 +115,35 @@ class DataSpaceServiceImpl @Inject() (
         if (user.isAdmin)
           Some(dataSpace)
         else {
-          val dataSetIds = getUsersDataSetIds(user.user)
+          val dataSetIds = getUsersPermissionDataSetIds(user.user)
           filterRecursively(dataSetIds)(dataSpace)
         }
       }.flatten
 
-  private def getUsersDataSetIds(user: User) =
+
+  override def getDataSetMetaInfosForCurrentUser(
+    implicit request: AuthenticatedRequest[_]
+  ): Future[Traversable[DataSetMetaInfo]] =
+    for {
+      user <- currentUser()
+
+      dataSpaceMetaInfos <- dataSpaceMetaInfoRepo.find()
+    } yield
+      user match {
+        case None => Nil
+
+        case Some(deadboltUser) =>
+          val allDataSetMetaInfos = dataSpaceMetaInfos.flatMap(_.dataSetMetaInfos)
+          if (deadboltUser.isAdmin)
+            allDataSetMetaInfos.toSeq.sortBy(_.id)
+          else {
+            val idMetaInfoMap = allDataSetMetaInfos.map(info => (info.id, info)).toMap
+            val dataSetIds = getUsersPermissionDataSetIds(deadboltUser.user).toSeq.sorted
+            dataSetIds.flatMap(idMetaInfoMap.get(_))
+          }
+      }
+
+  private def getUsersPermissionDataSetIds(user: User) =
     user.permissions.map { permission =>
       val dotsCount = permission.count(_ == '.')
       if (permission.startsWith("DS:") && dotsCount > 0) {

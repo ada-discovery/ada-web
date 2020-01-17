@@ -70,7 +70,8 @@ function categoricalCountWidget(elementId, widget, filterElement) {
     if (filterElement) {
         $('#' + elementId).on('pointSelected', function (event, data) {
             var condition = {fieldName: widget.fieldName, conditionType: "=", value: data.key};
-            $(filterElement).multiFilter('addConditionsAndSubmit', [condition]);
+
+            $(filterElement).multiFilter('replaceWithConditionAndSubmit', condition);
         });
     }
 }
@@ -300,6 +301,7 @@ function genericWidgetForElement(widgetId, widget, filterElement) {
         switch (widget.concreteClass) {
             case "org.ada.web.models.CategoricalCountWidget": categoricalCountWidget(widgetId, widget, filterElement); break;
             case "org.ada.web.models.NumericalCountWidget": numericalCountWidget(widgetId, widget, filterElement); break;
+            case "org.ada.web.models.CategoricalCheckboxCountWidget": categoricalChecboxCountWidget(widgetId, widget, filterElement); break;
             case "org.ada.web.models.BoxWidget": boxWidget(widgetId, widget); break;
             case "org.ada.web.models.ScatterWidget": scatterWidget(widgetId, widget, filterElement); break;
             case "org.ada.web.models.ValueScatterWidget": valueScatterWidget(widgetId, widget, filterElement); break;
@@ -418,6 +420,71 @@ function numericalTableWidget(elementId, widget) {
     div.append(centerWrapper)
 
     $('#' + elementId).html(div)
+}
+
+function categoricalChecboxCountWidget(elementId, widget, filterElement) {
+    var widgetElement = $('#' + elementId)
+
+    var caption = "<h4 align='center'>" + widget.title + "</h4>"
+
+    var height = widget.displayOptions.height || 400
+    var div = $("<div style='position: relative; overflow: auto; height:" + height + "px; text-align: left; line-height: normal; z-index: 0;'>")
+
+    var jumbotron = $("<div class='alert alert-very-light' role='alert'>")
+
+    var rowData = widget.data.map(function(checkCount){
+        var checked = checkCount[0]
+        var count = checkCount[1]
+
+        var checkedAttr = checked ? " checked" : ""
+
+        var key = count.key
+
+        var checkbox = '<input type="checkbox" data-key="' + key + '"' + checkedAttr + '/>';
+
+        if (!key) {
+            checkbox = ""
+        }
+
+        var value =  count.value;
+        if (checked) {
+            value = '<b>' + value + '</b>';
+        }
+        var count = (checked || !key) ? '(' + count.count + ')' : '---'
+        return [checkbox, value, count]
+    })
+
+    var checkboxTable = createTable(null, rowData, true)
+
+    jumbotron.append(checkboxTable)
+
+    div.append(caption)
+    div.append(jumbotron)
+
+    widgetElement.html(div)
+
+    // add a filter support
+
+    function findCheckedKeys() {
+        var keys = []
+        $.each(widgetElement.find('input:checkbox'), function() {
+             if ($(this).is(":checked")) {
+                keys.push($(this).attr("data-key"))
+            }
+        });
+        return keys;
+    }
+
+    widgetElement.find('input:checkbox').on('change', function() {
+        var selectedKeys = findCheckedKeys();
+
+        if (selectedKeys.length > 0) {
+            var condition = {fieldName: widget.fieldName, conditionType: "in", value: selectedKeys}
+
+            $(filterElement).multiFilter('replaceWithConditionAndSubmit', condition);
+        } else
+            showError("At least one checkbox must be selected in the widget '" + widget.title + "'.")
+    });
 }
 
 function basicStatsWidget(elementId, widget) {

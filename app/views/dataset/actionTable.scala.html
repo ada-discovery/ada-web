@@ -5,8 +5,8 @@
 @import views.html.dataset.{widgetsScreen, dynamicFieldTable, dataSetExportDropdown}
 @import views.html.table.dynamicTableJsImport
 @import views.html.elements.labelValue
-@import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.web.controllers.dataset.DataSetWebContext
+@import org.ada.web.controllers.dataset.DataSetWebContext._
 @import org.ada.server.models.DataSetSetting
 
 @(
@@ -37,8 +37,8 @@
 
     <script type="text/javascript">
         $(function () {
-            activateAllFilters(function(filterOrId) {generateTable()});
-            generateTable();
+            activateAllFilters(function(filterOrId) {generateTableAux()});
+            generateTableAux();
         });
 
         function selectAndSubmit() {
@@ -52,39 +52,9 @@
             submit("post", '@submitCall', params)
         }
 
-        function generateTable() {
+        function generateTableAux() {
             var fieldNames = [@Html(tableFieldNames.map("'" + _ + "'").mkString(","))]
-
-            var filterOrId = $(".filter-div").multiFilter('getIdOrModel')
-            var filterOrIdJson = JSON.stringify(filterOrId);
-
-            if (fieldNames.length == 0) {
-                showError("Table cannot be generated. No fields specified.");
-            } else if (fieldNames.length > 50) {
-                showError("Table cannot be generated. The maximum number of fields allowed is 50 but " + fieldNames.length + " were given.");
-            } else {
-                dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.generateTableWithFilter(0, "", fieldNames, filterOrIdJson).ajax({
-                    success: function (data) {
-                        // filter
-                        var filterElement = $(".filter-div");
-                        filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
-
-                        // table
-                        var tableDiv = $("#widgetsDiv .table-div")
-                        if (tableDiv.length == 0) {
-                            $("#widgetsDiv").html("<div class='table-div'></div>")
-                            tableDiv = $("#widgetsDiv .table-div")
-                        }
-                        tableDiv.html(data.table)
-                    },
-                    error: function (data) {
-                        $("#widgetsDiv").html("")
-                        showErrorResponse(data);
-                    }
-                })
-
-                hideErrors();
-            }
+            generateTable($("#widgetsDiv"), $(".filter-div"), fieldNames)
         }
     </script>
 }

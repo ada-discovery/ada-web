@@ -67,7 +67,7 @@ function saveFilterToView(viewId) {
     });
 }
 
-function refreshViewOnFilterUpdate(viewId, filterOrId, filterElement, widgetGridElementWidth, enforceWidth) {
+function refreshViewForFilter(viewId, filterOrId, filterElement, widgetGridElementWidth, enforceWidth, tableSelection) {
     var index = $("#filtersTr").find(".filter-div").index(filterElement);
 
     var counts = $("#filtersTr").find(".count-hidden").map(function(index, element) {
@@ -78,7 +78,7 @@ function refreshViewOnFilterUpdate(viewId, filterOrId, filterElement, widgetGrid
     var totalCount = counts.reduce(function (a, b) {return a + b;}, 0);
     var oldCountDiff = totalCount - counts[index];
 
-    dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getViewElementsAndWidgetsCallback(viewId, "", filterOrId, oldCountDiff).ajax( {
+    dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getViewElementsAndWidgetsCallback(viewId, "", filterOrId, oldCountDiff, tableSelection).ajax( {
         success: function(data) {
             hideErrors();
 
@@ -242,6 +242,44 @@ function updateAllWidgetsFromCallback(callbackId, defaultElementWidth) {
 ///////////
 // Table //
 ///////////
+
+function generateTable(parentTableDiv, filterElement, fieldNames, showSuccessMessage) {
+    var filterOrId = filterElement.multiFilter('getIdOrModel')
+    var filterOrIdJson = JSON.stringify(filterOrId);
+
+    if (fieldNames.length == 0) {
+        showError("Table cannot be generated. No fields specified.");
+    } else if (fieldNames.length > 50) {
+        showError("Table cannot be generated. The maximum number of fields allowed is 50 but " + fieldNames.length + " were given.");
+    } else {
+        dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.generateTableWithFilter(0, "", fieldNames, filterOrIdJson).ajax({
+            success: function (data) {
+                // filter
+                filterElement.multiFilter("replaceModelAndPanel", data.filterModel, data.conditionPanel);
+
+                // table
+                var tableDiv = parentTableDiv.find(".table-div")
+                if (tableDiv.length == 0) {
+                    parentTableDiv.html("<div class='table-div'></div>")
+                    tableDiv = parentTableDiv.find(".table-div")
+                }
+                tableDiv.html(data.table)
+                if (showSuccessMessage) {
+                    showMessage("Table generation finished.")
+                }
+            },
+            error: function (data) {
+                parentTableDiv.html("")
+                showErrorResponse(data);
+            }
+        })
+
+        hideErrors();
+        if (showSuccessMessage) {
+            showMessage("Table generation for " + fieldNames.length + " fields launched.")
+        }
+    }
+}
 
 function showJsonFieldValue(id, fieldName, fieldLabel, isArray) {
     dataSetJsRoutes.org.ada.web.controllers.dataset.DataSetDispatcher.getFieldValue(id, fieldName).ajax( {
