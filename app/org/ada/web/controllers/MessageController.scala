@@ -1,10 +1,6 @@
 package org.ada.web.controllers
 
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-
 import javax.inject.Inject
-import akka.stream.scaladsl.Source
 import org.ada.server.models.Message
 import org.ada.server.models.Message._
 import org.ada.server.dataaccess.RepoTypes.MessageRepo
@@ -15,11 +11,11 @@ import org.ada.server.models.Message.MessageFormat
 import org.ada.web.controllers.core.AdaBaseController
 import play.api.libs.EventSource
 import reactivemongo.bson.BSONObjectID
-import org.incal.core.dataaccess.DescSort
+import org.incal.core.dataaccess.{DescSort, NotEqualsNullCriterion}
 import play.api.http.{ContentTypes, HttpEntity}
 
 import scala.concurrent.duration._
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits._
 import reactivemongo.play.json.BSONFormats.BSONObjectIDFormat
 
@@ -46,35 +42,33 @@ class MessageController @Inject() (repo: MessageRepo) extends AdaBaseController 
 
   def listMostRecent(limit: Int) = restrictSubjectPresentAny(noCaching = true) { implicit request =>
     for {
-      messages <- repo.find(sort = Seq(DescSort("_id")), limit = Some(limit))  // ome(0)
+      // the current user
+      user <- currentUser()
+
+      // if the user is not admin filter out system messages (without created-by-user)
+      criteria = if (!user.map(_.isAdmin).getOrElse(false)) {
+        Seq(NotEqualsNullCriterion("createdByUser"))
+      } else
+        Nil
+
+      // find the messages
+      messages <- repo.find(
+        criteria = criteria,
+        sort = Seq(DescSort("_id")),
+        limit = Some(limit)
+      )  // ome(0)
     } yield
       Ok(Json.toJson(messages))
   }
 
-//  @Deprecated
-//  def stream = deadbolt.SubjectPresent() {
-//    Action { implicit request =>
-//      Ok.stream(repo.stream.map(message => Json.toJson(message)) &> Comet(callback = "parent.newMessage"))
-//    }
-//  }
-
   private def eventId(jsObject: JsValue) = Some(((jsObject \ "_id").get.as[BSONObjectID]).stringify)
   private implicit val idExtractor = new EventIdExtractor[JsValue](eventId)
 
-  def eventStream = Action { // deadbolt.SubjectPresent()()
+  def eventStream = Action {
     implicit request =>
       val requestStart = new java.util.Date()
       val messageStream = repo.stream.filter(_.timeCreated.after(requestStart)).map(message => Json.toJson(message))
       Ok.chunked(messageStream via EventSource.flow).as(ContentTypes.EVENT_STREAM) // as("text/event-stream")
-  }
-
-  def liveClock = Action {
-    val df: DateTimeFormatter = DateTimeFormatter.ofPattern("HH mm ss")
-    val tickSource = Source.tick(0 millis, 100 millis, "TICK")
-    val source: Source[String, _] = tickSource.map { (tick) =>
-      df.format(ZonedDateTime.now())
-    }
-    Ok.chunked(source via EventSource.flow).as(ContentTypes.EVENT_STREAM)
   }
 
   private def removeScriptTags(text: String): String = {
