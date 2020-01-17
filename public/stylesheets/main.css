@@ -600,3 +600,8 @@ a.carousel-control.right{
     background-color: #F5F5F5 !important;
     opacity: 0.6;
 }
+
+.alert-very-light {
+    background-color: #f5f5f5;
+    padding-bottom: 0px;
+}

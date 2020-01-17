@@ -40,8 +40,6 @@
                 @dataSetNameSuffix.map { suffix =>
                     $('#@{fieldName}Typeahead').on('typeahead:selected', function (evt, item) {
                         var sourceDataSetId = item.key
-                        var dataSetId = item.key + "_" + '@{nonAlphanumericToUnderscore(suffix.trim()).toLowerCase()}'
-                        var dataSetName = item.key + ' @suffix'
                         var transformationId = @if(transformationId.isDefined) { '@transformationId.get.stringify' } else { null }
 
                         dataSetTransformationJsRoutes.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.resultDataSetIdAndName(sourceDataSetId, '@suffix', transformationId).ajax({
@@ -59,7 +57,7 @@
         populateFieldTypeahedFromUrl(
             $('#@{fieldName}Typeahead'),
             $('#@{fieldName}'),
-            '@Html(routes.DataSetTransformationController.dataSetIds().url)',
+            '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
             @FilterShowFieldStyle.LabelsOnly.id,
             addSelectedListener,
             true

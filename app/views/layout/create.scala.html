@@ -9,12 +9,13 @@
 	elements : Html,
 	saveCall : Call,
 	listCall : Call,
-	formArgs: (Symbol,String)*
+	bottomResources: Option[Html] = None,
+	formArgs: Seq[(Symbol, String)] = Nil
 )(
 	implicit context: WebContext
 )
 
-@main(Messages("create.title", displayName), None, None, None, None, Some(formErrors(messagePrefix, form.errors))) {
+@main(Messages("create.title", displayName), None, None, None, bottomResources, Some(formErrors(messagePrefix, form.errors))) {
 
 	<div class="page-header">
 		<h3>@Messages("create.title", displayName)</h3>

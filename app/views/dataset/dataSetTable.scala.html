@@ -9,7 +9,7 @@
     filter: Option[Filter],
     tableFields: Traversable[Field],
     withRowClickableJs: Boolean = false,
-    tableSelection: Boolean = false
+    tableRowSelection: Boolean = false
 )(
     implicit request: Request[_], dataSetRouter: DataSetRouter
 )
@@ -23,11 +23,11 @@
             _,
             tableFields.map(_.name).toSeq,
             filter.map(_.conditionsOrId).getOrElse(Left(Nil)),
-            tableSelection
+            tableRowSelection
         ),
         Some(dataSetRouter.get),
         withRowClickableJs,
         true,
-        tableSelection
+        tableRowSelection
     )
 }

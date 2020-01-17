@@ -119,7 +119,8 @@ class ClusteringController @Inject()(
           viewElements(form, ctx.msg),
           clusteringRoutes.save,
           clusteringRoutes.listAll(),
-          'enctype -> "multipart/form-data"
+          None,
+          Seq('enctype -> "multipart/form-data")
         )
     }
 

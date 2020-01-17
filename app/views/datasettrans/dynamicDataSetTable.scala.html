@@ -1,0 +1,55 @@
+@import views.html.table.{dynamicTable, displayTable}
+@import views.html.filter.{jsTreeImport, categoricalTree}
+@import org.ada.web.util.typeColumns
+@import org.ada.server.field.FieldUtil.nameOrLabel
+@import org.ada.server.models.{Field, Category, FilterShowFieldStyle}
+@import org.ada.server.models.User
+@import views.html.elements.{inputTypeahead, typeahead}
+
+@(
+    tableId: String,
+    dataSetIds: Traversable[String] = Nil,
+    sortable: Boolean = true,
+    gridWidth: Int = 5
+)(
+    implicit request: Request[_], webJarAssets: WebJarAssets
+)
+
+@modalInner = {
+    @typeahead("dataSetTypeahead", "dataSetId", "Data Set", isLarge = true)
+}
+
+@table = {
+    @displayTable(
+        dataSetIds,
+        typeColumns[String](
+            (Some("dataSetId"), "", identity)
+        ),
+        tableSelection = true
+    )
+}
+
+@rowToModelJsFun = {
+    function(row) {
+        return row.find('#dataSetId').text().trim();
+    }
+}
+
+@itemToRowJsFun = {
+    function(values) {
+        var row = null
+        if (values["dataSetId"]) {
+            var checkboxColumn = "<td><input type='checkbox' class='table-selection'></input></td>";
+            var dataSetIdColumn = "<td id='dataSetId'>" + values["dataSetId"] + "</td>";
+
+            // create row
+            row = $("<tr></tr>")
+            row.append(checkboxColumn)
+            row.append(dataSetIdColumn)
+        }
+
+        return row;
+    }
+}
+
+@dynamicTable(tableId, table, sortable, rowToModelJsFun, itemToRowJsFun, modalInner, None, gridWidth, false, false)

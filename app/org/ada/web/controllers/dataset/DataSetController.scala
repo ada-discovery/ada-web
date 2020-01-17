@@ -30,6 +30,14 @@ import org.incal.play.controllers.ReadonlyController
   */
 trait DataSetController extends ReadonlyController[BSONObjectID] {
 
+  /**
+    * Gets a redirect to a default view for the data set associated with this controller. Default view is flagged with "default: true".
+    * If more than one exists redirects to the first one.
+    *
+    * @return
+    */
+  def getDefaultView: Action[AnyContent]
+
   def getView(
     dataViewId: BSONObjectID,
     tablePages: Seq[PageOrder],
@@ -37,13 +45,12 @@ trait DataSetController extends ReadonlyController[BSONObjectID] {
     filterChanged: Boolean
   ): Action[AnyContent]
 
-  def getDefaultView: Action[AnyContent]
-
   def getViewElementsAndWidgetsCallback(
     dataViewId: BSONObjectID,
     tableOrder: String,
     filterOrId: FilterOrId,
-    oldCountDiff: Option[Int]
+    oldCountDiff: Option[Int],
+    tableSelection: Boolean
   ): Action[AnyContent]
 
   def getNewFilter: Action[AnyContent]

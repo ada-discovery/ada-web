@@ -114,6 +114,8 @@ class DataSetTransformationController @Inject()(
       transformation._id, transformation.timeCreated, transformation.timeLastExecuted, transformation.scheduled, transformation.scheduledTime.map(fillZeroes)
     )
 
+    println(transformationWithFixedScheduledTime)
+
     super.saveCall(transformationWithFixedScheduledTime).map { id =>
       scheduleOrCancel(id, transformationWithFixedScheduledTime); id
     }
@@ -146,17 +148,6 @@ class DataSetTransformationController @Inject()(
         }
         Ok(JsArray(idAndNames.toSeq))
       }
-  }
-
-  def dataSetIds = restrictAny { implicit request =>
-    for {
-      dataSpaces <- dataSpaceMetaInfoRepo.find()
-    } yield {
-      val dataSetNameLabels = dataSpaces.flatMap(_.dataSetMetaInfos).toSeq.sortBy(_.id).map { dataSetInfo =>
-        Json.obj("name" -> dataSetInfo.id , "label" -> dataSetInfo.id)
-      }
-      Ok(Json.toJson(dataSetNameLabels))
-    }
   }
 
   def copy(id: BSONObjectID) = restrictAny {
