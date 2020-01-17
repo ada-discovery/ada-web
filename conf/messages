@@ -149,6 +149,7 @@ dataSets.menu = Studies
 ml.menu = ML
 admin.menu = Admin
 links.menu = Links
+issues.menu = Issues
 docs.menu = Docs / Help
 contact.menu = Contact
 
