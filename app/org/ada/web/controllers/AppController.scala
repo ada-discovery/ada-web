@@ -30,6 +30,12 @@ class AppController @Inject() (
     )
   }
 
+  def issues = AuthAction { implicit request =>
+    getHtmlSnippet(HtmlSnippetId.Issues).map( html =>
+      Ok(layout.issues(html))
+    )
+  }
+
   def contact = AuthAction { implicit request =>
     getHtmlSnippet(HtmlSnippetId.Contact).map( html =>
       Ok(layout.contact(html))
