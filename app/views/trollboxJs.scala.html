@@ -8,8 +8,20 @@
     messageJsRoutes.listMostRecent
 )
 
+@sensitivityConfirmationButtons = {
+    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-default" data-dismiss="modal" onclick="sensitivityInfoConfirmation(); return false;">OK, I understand</button>
+}
+
+@sensitivityConfirmationModalInner = {
+    <p>Pls. be aware that messages are visible to the all logged users so pls. don't share any sensitive information here.</p>
+}
+
+@modal("sensitivityModalConfirmation", "Confirmation", sensitivityConfirmationModalInner, None, Some(sensitivityConfirmationButtons))
+
 <script src="@routes.WebJarAssets.at(webJarAssets.locate("Autolinker.js", "Autolinker.min.js"))"></script>
 <script type="text/javascript" defer="defer">
+    var sensitivityModalConfirmationShown = false
     $(function() {
         $('.trollmessagebox').css('max-height',$(window).height() - 220);
 
@@ -29,17 +41,30 @@
         })
     });
 
+    function sensitivityInfoConfirmation() {
+        sensitivityModalConfirmationShown = true;
+        shoutMessage();
+    }
+
     $("#shoutmessage").keydown(function(event) {
         if (event.keyCode == 13) {
-            var message = $("#shoutmessage").val();
-            jsMessageRoutes.org.ada.web.controllers.MessageController.saveUserMessage(message).ajax( {
-                success: function() {
-                    $("#shoutmessage").val("");
-                },
-                error: function(data){
-                    $("#shoutmessage").val(data.responseText);
-                }
-            });
+            if (!sensitivityModalConfirmationShown) {
+                $("#sensitivityModalConfirmation").modal('show');
+            } else {
+                shoutMessage()
+            }
         }
     });
+
+    function shoutMessage() {
+        var message = $("#shoutmessage").val();
+        jsMessageRoutes.org.ada.web.controllers.MessageController.saveUserMessage(message).ajax( {
+            success: function() {
+                $("#shoutmessage").val("");
+            },
+            error: function(data){
+                $("#shoutmessage").val(data.responseText);
+            }
+        });
+    }
 </script>
