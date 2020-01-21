@@ -1,6 +1,7 @@
-@import views.html.filter.{jsTreeImport, categoricalTree}
+@import org.ada.server.models.{Category, FilterShowFieldStyle}
 @import org.incal.core.ConditionType
-@import org.ada.server.models.{FilterShowFieldStyle, Category}
+@import views.html.filter.categoricalTree
+@import org.ada.web.util.conditionTypeToReadableOperator
 
 @(
     filterElementId: String,
@@ -58,14 +59,14 @@
                             <input id="fieldName" type="hidden" value="">
                         </div>
                         <div class="col-md-6 aligned-container">
-                            <select id="conditionType" class="float-left">
+                            <select id="conditionType" class="float-left" style="margin-right:10px; padding:4px 0 4px 0;">
                                 @ConditionType.values.map{ conditionType =>
-                                    <option value="@conditionType">@conditionType</option>
+                                    <option value="@conditionType">@conditionTypeToReadableOperator(conditionType)</option>
                                 }
                             </select>
                             <input id="value" class="float-left conditionValue" placeholder="Condition"/>
                         </div>
-                        <div clas="col-md-2">
+                        <div class="col-md-2">
                             <a id="showChoicesButton" class="btn btn-sm btn-default" data-toggle="collapse" data-target="#@{filterElementId}-showChoicesPanel" data-toggle="tooltip" title="Field Name/Label Display Options">
                                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                             </a>
