@@ -495,8 +495,12 @@ a.carousel-control.right{
 }
 
 .filter-part {
-    display:inline-block;
-    margin-right: 15px;
+    flex-direction: column;
+    padding: 5px 5px 5px 0;
+}
+
+#conditionPanel {
+    display: flex;
 }
 
 .condition {
