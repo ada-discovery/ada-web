@@ -6,34 +6,23 @@
     filterLabel: String = "Filter"
 )
 
-@defining((filter.isEmpty || filter.get._id.isEmpty) && filter.map(_.conditions.size).getOrElse(0) < 4) { showPanel =>
-
-    <div id="conditionPanel" class="filter-part">
-
-        <span class="filter-part" style="padding-top: 5px">@filterLabel:</span>
-
-        @if(!showPanel) {
-            <button id="filterNameButton" type="button" class="filter-part btn btn-sm" title="Show Conditions">
-                <h5><b>@filter.get.name.getOrElse("...")</b></h5>
+<div id="conditionPanel" class="filter-part">
+    <span class="filter-part" style="padding-top: 5px">@filterLabel: @filter.get.name.getOrElse("")</span>
+    @filter.map(_.conditions).getOrElse(Nil).zipWithIndex.map { case (condition, index) =>
+    <div id="condition-full@index" class="filter-part condition-full">
+        <span class="condition">
+            <span class="label label-primary" id="fieldLabel">@condition.fieldLabelOrElseName</span>
+            <span id="conditionType"><b>@conditionTypeToReadableOperator(condition.conditionType)</b></span>
+            <span class="label label-primary" id="value">@valueOrUndefined(condition, trim = true)</span>
+    </span>
+        <span class="condition-buttons" style="display: none; padding-left: 5px">
+            <button type="button" class="btn btn-sm btn-default editConditionButton">
+                <span class="glyphicon glyphicon-pencil"></span>
             </button>
-        }
-
-        @filter.map(_.conditions).getOrElse(Nil).zipWithIndex.map { case (condition, index) =>
-            <div id="condition-full@index" class="filter-part condition-full" @if(!showPanel) {style="display:None"}>
-                <span class="condition">
-                    <span class="label label-primary" id="fieldLabel">@condition.fieldLabelOrElseName</span>
-                    <span id="conditionType"><b>@conditionTypeToReadableOperator(condition.conditionType)</b></span>
-                    <span class="label label-primary" id="value">@valueOrUndefined(condition, trim = true)</span>
-                </span>
-                <span class="condition-buttons" style="display: none; padding-left: 5px">
-                    <button type="button" class="btn btn-sm btn-default editConditionButton">
-                        <span class="glyphicon glyphicon-pencil"></span>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-default deleteConditionButton">
-                        <span class="glyphicon glyphicon-trash"></span>
-                    </button>
-                </span>
-            </div>
-        }
+            <button type="button" class="btn btn-sm btn-default deleteConditionButton">
+                <span class="glyphicon glyphicon-trash"></span>
+            </button>
+        </span>
     </div>
-}
+    }
+</div>
