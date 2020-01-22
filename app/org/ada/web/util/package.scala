@@ -41,6 +41,19 @@ package object util {
       case ConditionType.RegexNotEquals => "not like"
     }
 
+  val operators = Vector(
+    ConditionType.Equals -> 1,
+    ConditionType.NotEquals -> 2,
+    ConditionType.Greater -> 3,
+    ConditionType.GreaterEqual -> 4,
+    ConditionType.Less -> 5,
+    ConditionType.LessEqual -> 6,
+    ConditionType.In  -> 7,
+    ConditionType.NotIn -> 8,
+    ConditionType.RegexEquals -> 9,
+    ConditionType.RegexNotEquals -> 10
+  ).sortBy(_._2).map(x => x._1 -> conditionTypeToReadableOperator(x._1))
+
   def valueOrUndefined(condition: FilterCondition, trim: Boolean = false) = {
     val valueOrLabel =
       condition.valueLabel match {

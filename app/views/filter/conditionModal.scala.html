@@ -1,7 +1,6 @@
 @import org.ada.server.models.{Category, FilterShowFieldStyle}
-@import org.incal.core.ConditionType
 @import views.html.filter.categoricalTree
-@import org.ada.web.util.conditionTypeToReadableOperator
+@import org.ada.web.util.operators
 
 @(
     filterElementId: String,
@@ -31,7 +30,7 @@
     <li>
         <label class="radio-inline"><input type="radio" name="showChoice" value="@value.id" @if(showFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels) == value) {checked="checked"}>
             <h5 style="padding-left: 10px">
-            @text
+                @text
             </h5>
         </label>
     </li>
@@ -60,9 +59,9 @@
                         </div>
                         <div class="condition-modal-operator-select">
                             <select id="conditionType">
-                            @ConditionType.values.map{ conditionType =>
-                                <option value="@conditionType">@conditionTypeToReadableOperator(conditionType)</option>
-                            }
+                                @operators.map { operator =>
+                                    <option value="@operator._1">@operator._2</option>
+                                }
                             </select>
                         </div>
                         <div class="condition-modal-value-input">
