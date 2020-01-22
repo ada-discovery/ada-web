@@ -1,6 +1,6 @@
-@import views.html.filter.{jsTreeImport, categoricalTree}
-@import org.incal.core.ConditionType
-@import org.ada.server.models.{FilterShowFieldStyle, Category}
+@import org.ada.server.models.{Category, FilterShowFieldStyle}
+@import views.html.filter.categoricalTree
+@import org.ada.web.util.operators
 
 @(
     filterElementId: String,
@@ -30,7 +30,7 @@
     <li>
         <label class="radio-inline"><input type="radio" name="showChoice" value="@value.id" @if(showFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels) == value) {checked="checked"}>
             <h5 style="padding-left: 10px">
-            @text
+                @text
             </h5>
         </label>
     </li>
@@ -52,20 +52,22 @@
                             <hr/>
                         </div>
                     }
-                    <div class="row">
-                        <div class="col-md-4">
+                    <div class="condition-modal-form-row">
+                        <div class="condition-modal-field-input">
                             <input id="fieldNameTypeahead" class="typeahead" type="text" placeholder="Field Name or Label">
                             <input id="fieldName" type="hidden" value="">
                         </div>
-                        <div class="col-md-6 aligned-container">
-                            <select id="conditionType" class="float-left">
-                                @ConditionType.values.map{ conditionType =>
-                                    <option value="@conditionType">@conditionType</option>
+                        <div class="condition-modal-operator-select">
+                            <select id="conditionType">
+                                @operators.map { operator =>
+                                    <option value="@operator._1">@operator._2</option>
                                 }
                             </select>
-                            <input id="value" class="float-left conditionValue" placeholder="Condition"/>
                         </div>
-                        <div clas="col-md-2">
+                        <div class="condition-modal-value-input">
+                            <input id="value" class="conditionValue" placeholder="Condition"/>
+                        </div>
+                        <div class="condition-modal-btns">
                             <a id="showChoicesButton" class="btn btn-sm btn-default" data-toggle="collapse" data-target="#@{filterElementId}-showChoicesPanel" data-toggle="tooltip" title="Field Name/Label Display Options">
                                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                             </a>
@@ -76,6 +78,7 @@
                             }
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="col-md-12" style="margin-left:10px">
                             <span id="fieldInfo" class="help-block"></span>

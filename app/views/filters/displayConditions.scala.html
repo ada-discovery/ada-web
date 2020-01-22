@@ -1,22 +1,11 @@
 @import org.incal.core.FilterCondition
+@import org.ada.web.util.{conditionTypeToReadableOperator, valueOrUndefined}
 
 @(conditions: Traversable[FilterCondition])
 
-@valueOrUndefined(condition: FilterCondition) = @{
-    val valueOrLabel =
-        condition.valueLabel match {
-            case Some(label) => Some(label)
-            case None => condition.value
-        }
-    valueOrLabel match {
-        case None => "undefined"
-        case Some(s) if s.isEmpty => "undefined"
-        case Some(s) => s
-    }
-}
-
 @displayCondition(condition: FilterCondition) = @{
-    condition.fieldLabelOrElseName + " " + condition.conditionType + " " + valueOrUndefined(condition)
+    val operator = conditionTypeToReadableOperator(condition.conditionType)
+    condition.fieldLabelOrElseName + " " + operator + " " + valueOrUndefined(condition)
 }
 
 @conditions.map( condition => displayCondition(condition)).mkString(" AND ")
