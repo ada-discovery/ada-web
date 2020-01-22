@@ -392,9 +392,46 @@ a.carousel-control.right{
     }
 }
 
+.condition-modal-form-row {
+    display: flex;
+}
+
+.condition-modal-field-input {
+    flex-direction: row;
+    padding-right: 15px;
+}
+
+.condition-modal-operator-select {
+    flex-direction: row;
+    padding-right: 15px;
+}
+
+.condition-modal-value-input {
+    flex-direction: row;
+    padding-right: 15px;
+    min-width: 170px;
+}
+
+.condition-modal-btns {
+    flex-direction: row;
+}
+
+#conditionPanel {
+    display: flex;
+}
+
+.condition {
+    font-size: 18px;
+}
+
+#conditionType {
+    width: 80px;
+    max-width: 80px;
+}
+
 .conditionValue {
-    width: 200px;
-    max-width: 200px
+    width: 150px;
+    max-width: 150px;
 }
 
 .documentation {
@@ -497,14 +534,6 @@ a.carousel-control.right{
 .filter-part {
     flex-direction: column;
     padding: 5px 5px 5px 0;
-}
-
-#conditionPanel {
-    display: flex;
-}
-
-.condition {
-    font-size: 18px;
 }
 
 .aligned-container {

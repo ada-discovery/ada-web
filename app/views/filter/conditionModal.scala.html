@@ -53,20 +53,22 @@
                             <hr/>
                         </div>
                     }
-                    <div class="row">
-                        <div class="col-md-4">
+                    <div class="condition-modal-form-row">
+                        <div class="condition-modal-field-input">
                             <input id="fieldNameTypeahead" class="typeahead" type="text" placeholder="Field Name or Label">
                             <input id="fieldName" type="hidden" value="">
                         </div>
-                        <div class="col-md-6 aligned-container">
-                            <select id="conditionType" class="float-left" style="margin-right:10px; padding:4px 0 4px 0;">
-                                @ConditionType.values.map{ conditionType =>
-                                    <option value="@conditionType">@conditionTypeToReadableOperator(conditionType)</option>
-                                }
+                        <div class="condition-modal-operator-select">
+                            <select id="conditionType">
+                            @ConditionType.values.map{ conditionType =>
+                                <option value="@conditionType">@conditionTypeToReadableOperator(conditionType)</option>
+                            }
                             </select>
-                            <input id="value" class="float-left conditionValue" placeholder="Condition"/>
                         </div>
-                        <div class="col-md-2">
+                        <div class="condition-modal-value-input">
+                            <input id="value" class="conditionValue" placeholder="Condition"/>
+                        </div>
+                        <div class="condition-modal-btns">
                             <a id="showChoicesButton" class="btn btn-sm btn-default" data-toggle="collapse" data-target="#@{filterElementId}-showChoicesPanel" data-toggle="tooltip" title="Field Name/Label Display Options">
                                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                             </a>
@@ -77,6 +79,7 @@
                             }
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="col-md-12" style="margin-left:10px">
                             <span id="fieldInfo" class="help-block"></span>
