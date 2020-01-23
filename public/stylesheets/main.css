@@ -418,6 +418,7 @@ a.carousel-control.right{
 
 #conditionPanel {
     display: flex;
+    overflow: scroll;
 }
 
 .condition {
