@@ -143,14 +143,14 @@ function populateTypeahead(element, source, displayFun, suggestionFun, updateVal
     element.typeahead({
         hint: true,
         highlight: true,
-        minLength: 0
+        minLength: 2
     }, {
         source: source,
         display: displayFun,
         templates: {
             suggestion: suggestionFun
         },
-        limit: 25
+        limit: 100
     });
 
     element.on("focus", function () {
