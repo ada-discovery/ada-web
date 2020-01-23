@@ -636,10 +636,10 @@ function loadNewTableContent(element, url, data, callType) {
 
 function activateRowClickable() {
     $(function() {
-        $(".clickable-row").dblclick(function () {
+        $(".clickable-row").click(function () {
             window.document.location = $(this).data("href");
         });
-        $(".no-rowClicked").dblclick(function (event) {
+        $(".no-rowClicked").click(function (event) {
             event.stopPropagation();
         });
     });
