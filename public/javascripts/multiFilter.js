@@ -364,9 +364,9 @@ $.widget("custom.multiFilter", {
         var li = $("<li>", {id: "condition-full" + index, "class": "condition-full"});
 
         var conditionSpan = $("<span>", {"class": "condition"})
-        conditionSpan.append("<span class='label label-primary' id='fieldLabel'>" + condition['fieldLabel'] + "</span>");
-        conditionSpan.append("<span id='conditionType'><b> " + condition['conditionType'] + " </b></span>");
-        conditionSpan.append("<span class='label label-primary' id='value'>" + condition['value'] + "</span>");
+        conditionSpan.append("<span class='filter-label label label-primary' id='fieldLabel'>" + condition['fieldLabel'] + "</span>");
+        conditionSpan.append("<span id='filter-label conditionType'><b> " + condition['conditionType'] + " </b></span>");
+        conditionSpan.append("<span class='filter-label label label-primary' id='value'>" + condition['value'] + "</span>");
 
         var h4 = $("<h4></h4>");
         h4.append(conditionSpan)

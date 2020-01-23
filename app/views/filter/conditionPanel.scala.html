@@ -1,57 +1,28 @@
 @import org.ada.server.models.Filter
-@import org.incal.core.FilterCondition
-@import org.ada.web.util.shorten
+@import org.ada.web.util.{conditionTypeToReadableOperator, valueOrUndefined}
 
 @(
     filter: Option[Filter],
     filterLabel: String = "Filter"
 )
 
-@valueOrUndefined(condition: FilterCondition) = @{
-    val valueOrLabel =
-        condition.valueLabel match {
-            case Some(label) => Some(label)
-            case None => condition.value
-        }
-
-    valueOrLabel match {
-        case None => "undefined"
-        case Some(s) if s.isEmpty => "undefined"
-        case Some(s) => shorten(s, 80)
-    }
-}
-
-@defining((filter.isEmpty || filter.get._id.isEmpty) && filter.map(_.conditions.size).getOrElse(0) < 4) { showPanel =>
-
-    <div id="conditionPanel" class="filter-part">
-
-        <span class="filter-part" style="padding-top: 5px">@filterLabel:</span>
-
-        @if(!showPanel) {
-            <button id="filterNameButton" type="button" class="filter-part btn btn-sm" title="Show Conditions">
-                <h5><b>@filter.get.name.getOrElse("...")</b></h5>
+<div id="conditionPanel" class="filter-part">
+    <span class="filter-part" style="padding-top: 5px">@filterLabel: @filter.map(_.name.getOrElse(""))</span>
+    @filter.map(_.conditions).getOrElse(Nil).zipWithIndex.map { case (condition, index) =>
+    <div id="condition-full@index" class="filter-part condition-full">
+        <span class="condition">
+            <span class="filter-label label label-primary" id="fieldLabel">@condition.fieldLabelOrElseName</span>
+            <span id="filter-label conditionType"><b>@conditionTypeToReadableOperator(condition.conditionType)</b></span>
+            <span class="filter-label label label-primary" id="value">@valueOrUndefined(condition, trim = true)</span>
+    </span>
+        <span class="condition-buttons" style="display: none; padding-left: 5px">
+            <button type="button" class="btn btn-sm btn-default editConditionButton">
+                <span class="glyphicon glyphicon-pencil"></span>
             </button>
-        }
-
-        @filter.map(_.conditions).getOrElse(Nil).zipWithIndex.map { case (condition, index) =>
-            <div id="condition-full@index" class="filter-part condition-full" @if(!showPanel) {style="display:None"}>
-                <span class="condition">
-                    <span class="label label-primary" id="fieldLabel">@condition.fieldLabelOrElseName</span>
-                    <span id="conditionType"><b>@condition.conditionType</b></span>
-                    <span class="label label-primary" id="value">@valueOrUndefined(condition)</span>
-                </span>
-                <span class="condition-buttons" style="display: none; padding-left: 5px">
-                    <button type="button" class="btn btn-sm btn-default editConditionButton">
-                        <span class="glyphicon glyphicon-pencil"></span>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-default deleteConditionButton">
-                        <span class="glyphicon glyphicon-trash"></span>
-                    </button>
-                </span>
-            </div>
-            @if(index < filter.map(_.conditions.size).getOrElse(0) - 1) {
-                <span class="filter-part" @if(!showPanel) {style="padding-top: 5px; display:None"} else {style="padding-top: 5px"}>AND</span>
-            }
-        }
+            <button type="button" class="btn btn-sm btn-default deleteConditionButton">
+                <span class="glyphicon glyphicon-trash"></span>
+            </button>
+        </span>
     </div>
-}
+    }
+</div>

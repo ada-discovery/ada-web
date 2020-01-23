@@ -1,20 +1,20 @@
 package org.ada.web
 
-import org.ada.web.models._
-import org.ada.server.models._
-import org.incal.core.util.toHumanReadableCamel
-import play.api.{Logger, LoggerLike}
 import org.ada.server.dataaccess.JsonUtil
+import org.ada.server.models._
+import org.ada.web.models._
+import org.incal.core.util.toHumanReadableCamel
+import org.incal.core.{ConditionType, FilterCondition}
 import play.api.libs.json.{Json, Writes}
 import play.twirl.api.Html
 
-import scala.collection.{AbstractIterator, Iterator, Traversable}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.collection.Traversable
 
 package object util {
 
   def shorten(string : String, length: Int = 25) =
     if (string.length > length) string.substring(0, length - 2) + "..." else string
+
 
   def fieldLabel(fieldName : String): String =
     toHumanReadableCamel(JsonUtil.unescapeKey(fieldName))
@@ -26,6 +26,48 @@ package object util {
 
   def fieldLabel(field: Field): String =
     field.label.getOrElse(fieldLabel(field.name))
+
+  def conditionTypeToReadableOperator(conditionType: ConditionType.Value) =
+    conditionType match {
+      case ConditionType.Equals => "="
+      case ConditionType.NotEquals => "≠"
+      case ConditionType.Greater => ">"
+      case ConditionType.GreaterEqual => "≥"
+      case ConditionType.Less => "<"
+      case ConditionType.LessEqual => "≤"
+      case ConditionType.In => "in"
+      case ConditionType.NotIn => "not in"
+      case ConditionType.RegexEquals => "like"
+      case ConditionType.RegexNotEquals => "not like"
+    }
+
+  val operators = Vector(
+    ConditionType.Equals -> 1,
+    ConditionType.NotEquals -> 2,
+    ConditionType.Greater -> 3,
+    ConditionType.GreaterEqual -> 4,
+    ConditionType.Less -> 5,
+    ConditionType.LessEqual -> 6,
+    ConditionType.In  -> 7,
+    ConditionType.NotIn -> 8,
+    ConditionType.RegexEquals -> 9,
+    ConditionType.RegexNotEquals -> 10
+  ).sortBy(_._2).map(x => x._1 -> conditionTypeToReadableOperator(x._1))
+
+  def valueOrUndefined(condition: FilterCondition, trim: Boolean = false) = {
+    val valueOrLabel =
+      condition.valueLabel match {
+        case Some(label) => Some(label)
+        case None => condition.value
+      }
+
+    valueOrLabel match {
+      case None => "undefined"
+      case Some(s) if s.isEmpty => "undefined"
+      case Some(s) if trim => shorten(s, 80)
+      case Some(s) => s
+    }
+  }
 
   def widgetElementId(chart: Widget) = chart._id.stringify + "Widget"
 
