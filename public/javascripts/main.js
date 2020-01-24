@@ -827,12 +827,16 @@ function updateFilterValueElement(filterElement, data) {
     var conditionTypeElement = filterElement.find("#conditionType")
 
     var conditionType = conditionTypeElement.val();
+
+    console.log(conditionType)
+
     var isInNinType = (conditionType == "in" || conditionType == "nin") ? "multiple" : ""
+
 
     var newValueElement = null;
     if (data.allowedValues.length > 0) {
         conditionTypeElement.change(function() {
-            var valueElement = $(this).parent().find("#value")
+            var valueElement = $(this).parent().parent().find("#value")
 
             if (this.value == "in" || this.value == "nin") {
                 valueElement.prop('multiple', 'multiple');

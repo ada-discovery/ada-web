@@ -14,10 +14,10 @@
     @filter.map(_.conditions).getOrElse(Nil).zipWithIndex.map { case (condition, index) =>
     <div id="condition-full@index" class="filter-part condition-full">
         <span class="condition">
-            <span class="filter-label label label-primary" id="fieldLabel">@condition.fieldLabelOrElseName</span>
-            <span id="filter-label conditionType"><b>@conditionTypeToReadableOperator(condition.conditionType)</b></span>
-            <span class="filter-label label label-primary" id="value">@valueOrUndefined(condition, trim = true)</span>
-    </span>
+            <span id="fieldLabel" class="filter-label label label-primary">@condition.fieldLabelOrElseName</span>
+            <span id="conditionType" class="filter-label"><b>@conditionTypeToReadableOperator(condition.conditionType)</b></span>
+            <span id="value" class="filter-label label label-primary">@valueOrUndefined(condition, trim = true)</span>
+        </span>
         <span class="condition-buttons" style="display: none; padding-left: 5px">
             <button type="button" class="btn btn-sm btn-default editConditionButton">
                 <span class="glyphicon glyphicon-pencil"></span>
