@@ -258,6 +258,19 @@ tr.clickable-row:hover {
     margin-left: 10px;
 }
 
+.filter-container {
+    display: flex;
+}
+
+.filter-part {
+    flex-direction: column;
+    padding: 5px 5px 5px 0;
+}
+
+.filter-name {
+    font-weight: bold;
+}
+
 .filter-label {
     font-weight: normal;
 }
@@ -534,11 +547,6 @@ a.carousel-control.right{
 .horizontal-scroll {
     overflow-x: auto;
     width: auto;
-}
-
-.filter-part {
-    flex-direction: column;
-    padding: 5px 5px 5px 0;
 }
 
 .aligned-container {
