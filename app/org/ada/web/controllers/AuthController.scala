@@ -91,7 +91,7 @@ class AuthController @Inject() (
           (formWithErrors: Form[(String, String)]) => BadRequest(views.html.auth.login(formWithErrors)),
           BadRequest(views.html.auth.login(loginForm.withGlobalError("Invalid user id or password"))),
           loginRedirect("User not found or locked."),
-          (userId: String) => gotoLoginSucceeded(userId)
+          (userId: String) => gotoLoginSucceeded(userId, Future(Redirect(routes.AppController.dataSets())))
         )
 
       case Accepts.Json() =>
@@ -136,7 +136,7 @@ class AuthController @Inject() (
   // immediately login as basic user
   def loginBasic = Action.async { implicit request =>
     if(userManager.debugUsers.nonEmpty)
-      gotoLoginSucceeded(userManager.basicUser.ldapDn)
+      gotoLoginSucceeded(userManager.basicUser.ldapDn, Future(Redirect(routes.AppController.dataSets())))
     else
       Future(unauthorizedRedirect)
   }
@@ -144,7 +144,7 @@ class AuthController @Inject() (
   // immediately login as admin user
   def loginAdmin = Action.async { implicit request =>
     if (userManager.debugUsers.nonEmpty)
-      gotoLoginSucceeded(userManager.adminUser.ldapDn)
+      gotoLoginSucceeded(userManager.adminUser.ldapDn, Future(Redirect(routes.AppController.dataSets())))
     else
       Future(unauthorizedRedirect)
   }
