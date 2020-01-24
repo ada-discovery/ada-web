@@ -1,6 +1,7 @@
 @import org.ada.server.models.datatrans.FilterDataSetTransformation
 @import views.html.elements.{inputText, labelValue}
 @import views.html.datasettrans.dataSetTypeahead
+@import views.html.elements.inputTypeahead
 @import play.api.i18n.Messages
 @import org.incal.play.controllers.WebContext
 @import org.incal.play.controllers.WebContext._
@@ -16,4 +17,49 @@
 
 @dataSetTypeahead("filterDataSetTransformation", "sourceDataSetId", form, id, Some("Filter"))
 
-@inputText("filterDataSetTransformation", "filterId", form)
+@inputTypeahead(
+    "filterDataSetTransformation",
+    "filterId",
+    "filterTypeahead",
+    form,
+    "Filter"
+)
+
+@helper.javascriptRouter("dataSetTransformationJsRoutes2")(
+    org.ada.web.controllers.dataset.datatrans.routes.javascript.DataSetTransformationController.filterIdAndNames
+)
+
+<script type="text/javascript">
+
+    // ugly hack - would be better to have some kind of typeahead:changed event
+    var previousDataSetId = null;
+
+    $(function () {
+        $('#sourceDataSetIdTypeahead').on('typeahead:selected', function (evt, item) {
+            const dataSetId = $("#sourceDataSetId").val()
+            populateFilterTypeahead(dataSetId)
+        })
+
+        const dataSetId = $("#sourceDataSetId").val()
+
+        populateFilterTypeahead(dataSetId)
+    })
+
+    function populateFilterTypeahead(dataSetId) {
+        // $('#filterTypeahead').typeahead('isEnabled')
+        if (previousDataSetId && previousDataSetId != dataSetId) {
+            $('#filterId').val("");
+            $('#filterTypeahead').val("");
+            $('#filterTypeahead').typeahead("destroy");
+        }
+
+        dataSetTransformationJsRoutes2.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.filterIdAndNames(dataSetId).ajax({
+            success: function (data) {
+                populateIdNameTypeahed($('#filterTypeahead'), $('#filterId'), data, true)
+           },
+           error: showErrorResponse
+        })
+
+        previousDataSetId = dataSetId;
+    }
+</script>

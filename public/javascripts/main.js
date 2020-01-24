@@ -369,15 +369,19 @@ function populateIdNameTypeahedFromUrl(typeaheadElement, idElement, url, initSel
     $.ajax({
         url: url,
         success: function (data) {
-            var typeaheadData = data.map(function (item, index) {
-                return {name: item._id.$oid, label: item.name};
-            });
-            populateFieldTypeahed(typeaheadElement, idElement, typeaheadData, 1, initSelectByNameElement);
+            populateIdNameTypeahed(typeaheadElement, idElement, data, initSelectByNameElement);
         },
         error: function(data){
             showErrorResponse(data)
         }
     });
+}
+
+function populateIdNameTypeahed(typeaheadElement, idElement, idNames, initSelectByNameElement) {
+    var typeaheadData = idNames.map(function (item, index) {
+        return {name: item._id.$oid, label: item.name};
+    });
+    populateFieldTypeahed(typeaheadElement, idElement, typeaheadData, 1, initSelectByNameElement);
 }
 
 function populateIdNameTypeahedsFromUrl(typeaheadElements, idElements, url, initSelectByNameElement) {

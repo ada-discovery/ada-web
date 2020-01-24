@@ -258,6 +258,10 @@ tr.clickable-row:hover {
     margin-left: 10px;
 }
 
+.filter-label {
+    font-weight: normal;
+}
+
 /*.row.vertical-divider {*/
     /*overflow: hidden;*/
 /*}*/

@@ -5,6 +5,7 @@ import java.util.Date
 import be.objectify.deadbolt.scala.AuthenticatedRequest
 import javax.inject.Inject
 import org.ada.server.dataaccess.RepoTypes.{DataSetTransformationRepo, DataSpaceMetaInfoRepo, MessageRepo}
+import org.ada.server.dataaccess.dataset.DataSetAccessorFactory
 import org.ada.server.models.DataSpaceMetaInfo
 import org.ada.server.models.datatrans.DataSetTransformation.{DataSetMetaTransformationIdentity, dataSetMetaTransformationFormat}
 import org.ada.server.models.datatrans.{DataSetMetaTransformation, DataSetTransformation}
@@ -38,6 +39,7 @@ class DataSetTransformationController @Inject()(
     dataSetTransformationFormViewsCentral: StaticLookupCentral[DataSetMetaTransformationFormViews[DataSetMetaTransformation]],
     dataSpaceService: DataSpaceService,
     dataSpaceMetaInfoRepo: DataSpaceMetaInfoRepo,
+    dsaf: DataSetAccessorFactory,
     messageRepo: MessageRepo
   ) extends AdaCrudControllerImpl[DataSetMetaTransformation, BSONObjectID](repo)
     with AdminRestrictedCrudController[BSONObjectID]
@@ -224,6 +226,23 @@ class DataSetTransformationController @Inject()(
         Json.obj("id" -> newDataSetIdFixed , "name" -> newDataSetNameFixed)
       )
     }
+  }
+
+  def filterIdAndNames(
+    dataSetId: String
+  ) = restrictAny { implicit request =>
+    dsaf(dataSetId).map { dsa =>
+      for {
+        filters <- dsa.filterRepo.find()
+      } yield {
+        val idAndNames = filters.toSeq.map(filter =>
+          Json.obj("_id" -> filter._id, "name" -> filter.name)
+        )
+        Ok(JsArray(idAndNames))
+      }
+    }.getOrElse(
+      Future(BadRequest(s"Data set '${dataSetId}' not found."))
+    )
   }
 
   private def scheduleOrCancel(
