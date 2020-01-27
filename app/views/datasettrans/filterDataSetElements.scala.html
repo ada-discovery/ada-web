@@ -46,20 +46,22 @@
     })
 
     function populateFilterTypeahead(dataSetId) {
-        // $('#filterTypeahead').typeahead('isEnabled')
-        if (previousDataSetId && previousDataSetId != dataSetId) {
-            $('#filterId').val("");
-            $('#filterTypeahead').val("");
-            $('#filterTypeahead').typeahead("destroy");
+        if (dataSetId) {
+            // $('#filterTypeahead').typeahead('isEnabled')
+            if (previousDataSetId && previousDataSetId != dataSetId) {
+                $('#filterId').val("");
+                $('#filterTypeahead').val("");
+                $('#filterTypeahead').typeahead("destroy");
+            }
+
+            dataSetTransformationJsRoutes2.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.filterIdAndNames(dataSetId).ajax({
+                success: function (data) {
+                    populateIdNameTypeahed($('#filterTypeahead'), $('#filterId'), data, true)
+                },
+                error: showErrorResponse
+            })
+
+            previousDataSetId = dataSetId;
         }
-
-        dataSetTransformationJsRoutes2.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.filterIdAndNames(dataSetId).ajax({
-            success: function (data) {
-                populateIdNameTypeahed($('#filterTypeahead'), $('#filterId'), data, true)
-           },
-           error: showErrorResponse
-        })
-
-        previousDataSetId = dataSetId;
     }
 </script>

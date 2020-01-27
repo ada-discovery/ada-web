@@ -1,4 +1,4 @@
-@import org.ada.server.models.datatrans.LinkTwoDataSetsTransformation
+@import org.ada.server.models.datatrans.CoreLinkTwoDataSetsTransformation
 @import org.ada.web.util.typeColumns
 @import views.html.datasetimport.schedulePanel
 @import views.html.datasettrans.{resultDataSetInfoPanel, streamSpecPanel, dataSetTypeahead}
@@ -13,7 +13,7 @@
 
 @(
     id: Option[BSONObjectID],
-    form: Form[LinkTwoDataSetsTransformation]
+    form: Form[_ <: CoreLinkTwoDataSetsTransformation]
 )(
     implicit webContext: WebContext
 )

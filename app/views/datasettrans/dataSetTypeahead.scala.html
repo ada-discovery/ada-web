@@ -42,13 +42,15 @@
                         var sourceDataSetId = item.key
                         var transformationId = @if(transformationId.isDefined) { '@transformationId.get.stringify' } else { null }
 
-                        dataSetTransformationJsRoutes.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.resultDataSetIdAndName(sourceDataSetId, '@suffix', transformationId).ajax({
-                            success: function (data) {
-                                $('#resultDataSetSpec_id').val(data.id)
-                                $('#resultDataSetSpec_name').val(data.name)
-                            },
-                            error: showErrorResponse
-                        })
+                        if (sourceDataSetId) {
+                            dataSetTransformationJsRoutes.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.resultDataSetIdAndName(sourceDataSetId, '@suffix', transformationId).ajax({
+                                success: function (data) {
+                                    $('#resultDataSetSpec_id').val(data.id)
+                                    $('#resultDataSetSpec_name').val(data.name)
+                                },
+                                error: showErrorResponse
+                            })
+                        }
                     })
                 }
             }, 250)
