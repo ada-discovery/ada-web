@@ -156,10 +156,10 @@ class DataSpaceMetaInfoController @Inject() (
       // copy existing data set meta infos
       newDataSetMetaInfos = {
         val requestMap = request.body.asFormUrlEncoded.get
-        val ids = requestMap.get("dataSetMetaInfos.id").get
-        val newDataSetNames = requestMap.get("dataSetMetaInfos.name").get
-        val newDataSetSortOrders = requestMap.get("dataSetMetaInfos.sortOrder").get
-        val newHides = requestMap.get("dataSetMetaInfos.hide").get
+        val ids = requestMap.get("dataSetMetaInfos.id").getOrElse(Nil)
+        val newDataSetNames = requestMap.get("dataSetMetaInfos.name").getOrElse(Nil)
+        val newDataSetSortOrders = requestMap.get("dataSetMetaInfos.sortOrder").getOrElse(Nil)
+        val newHides = requestMap.get("dataSetMetaInfos.hide").getOrElse(Nil)
 
         val existingDataSetMetaInfos = existingItem.dataSetMetaInfos
         val dataSetMetaInfoIdMap = existingDataSetMetaInfos.map( info => (info._id.get, info)).toMap
