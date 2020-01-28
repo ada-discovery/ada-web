@@ -59,7 +59,7 @@
             var nameElement = $('#inputDiv #' + fieldPrefix + 'Name');
             var focusFun = (isFocus) ? function() {setTimeout(function(){ $(typeaheadElement).focus();}, 250)} : null
 
-            populateFieldTypeahedFromUrl(
+            populateFieldTypeaheadFromUrl(
                 typeaheadElement,
                 nameElement,
                 url,
@@ -79,7 +79,7 @@
                     var typeaheadData = data.map(function (item, index) {
                         return {name: item._id.$oid, label: item.name};
                     });
-                    populateFieldTypeahed(
+                    populateFieldTypeahead(
                         typeaheadElement,
                         idElement,
                         typeaheadData,

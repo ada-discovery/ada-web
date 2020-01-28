@@ -116,7 +116,7 @@ function createStringDatumTokenizer(searchAsContainsFlag, nonWhitespaceDelimiter
 function populateStringTypeahead(element, data, searchAsContainsFlag, nonWhitespaceDelimiter, updateValueElement) {
     var datumTokenizer = createStringDatumTokenizer(searchAsContainsFlag, nonWhitespaceDelimiter)
     var source = createBloodhoundSource(data, datumTokenizer)
-    populateTypeahead(element, source, null, null, updateValueElement)
+    populateTypeahead({element, source, updateValueElement})
 }
 
 function createBloodhoundSource(data, datumTokenizer) {
@@ -139,7 +139,7 @@ function createBloodhoundSource(data, datumTokenizer) {
     return listSearchWithAll;
 }
 
-function populateTypeahead(element, source, displayFun, suggestionFun, updateValueElement) {
+function populateTypeahead({element, source, displayFun, suggestionFun, updateValueElement}) {
     element.typeahead({
         hint: true,
         highlight: true,
@@ -237,14 +237,14 @@ function createFieldBloodhoundSource(fieldNameAndLabels, showOption) {
     )
 }
 
-function populateFieldTypeaheds(typeaheadElements, fieldNameElements, fieldNameAndLabels, showOption, initSelectByNameElement) {
+function populateFieldTypeaheads(typeaheadElements, fieldNameElements, fieldNameAndLabels, showOption, initSelectByNameElement) {
     var source = createFieldBloodhoundSource(fieldNameAndLabels, showOption)
 
     for(var i = 0; i < typeaheadElements.length; i++){
         var typeaheadElement = typeaheadElements[i]
         var fieldNameElement = fieldNameElements[i]
 
-        populateFieldTypeahedAux(typeaheadElement, fieldNameElement, source, showOption)
+        populateFieldTypeaheadAux(typeaheadElement, fieldNameElement, source, showOption)
 
         if (initSelectByNameElement) {
             selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption)
@@ -260,10 +260,10 @@ function populateFieldTypeaheds(typeaheadElements, fieldNameElements, fieldNameA
  * @param showOption 0 - show field names only, 1 - show field labels only,
  *                   2 - show field labels, and field names if no label defined, 3 - show both, field names and labels
  */
-function populateFieldTypeahed(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption, initSelectByNameElement) {
+function populateFieldTypeahead(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption, initSelectByNameElement) {
     var source = createFieldBloodhoundSource(fieldNameAndLabels, showOption)
 
-    populateFieldTypeahedAux(typeaheadElement, fieldNameElement, source, showOption)
+    populateFieldTypeaheadAux(typeaheadElement, fieldNameElement, source, showOption)
 
     if (initSelectByNameElement) {
         selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption)
@@ -298,37 +298,53 @@ function selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLab
     }
 }
 
-function populateFieldTypeahedAux(typeaheadElement, fieldNameElement, source, showOption) {
-    populateTypeahead(
-        typeaheadElement,
-        source,
-        function (item) {
-            return item.value;
-        },
-        function (item) {
-            var nameBadge = '';
-            var labelBadge = '';
-            switch (showOption) {
-                case 0: nameBadge = ''; break;
-                case 1: nameBadge = ''; break;
-                case 2: nameBadge = '<span class="label label-info label-filter">name</span>'; break;
-                case 3: nameBadge = '<span class="label label-info label-filter">name</span>'; break;
-            }
-            switch (showOption) {
-                case 0: labelBadge = ''; break;
-                case 1: labelBadge = ''; break;
-                case 2: labelBadge = '<span class="label label-success label-filter">label</span>'; break;
-                case 3: labelBadge = '<span class="label label-success label-filter">label</span>'; break;
-            }
-            if (item.isLabel)
-                return '<div><span>' + item.value + '</span>' + labelBadge + '</div>';
-            else
-                return '<div><span>' + item.value + '</span>' + nameBadge + '</div>';
-        },
-        function (item) {
-            fieldNameElement.val(item.key);
+function populateFieldTypeaheadAux(typeaheadElement, fieldNameElement, source, showOption) {
+    populateTypeahead({
+      typeaheadElement,
+      source,
+      displayFun: function(item) {
+        return item.value;
+      },
+      suggestionFun: function(item) {
+        var nameBadge = '';
+        var labelBadge = '';
+        switch (showOption) {
+          case 0:
+            nameBadge = '';
+            break;
+          case 1:
+            nameBadge = '';
+            break;
+          case 2:
+            nameBadge = '<span class="label label-info label-filter">name</span>';
+            break;
+          case 3:
+            nameBadge = '<span class="label label-info label-filter">name</span>';
+            break;
         }
-    );
+        switch (showOption) {
+          case 0:
+            labelBadge = '';
+            break;
+          case 1:
+            labelBadge = '';
+            break;
+          case 2:
+            labelBadge = '<span class="label label-success label-filter">label</span>';
+            break;
+          case 3:
+            labelBadge = '<span class="label label-success label-filter">label</span>';
+            break;
+        }
+        if (item.isLabel)
+          return '<div><span>' + item.value + '</span>' + labelBadge + '</div>';
+        else
+          return '<div><span>' + item.value + '</span>' + nameBadge + '</div>';
+      },
+      function(item) {
+        fieldNameElement.val(item.key);
+      }
+    });
 }
 
 /**
@@ -339,11 +355,11 @@ function populateFieldTypeahedAux(typeaheadElement, fieldNameElement, source, sh
  * @param showOption 0 - show field names only, 1 - show field labels only,
  *                   2 - show field labels, and field names if no label defined, 3 - show both, field names and labels
  */
-function populateFieldTypeahedFromUrl(typeaheadElement, fieldNameElement, url, showOption, postFunction, initSelectByNameElement) {
+function populateFieldTypeaheadFromUrl(typeaheadElement, fieldNameElement, url, showOption, postFunction, initSelectByNameElement) {
     $.ajax({
         url: url,
         success: function (fieldNameAndLabels) {
-            populateFieldTypeahed(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption, initSelectByNameElement);
+            populateFieldTypeahead(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption, initSelectByNameElement);
             if (postFunction) {
                 postFunction()
             }
@@ -352,11 +368,11 @@ function populateFieldTypeahedFromUrl(typeaheadElement, fieldNameElement, url, s
     });
 }
 
-function populateFieldTypeahedsFromUrl(typeaheadElements, fieldNameElements, url, showOption, initSelectByNameElement, postFunction) {
+function populateFieldTypeaheadsFromUrl(typeaheadElements, fieldNameElements, url, showOption, initSelectByNameElement, postFunction) {
     $.ajax({
         url: url,
         success: function (fieldNameAndLabels) {
-            populateFieldTypeaheds(typeaheadElements, fieldNameElements, fieldNameAndLabels, showOption, initSelectByNameElement);
+            populateFieldTypeaheads(typeaheadElements, fieldNameElements, fieldNameAndLabels, showOption, initSelectByNameElement);
             if (postFunction) {
                 postFunction()
             }
@@ -365,14 +381,14 @@ function populateFieldTypeahedsFromUrl(typeaheadElements, fieldNameElements, url
     });
 }
 
-function populateIdNameTypeahedFromUrl(typeaheadElement, idElement, url, initSelectByNameElement) {
+function populateIdNameTypeaheadFromUrl(typeaheadElement, idElement, url, initSelectByNameElement) {
     $.ajax({
         url: url,
         success: function (data) {
             var typeaheadData = data.map(function (item, index) {
                 return {name: item._id.$oid, label: item.name};
             });
-            populateFieldTypeahed(typeaheadElement, idElement, typeaheadData, 1, initSelectByNameElement);
+            populateFieldTypeahead(typeaheadElement, idElement, typeaheadData, 1, initSelectByNameElement);
         },
         error: function(data){
             showErrorResponse(data)
@@ -380,14 +396,14 @@ function populateIdNameTypeahedFromUrl(typeaheadElement, idElement, url, initSel
     });
 }
 
-function populateIdNameTypeahedsFromUrl(typeaheadElements, idElements, url, initSelectByNameElement) {
+function populateIdNameTypeaheadsFromUrl(typeaheadElements, idElements, url, initSelectByNameElement) {
     $.ajax({
         url: url,
         success: function (data) {
             var fieldNameAndLabels = data.map(function (item, index) {
                 return {name: item._id.$oid, label: item.name};
             });
-            populateFieldTypeaheds(typeaheadElements, idElements, fieldNameAndLabels, 1, initSelectByNameElement);
+            populateFieldTypeaheads(typeaheadElements, idElements, fieldNameAndLabels, 1, initSelectByNameElement);
         },
         error: showErrorResponse
     });
@@ -982,8 +998,8 @@ function getSelectedRowIds(tableElement) {
     return ids;
 }
 
-function enableFieldDragover(fieldNameElement, fieldTypeahedElement, execFun, acceptedTypes) {
-    fieldTypeahedElement.on('dragover', false).on('drop', function (ev) {
+function enableFieldDragover(fieldNameElement, fieldTypeaheadElement, execFun, acceptedTypes) {
+    fieldTypeaheadElement.on('dragover', false).on('drop', function (ev) {
         $(this).removeClass("dragged-over")
         ev.preventDefault();
         var transfer = ev.originalEvent.dataTransfer;
@@ -993,7 +1009,7 @@ function enableFieldDragover(fieldNameElement, fieldTypeahedElement, execFun, ac
 
         if (id && (!acceptedTypes || acceptedTypes.includes(type))) {
             $(fieldNameElement).val(id)
-            $(fieldTypeahedElement).val(text)
+            $(fieldTypeaheadElement).val(text)
             execFun();
         }
     }).on("dragover", function (ev) {

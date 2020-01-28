@@ -18,7 +18,7 @@
         $.ajax({
             url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
             success: function (data) {
-                populateFieldTypeaheds(
+                populateFieldTypeaheads(
                     [
                         $('#add_tableColumnNameModal #fieldTypeahead'),
                         $('#add_widgetSpecModal #fieldNameTypeahead'),
@@ -38,7 +38,7 @@
         $.ajax({
             url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Enum, FieldTypeId.String, FieldTypeId.Boolean, FieldTypeId.Json)).url)',
             success: function (data) {
-                populateFieldTypeaheds(
+                populateFieldTypeaheads(
                     [
                         $('#add_widgetSpecModal #groupFieldNameTypeahead'),
                         $('#edit_widgetSpecModal #groupFieldNameTypeahead')
@@ -56,7 +56,7 @@
         $.ajax({
             url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Double, FieldTypeId.Integer, FieldTypeId.Date)).url)',
             success: function (data) {
-                populateFieldTypeaheds(
+                populateFieldTypeaheads(
                     [
                         $('#add_widgetSpecModal #xFieldNameTypeahead'),
                         $('#add_widgetSpecModal #yFieldNameTypeahead'),
@@ -85,7 +85,7 @@
                 var typeaheadData = data.map(function (item, index) {
                     return {name: item._id.$oid, label: item.name};
                 });
-                populateFieldTypeahed(
+                populateFieldTypeahead(
                     $('#subFilterTypeahead'),
                     $('#subFilterId'),
                     typeaheadData,

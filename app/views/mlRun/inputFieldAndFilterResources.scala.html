@@ -15,7 +15,7 @@
 
 <script type="text/javascript">
     $(function () {
-        populateFieldTypeahedFromUrl(
+        populateFieldTypeaheadFromUrl(
             $('#inputFieldNameDiv #fieldTypeahead'),
             $('#inputFieldNameDiv #fieldName'),
             '@Html(dataSetRouter.allFields.url)',
@@ -29,7 +29,7 @@
                     return {name: item._id.$oid, label: item.name};
                 });
                 @filterElementIds.map { filterElementId =>
-                    populateFieldTypeahed(
+                    populateFieldTypeahead(
                         $('#@{filterElementId}NameTypeahead'),
                         $('#@{filterElementId}Id'),
                         typeaheadData,

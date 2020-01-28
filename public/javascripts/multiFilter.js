@@ -423,7 +423,7 @@ $.widget("custom.multiFilter", {
                     });
                     that.filterTypeaheadElement.typeahead('destroy');
                     if (filterTypeaheadData.length > 0) {
-                        populateFieldTypeahed(
+                        populateFieldTypeahead(
                             that.filterTypeaheadElement,
                             that.filterIdModalElement,
                             filterTypeaheadData,
@@ -502,7 +502,7 @@ $.widget("custom.multiFilter", {
 
             this.fieldNameTypeaheadElement.typeahead('destroy');
 
-            populateFieldTypeahed(
+            populateFieldTypeahead(
                 this.fieldNameTypeaheadElement,
                 this.fieldNameElement,
                 this.fieldNameAndLabels,

@@ -15,7 +15,7 @@
     $(function () {
         var showOption = @form.value.flatMap(_.filterShowFieldStyle).getOrElse(FilterShowFieldStyle.NamesAndLabels).id
 
-        populateIdNameTypeahedFromUrl($('#ownerTypeahead'), $('#ownerId'), '@Html(routes.UserController.idAndNames.url)', true)
+        populateIdNameTypeaheadFromUrl($('#ownerTypeahead'), $('#ownerId'), '@Html(routes.UserController.idAndNames.url)', true)
 
         $.ajax({
             url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
@@ -24,10 +24,10 @@
                 var fieldNamesAndLabelsWithNone = fieldNameAndLabels.concat([["", "[None]"]])
                 var fieldNamesAndLabelsWithIdAndNone = fieldNamesAndLabelsWithId.concat([["", "[None]"]])
 
-                populateFieldTypeahed($('#keyFieldTypeahead'), $('#keyFieldName'), fieldNamesAndLabelsWithId, showOption, true);
-                populateFieldTypeahed($('#exportOrderByFieldTypeahead'), $('#exportOrderByFieldName'), fieldNamesAndLabelsWithIdAndNone, showOption, true);
-                populateFieldTypeahed($('#defaultDistributionFieldTypeahead'), $('#defaultDistributionFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
-                populateFieldTypeahed($('#defaultCumulativeCountFieldTypeahead'), $('#defaultCumulativeCountFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahead($('#keyFieldTypeahead'), $('#keyFieldName'), fieldNamesAndLabelsWithId, showOption, true);
+                populateFieldTypeahead($('#exportOrderByFieldTypeahead'), $('#exportOrderByFieldName'), fieldNamesAndLabelsWithIdAndNone, showOption, true);
+                populateFieldTypeahead($('#defaultDistributionFieldTypeahead'), $('#defaultDistributionFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahead($('#defaultCumulativeCountFieldTypeahead'), $('#defaultCumulativeCountFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
             },
             error: showErrorResponse
         });
@@ -37,8 +37,8 @@
             success: function (fieldNameAndLabels) {
                 var fieldNamesAndLabelsWithNone = fieldNameAndLabels.concat([["", "[None]"]])
 
-                populateFieldTypeahed($('#defaultScatterXFieldTypeahead'), $('#defaultScatterXFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
-                populateFieldTypeahed($('#defaultScatterYFieldTypeahead'), $('#defaultScatterYFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahead($('#defaultScatterXFieldTypeahead'), $('#defaultScatterXFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahead($('#defaultScatterYFieldTypeahead'), $('#defaultScatterYFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
             },
             error: showErrorResponse
         });

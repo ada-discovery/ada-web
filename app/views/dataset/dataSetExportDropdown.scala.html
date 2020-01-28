@@ -131,8 +131,8 @@
             success: function (fieldNameAndLabels) {
                 var fieldNamesAndLabelsWithNone = fieldNameAndLabels.concat([["", "[None]"]])
 
-                populateFieldTypeahed($('#exportTranSMARTDataModal #visitFieldTypeahead'), $('#exportTranSMARTDataModal #visitFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
-                populateFieldTypeahed($('#exportTranSMARTMappingModal #visitFieldTypeahead'), $('#exportTranSMARTMappingModal #visitFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahead($('#exportTranSMARTDataModal #visitFieldTypeahead'), $('#exportTranSMARTDataModal #visitFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahead($('#exportTranSMARTMappingModal #visitFieldTypeahead'), $('#exportTranSMARTMappingModal #visitFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
             },
             error: showErrorResponse
          });

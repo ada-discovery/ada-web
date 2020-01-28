@@ -3,10 +3,10 @@
     valueElementId: String,
     placeholder: String = "",
     isLarge: Boolean = false,
-    typeahedValue: Option[String] = None,
+    typeaheadValue: Option[String] = None,
     value: Option[String] = None,
     extraClass: Option[String] = None
 )
 
-<input id="@{typeaheadElementId}" class="typeahead @if(isLarge) { typeahead-large typeahead-full-width } @extraClass.getOrElse("")" type="text" placeholder="@placeholder" value="@typeahedValue.getOrElse("")">
+<input id="@{typeaheadElementId}" class="typeahead @if(isLarge) { typeahead-large typeahead-full-width } @extraClass.getOrElse("")" type="text" placeholder="@placeholder" value="@typeaheadValue.getOrElse("")">
 <input id="@{valueElementId}" name="@{valueElementId}" type="hidden" value="@value.getOrElse("")">
