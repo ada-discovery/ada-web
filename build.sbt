@@ -32,11 +32,11 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 
 PlayKeys.devSettings := Seq(
   "play.server.netty.maxInitialLineLength" -> "16384"
-  //   "play.server.netty.transport" -> "jdk"
+  //   "play.server.netty.transport" -> "jdk" // uncomment for MacOS
 )
 
 libraryDependencies ++= Seq(
-  "org.adada" %% "ada-server" % "0.8.1.RC.16",
+  "org.adada" %% "ada-server" % "0.8.1",
   "org.in-cal" %% "incal-play" % "0.2.4",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",        // to send emails
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1",  // to send emails (Guice)
@@ -230,7 +230,10 @@ publishMavenStyle := true
 
 scmInfo := Some(ScmInfo(url("https://github.com/ada-discovery/ada-web"), "scm:git@github.com:ada-discovery/ada-web.git"))
 
-developers := List()
+developers := List(
+  Developer("bnd", "Peter Banda", "peter.banda@protonmail.com", url("https://peterbanda.net")),
+  Developer("sherzinger", "Sascha Herzinger", "sascha.herzinger@uni.lu", url("https://wwwfr.uni.lu/lcsb/people/sascha_herzinger"))
+)
 
 licenses ++= Seq(
   "Creative Commons Attribution-NonCommercial 3.0" -> url("http://creativecommons.org/licenses/by-nc/3.0"),
