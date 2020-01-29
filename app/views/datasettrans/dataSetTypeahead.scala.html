@@ -54,13 +54,13 @@
             }, 250)
         }
 
-        populateFieldTypeaheadFromUrl(
-            $('#@{fieldName}Typeahead'),
-            $('#@{fieldName}'),
-            '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
-            @FilterShowFieldStyle.LabelsOnly.id,
-            addSelectedListener,
-            true
-        )
+        populateFieldTypeaheadFromUrl({
+            typeaheadElement: $('#@{fieldName}Typeahead'),
+            fieldNameElement: $('#@{fieldName}'),
+            url: '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
+            showOption: @FilterShowFieldStyle.LabelsOnly.id,
+            postFunction: addSelectedListener,
+            initSelectByNameElement: true
+        })
     })
 </script>

@@ -113,7 +113,7 @@ function createStringDatumTokenizer(searchAsContainsFlag, nonWhitespaceDelimiter
     return stringDatumTokenizer.bind(null, searchAsContainsFlag).bind(null, nonWhitespaceDelimiter)
 }
 
-function populateStringTypeahead(element, data, searchAsContainsFlag, nonWhitespaceDelimiter, updateValueElement) {
+function populateStringTypeahead({element, data, searchAsContainsFlag, nonWhitespaceDelimiter, updateValueElement}) {
     var datumTokenizer = createStringDatumTokenizer(searchAsContainsFlag, nonWhitespaceDelimiter)
     var source = createBloodhoundSource(data, datumTokenizer)
     populateTypeahead({element, source, updateValueElement})
@@ -237,14 +237,14 @@ function createFieldBloodhoundSource(fieldNameAndLabels, showOption) {
     )
 }
 
-function populateFieldTypeaheads(typeaheadElements, fieldNameElements, fieldNameAndLabels, showOption, initSelectByNameElement) {
+function populateFieldTypeaheads({typeaheadElements, fieldNameElements, fieldNameAndLabels, showOption, initSelectByNameElement}) {
     var source = createFieldBloodhoundSource(fieldNameAndLabels, showOption)
 
     for(var i = 0; i < typeaheadElements.length; i++){
         var typeaheadElement = typeaheadElements[i]
         var fieldNameElement = fieldNameElements[i]
 
-        populateFieldTypeaheadAux(typeaheadElement, fieldNameElement, source, showOption)
+        populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption})
 
         if (initSelectByNameElement) {
             selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption)
@@ -260,10 +260,10 @@ function populateFieldTypeaheads(typeaheadElements, fieldNameElements, fieldName
  * @param showOption 0 - show field names only, 1 - show field labels only,
  *                   2 - show field labels, and field names if no label defined, 3 - show both, field names and labels
  */
-function populateFieldTypeahead(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption, initSelectByNameElement) {
+function populateFieldTypeahead({typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption, initSelectByNameElement}) {
     var source = createFieldBloodhoundSource(fieldNameAndLabels, showOption)
 
-    populateFieldTypeaheadAux(typeaheadElement, fieldNameElement, source, showOption)
+    populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption})
 
     if (initSelectByNameElement) {
         selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption)
@@ -298,7 +298,7 @@ function selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLab
     }
 }
 
-function populateFieldTypeaheadAux(typeaheadElement, fieldNameElement, source, showOption) {
+function populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption}) {
     populateTypeahead({
       typeaheadElement,
       source,
@@ -355,11 +355,17 @@ function populateFieldTypeaheadAux(typeaheadElement, fieldNameElement, source, s
  * @param showOption 0 - show field names only, 1 - show field labels only,
  *                   2 - show field labels, and field names if no label defined, 3 - show both, field names and labels
  */
-function populateFieldTypeaheadFromUrl(typeaheadElement, fieldNameElement, url, showOption, postFunction, initSelectByNameElement) {
+function populateFieldTypeaheadFromUrl({typeaheadElement, fieldNameElement, url, showOption, postFunction, initSelectByNameElement}) {
     $.ajax({
         url: url,
         success: function (fieldNameAndLabels) {
-            populateFieldTypeahead(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption, initSelectByNameElement);
+            populateFieldTypeahead({
+              typeaheadElement,
+              fieldNameElement,
+              fieldNameAndLabels,
+              showOption,
+              initSelectByNameElement
+            });
             if (postFunction) {
                 postFunction()
             }
@@ -368,11 +374,17 @@ function populateFieldTypeaheadFromUrl(typeaheadElement, fieldNameElement, url, 
     });
 }
 
-function populateFieldTypeaheadsFromUrl(typeaheadElements, fieldNameElements, url, showOption, initSelectByNameElement, postFunction) {
+function populateFieldTypeaheadsFromUrl({typeaheadElements, fieldNameElements, url, showOption, initSelectByNameElement, postFunction}) {
     $.ajax({
         url: url,
         success: function (fieldNameAndLabels) {
-            populateFieldTypeaheads(typeaheadElements, fieldNameElements, fieldNameAndLabels, showOption, initSelectByNameElement);
+            populateFieldTypeaheads({
+              typeaheadElements,
+              fieldNameElements,
+              fieldNameAndLabels,
+              showOption,
+              initSelectByNameElement
+            });
             if (postFunction) {
                 postFunction()
             }
@@ -381,14 +393,20 @@ function populateFieldTypeaheadsFromUrl(typeaheadElements, fieldNameElements, ur
     });
 }
 
-function populateIdNameTypeaheadFromUrl(typeaheadElement, idElement, url, initSelectByNameElement) {
+function populateIdNameTypeaheadFromUrl({typeaheadElement, idElement, url, initSelectByNameElement}) {
     $.ajax({
         url: url,
         success: function (data) {
             var typeaheadData = data.map(function (item, index) {
                 return {name: item._id.$oid, label: item.name};
             });
-            populateFieldTypeahead(typeaheadElement, idElement, typeaheadData, 1, initSelectByNameElement);
+            populateFieldTypeahead({
+              typeaheadElement,
+              fieldNameElement: idElement,
+              fieldNameAndLabels: typeaheadData,
+              showOption: 1,
+              initSelectByNameElement
+            });
         },
         error: function(data){
             showErrorResponse(data)
@@ -396,14 +414,20 @@ function populateIdNameTypeaheadFromUrl(typeaheadElement, idElement, url, initSe
     });
 }
 
-function populateIdNameTypeaheadsFromUrl(typeaheadElements, idElements, url, initSelectByNameElement) {
+function populateIdNameTypeaheadsFromUrl({typeaheadElements, idElements, url, initSelectByNameElement}) {
     $.ajax({
         url: url,
         success: function (data) {
             var fieldNameAndLabels = data.map(function (item, index) {
                 return {name: item._id.$oid, label: item.name};
             });
-            populateFieldTypeaheads(typeaheadElements, idElements, fieldNameAndLabels, 1, initSelectByNameElement);
+            populateFieldTypeaheads({
+              typeaheadElements,
+              fieldNameElements: idElements,
+              fieldNameAndLabels,
+              showOption: 1,
+              initSelectByNameElement
+            });
         },
         error: showErrorResponse
     });

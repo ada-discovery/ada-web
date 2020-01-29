@@ -88,6 +88,11 @@ mappings in (Compile, packageBin) ~= { _.filter(!_._1.getName.endsWith("custom.c
 
 // Asset stages
 
+Closure.flags := Seq(
+  "--language_in=ES6"
+)
+//Closure.suffix := ".min.js"
+
 pipelineStages in Assets := Seq(closure, cssCompress, digest, gzip)
 
 excludeFilter in gzip := (excludeFilter in gzip).value || new SimpleFileFilter(file => new File(file.getAbsolutePath + ".gz").exists)

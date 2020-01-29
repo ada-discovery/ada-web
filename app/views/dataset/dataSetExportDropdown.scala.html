@@ -131,8 +131,20 @@
             success: function (fieldNameAndLabels) {
                 var fieldNamesAndLabelsWithNone = fieldNameAndLabels.concat([["", "[None]"]])
 
-                populateFieldTypeahead($('#exportTranSMARTDataModal #visitFieldTypeahead'), $('#exportTranSMARTDataModal #visitFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
-                populateFieldTypeahead($('#exportTranSMARTMappingModal #visitFieldTypeahead'), $('#exportTranSMARTMappingModal #visitFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahead({
+                  typeaheadElement: $('#exportTranSMARTDataModal #visitFieldTypeahead'),
+                  fieldNameElement: $('#exportTranSMARTDataModal #visitFieldName'),
+                  fieldNameAndLabels: fieldNamesAndLabelsWithNone,
+                  showOption,
+                  initSelectByNameElement: true
+                });
+                populateFieldTypeahead({
+                  typeaheadElement: $('#exportTranSMARTMappingModal #visitFieldTypeahead'),
+                  fieldNameElement: $('#exportTranSMARTMappingModal #visitFieldName'),
+                  fieldNameAndLabels: fieldNamesAndLabelsWithNone,
+                  showOption,
+                  initSelectByNameElement: true
+                });
             },
             error: showErrorResponse
          });
