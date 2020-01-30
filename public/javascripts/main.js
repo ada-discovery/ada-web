@@ -397,14 +397,10 @@ function populateIdNameTypeaheadFromUrl({typeaheadElement, idElement, url, initS
     $.ajax({
         url: url,
         success: function (data) {
-            var typeaheadData = data.map(function (item, index) {
-                return {name: item._id.$oid, label: item.name};
-            });
-            populateFieldTypeahead({
+            populateIdNameTypeahed({
               typeaheadElement,
               fieldNameElement: idElement,
-              fieldNameAndLabels: typeaheadData,
-              showOption: 1,
+              fieldNameAndLabels: data,
               initSelectByNameElement
             });
         },
@@ -414,22 +410,16 @@ function populateIdNameTypeaheadFromUrl({typeaheadElement, idElement, url, initS
     });
 }
 
-function populateIdNameTypeaheadsFromUrl({typeaheadElements, idElements, url, initSelectByNameElement}) {
-    $.ajax({
-        url: url,
-        success: function (data) {
-            var fieldNameAndLabels = data.map(function (item, index) {
-                return {name: item._id.$oid, label: item.name};
-            });
-            populateFieldTypeaheads({
-              typeaheadElements,
-              fieldNameElements: idElements,
-              fieldNameAndLabels,
-              showOption: 1,
-              initSelectByNameElement
-            });
-        },
-        error: showErrorResponse
+function populateIdNameTypeahead({typeaheadElement, idElement, idNames, initSelectByNameElement}) {
+    var typeaheadData = idNames.map(function (item, index) {
+        return {name: item._id.$oid, label: item.name};
+    });
+    populateFieldTypeaheads({
+      typeaheadElements,
+      fieldNameElements: idElements,
+      fieldNameAndLabels,
+      showOption: 1,
+      initSelectByNameElement
     });
 }
 
@@ -868,7 +858,7 @@ function updateFilterValueElement(filterElement, data) {
     var newValueElement = null;
     if (data.allowedValues.length > 0) {
         conditionTypeElement.change(function() {
-            var valueElement = $(this).parent().find("#value")
+            var valueElement = $(this).parent().parent().find("#value")
 
             if (this.value == "in" || this.value == "nin") {
                 valueElement.prop('multiple', 'multiple');
