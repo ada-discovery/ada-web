@@ -88,14 +88,9 @@ mappings in (Compile, packageBin) ~= { _.filter(!_._1.getName.endsWith("custom.c
 
 // Asset stages
 
-pipelineStages in Assets := Seq(cssCompress, digest, gzip)
+pipelineStages in Assets := Seq(digest, gzip)
 
 excludeFilter in gzip := (excludeFilter in gzip).value || new SimpleFileFilter(file => new File(file.getAbsolutePath + ".gz").exists)
-
-includeFilter in cssCompress := (includeFilter in cssCompress).value && new SimpleFileFilter(f => f.getPath.contains("stylesheets"))
-
-//includeFilter in uglify := GlobFilter("javascripts/*.js")
-
 
 // For licenses not automatically downloaded (need to list them manually)
 licenseOverrides := {
