@@ -34,8 +34,6 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
 
 addSbtPlugin("net.ground5hark.sbt" % "sbt-css-compress" % "0.1.3")
 
-addSbtPlugin("net.ground5hark.sbt" % "sbt-closure" % "0.1.3")
-
 // addSbtPlugin("me.lessis" % "bintray-sbt" % "0.1.1")
 
 // code coverage
