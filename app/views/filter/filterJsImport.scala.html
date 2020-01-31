@@ -4,11 +4,11 @@
 
 <!-- '
     Widget' part of the JQuery UI lib is sufficient for the filter JS, however for consistence we load the whole JQuery UI
-    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/jquery-ui-1.11.4-widget.min.js")"></script>
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/jquery-ui-1.11.4-widget.js")"></script>
 -->
 <!-- need to import css and js first -->
 @typeaheadJsImport()
 
 <script src="@routes.WebJarAssets.at(webJarAssets.locate("jquery-ui.min.js"))"></script>
-<script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/multiFilter.min.js")"></script>
-<script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/multiCategoryFilter.min.js")"></script>
+<script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/multiFilter.js")"></script>
+<script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/multiCategoryFilter.js")"></script>

@@ -42,10 +42,10 @@
     <script type="text/javascript">
         $(function () {
             populateFieldTypeaheadFromUrl({
-                 typeaheadElement: $('#add_fieldModal #fieldTypeahead'),
-                 fieldNameElement: $('#add_fieldModal #fieldName'),
-                 url: '@Html(dataSetRouter.allFields.url)',
-                 showOption: @setting.filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
+                typeaheadElement: $('#add_fieldModal #fieldTypeahead'),
+                fieldNameElement: $('#add_fieldModal #fieldName'),
+                url: '@Html(dataSetRouter.allFields.url)',
+                showOption: @setting.filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
             });
         })
     </script>

@@ -300,7 +300,7 @@ function selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLab
 
 function populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption}) {
     populateTypeahead({
-      typeaheadElement,
+      element: typeaheadElement,
       source,
       displayFun: function(item) {
         return item.value;
@@ -341,7 +341,7 @@ function populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, 
         else
           return '<div><span>' + item.value + '</span>' + nameBadge + '</div>';
       },
-      function(item) {
+      updateValueElement: function(item) {
         fieldNameElement.val(item.key);
       }
     });
@@ -399,8 +399,8 @@ function populateIdNameTypeaheadFromUrl({typeaheadElement, idElement, url, initS
         success: function (data) {
             populateIdNameTypeahead({
               typeaheadElement,
-              fieldNameElement: idElement,
-              fieldNameAndLabels: data,
+              idElement,
+              idNames: data,
               initSelectByNameElement
             });
         },
@@ -415,12 +415,31 @@ function populateIdNameTypeahead({typeaheadElement, idElement, idNames, initSele
         return {name: item._id.$oid, label: item.name};
     });
     populateFieldTypeaheads({
-      typeaheadElements,
-      fieldNameElements: idElements,
-      fieldNameAndLabels,
+      typeaheadElement,
+      fieldNameElements: idElement,
+      fieldNameAndLabels: typeaheadData,
       showOption: 1,
       initSelectByNameElement
     });
+}
+
+function populateIdNameTypeaheadsFromUrl({typeaheadElements, idElements, url, initSelectByNameElement}) {
+  $.ajax({
+    url: url,
+    success: function (data) {
+      var fieldNameAndLabels = data.map(function (item, index) {
+        return {name: item._id.$oid, label: item.name};
+      });
+      populateFieldTypeaheads({
+        typeaheadElements,
+        fieldNameElements: idElements,
+        fieldNameAndLabels,
+        showOption: 1,
+        initSelectByNameElement
+      });
+    },
+    error: showErrorResponse
+  });
 }
 
 function registerMessageEventSource(url) {
