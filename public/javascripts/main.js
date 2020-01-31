@@ -415,9 +415,9 @@ function populateIdNameTypeahead({typeaheadElement, idElement, idNames, initSele
         return {name: item._id.$oid, label: item.name};
     });
     populateFieldTypeaheads({
-      typeaheadElement,
-      fieldNameElements: idElement,
-      fieldNameAndLabels: typeaheadData,
+      typeaheadElements: [typeaheadElement],
+      fieldNameElements: [idElement],
+      fieldNameAndLabels: [typeaheadData],
       showOption: 1,
       initSelectByNameElement
     });
