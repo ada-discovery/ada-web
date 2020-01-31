@@ -414,10 +414,10 @@ function populateIdNameTypeahead({typeaheadElement, idElement, idNames, initSele
     var typeaheadData = idNames.map(function (item, index) {
         return {name: item._id.$oid, label: item.name};
     });
-    populateFieldTypeaheads({
-      typeaheadElements: [typeaheadElement],
-      fieldNameElements: [idElement],
-      fieldNameAndLabels: [typeaheadData],
+    populateFieldTypeahead({
+      typeaheadElement,
+      fieldNameElement: idElement,
+      fieldNameAndLabels: typeaheadData,
       showOption: 1,
       initSelectByNameElement
     });
