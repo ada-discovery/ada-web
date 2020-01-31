@@ -397,7 +397,7 @@ function populateIdNameTypeaheadFromUrl({typeaheadElement, idElement, url, initS
     $.ajax({
         url: url,
         success: function (data) {
-            populateIdNameTypeahed({
+            populateIdNameTypeahead({
               typeaheadElement,
               fieldNameElement: idElement,
               fieldNameAndLabels: data,
