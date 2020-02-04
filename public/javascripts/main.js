@@ -139,18 +139,18 @@ function createBloodhoundSource(data, datumTokenizer) {
     return listSearchWithAll;
 }
 
-function populateTypeahead({element, source, displayFun, suggestionFun, updateValueElement}) {
+function populateTypeahead({element, source, displayFun, suggestionFun, updateValueElement, minLength}) {
     element.typeahead({
         hint: true,
         highlight: true,
-        minLength: 2
+        minLength: typeof minLength === 'undefined' ? 0 : minLength
     }, {
         source: source,
         display: displayFun,
         templates: {
             suggestion: suggestionFun
         },
-        limit: 100
+        limit: 1000
     });
 
     element.on("focus", function () {
@@ -237,14 +237,19 @@ function createFieldBloodhoundSource(fieldNameAndLabels, showOption) {
     )
 }
 
-function populateFieldTypeaheads({typeaheadElements, fieldNameElements, fieldNameAndLabels, showOption, initSelectByNameElement}) {
+function populateFieldTypeaheads({typeaheadElements,
+                                   fieldNameElements,
+                                   fieldNameAndLabels,
+                                   showOption,
+                                   initSelectByNameElement,
+                                   minLength}) {
     var source = createFieldBloodhoundSource(fieldNameAndLabels, showOption)
 
     for(var i = 0; i < typeaheadElements.length; i++){
         var typeaheadElement = typeaheadElements[i]
         var fieldNameElement = fieldNameElements[i]
 
-        populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption})
+        populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption, minLength})
 
         if (initSelectByNameElement) {
             selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption)
@@ -260,10 +265,15 @@ function populateFieldTypeaheads({typeaheadElements, fieldNameElements, fieldNam
  * @param showOption 0 - show field names only, 1 - show field labels only,
  *                   2 - show field labels, and field names if no label defined, 3 - show both, field names and labels
  */
-function populateFieldTypeahead({typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption, initSelectByNameElement}) {
+function populateFieldTypeahead({typeaheadElement,
+                                  fieldNameElement,
+                                  fieldNameAndLabels,
+                                  showOption,
+                                  initSelectByNameElement,
+                                  minLength}) {
     var source = createFieldBloodhoundSource(fieldNameAndLabels, showOption)
 
-    populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption})
+    populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption, minLength})
 
     if (initSelectByNameElement) {
         selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLabels, showOption)
@@ -298,7 +308,7 @@ function selectByNameElement(typeaheadElement, fieldNameElement, fieldNameAndLab
     }
 }
 
-function populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption}) {
+function populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, showOption, minLength}) {
     populateTypeahead({
       element: typeaheadElement,
       source,
@@ -343,7 +353,8 @@ function populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, 
       },
       updateValueElement: function(item) {
         fieldNameElement.val(item.key);
-      }
+      },
+      minLength
     });
 }
 
@@ -355,7 +366,7 @@ function populateFieldTypeaheadAux({typeaheadElement, fieldNameElement, source, 
  * @param showOption 0 - show field names only, 1 - show field labels only,
  *                   2 - show field labels, and field names if no label defined, 3 - show both, field names and labels
  */
-function populateFieldTypeaheadFromUrl({typeaheadElement, fieldNameElement, url, showOption, postFunction, initSelectByNameElement}) {
+function populateFieldTypeaheadFromUrl({typeaheadElement, fieldNameElement, url, showOption, postFunction, initSelectByNameElement, minLength}) {
     $.ajax({
         url: url,
         success: function (fieldNameAndLabels) {
@@ -364,7 +375,8 @@ function populateFieldTypeaheadFromUrl({typeaheadElement, fieldNameElement, url,
               fieldNameElement,
               fieldNameAndLabels,
               showOption,
-              initSelectByNameElement
+              initSelectByNameElement,
+              minLength
             });
             if (postFunction) {
                 postFunction()
@@ -410,7 +422,7 @@ function populateIdNameTypeaheadFromUrl({typeaheadElement, idElement, url, initS
     });
 }
 
-function populateIdNameTypeahead({typeaheadElement, idElement, idNames, initSelectByNameElement}) {
+function populateIdNameTypeahead({typeaheadElement, idElement, idNames, initSelectByNameElement, minLength}) {
     var typeaheadData = idNames.map(function (item, index) {
         return {name: item._id.$oid, label: item.name};
     });
@@ -419,7 +431,8 @@ function populateIdNameTypeahead({typeaheadElement, idElement, idNames, initSele
       fieldNameElement: idElement,
       fieldNameAndLabels: typeaheadData,
       showOption: 1,
-      initSelectByNameElement
+      initSelectByNameElement,
+      minLength
     });
 }
 

@@ -506,7 +506,8 @@ $.widget("custom.multiFilter", {
                 typeaheadElement: this.fieldNameTypeaheadElement,
                 fieldNameElement: this.fieldNameElement,
                 fieldNameAndLabels: this.fieldNameAndLabels,
-                showOption: choiceValue
+                showOption: choiceValue,
+                minLength: 2
             })
 
             this.fieldNameTypeaheadElement.typeahead('val', '');
