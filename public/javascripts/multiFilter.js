@@ -423,12 +423,12 @@ $.widget("custom.multiFilter", {
                     });
                     that.filterTypeaheadElement.typeahead('destroy');
                     if (filterTypeaheadData.length > 0) {
-                        populateFieldTypeahed(
-                            that.filterTypeaheadElement,
-                            that.filterIdModalElement,
-                            filterTypeaheadData,
-                            1
-                        );
+                        populateFieldTypeahead({
+                            typeaheadElement: that.filterTypeaheadElement,
+                            fieldNameElement: that.filterIdModalElement,
+                            fieldNameAndLabels: filterTypeaheadData,
+                            showOption: 1
+                        });
                         if (successFun)
                             successFun()
                     } else {
@@ -502,12 +502,13 @@ $.widget("custom.multiFilter", {
 
             this.fieldNameTypeaheadElement.typeahead('destroy');
 
-            populateFieldTypeahed(
-                this.fieldNameTypeaheadElement,
-                this.fieldNameElement,
-                this.fieldNameAndLabels,
-                choiceValue
-            )
+            populateFieldTypeahead({
+                typeaheadElement: this.fieldNameTypeaheadElement,
+                fieldNameElement: this.fieldNameElement,
+                fieldNameAndLabels: this.fieldNameAndLabels,
+                showOption: choiceValue,
+                minLength: 2
+            })
 
             this.fieldNameTypeaheadElement.typeahead('val', '');
 

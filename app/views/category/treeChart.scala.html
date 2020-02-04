@@ -8,10 +8,10 @@
     implicit request: Request[_], webJarAssets: WebJarAssets
 )
 
-<link rel="stylesheet" type="text/css" media="screen" href="@CustomDirAssets.versioned("stylesheets/tree.min.css")">
+<link rel="stylesheet" type="text/css" media="screen" href="@CustomDirAssets.versioned("stylesheets/tree.css")">
 <script src="@routes.WebJarAssets.at(webJarAssets.locate("d3.min.js"))"></script>
 <script src="@routes.WebJarAssets.at(webJarAssets.locate("jquery-ui.min.js"))"></script>
-<script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/tree.min.js")"></script>
+<script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/tree.js")"></script>
 
 <div id="treeDiv" name="treeDiv" class="treeDiv"></div>
 <script>

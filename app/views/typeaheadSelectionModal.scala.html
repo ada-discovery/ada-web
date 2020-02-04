@@ -30,7 +30,7 @@
         var typeaheadElement = $('#@{modalId} #@{itemId}Typeahead');
         var idElement = $('#@{modalId} #@{itemId}Id')
 
-        populateIdNameTypeahedFromUrl(typeaheadElement, idElement, '@Html(idAndNamesCall.url)');
+        populateIdNameTypeaheadFromUrl({typeaheadElement, idElement, url: '@Html(idAndNamesCall.url)'});
 
         $("#@{modalId}").on('shown.bs.modal', function () {
             typeaheadElement.focus();

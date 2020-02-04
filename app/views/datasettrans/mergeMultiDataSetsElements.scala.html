@@ -46,12 +46,12 @@
 
 <script type="text/javascript">
     $(function () {
-        populateFieldTypeahedFromUrl(
-            $('#add_sourceDataSetIdModal').find('#dataSetTypeahead'),
-            $('#add_sourceDataSetIdModal').find('#dataSetId'),
-            '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
-            @FilterShowFieldStyle.LabelsOnly.id
-        )
+        populateFieldTypeaheadFromUrl({
+            typeaheadElement: $('#add_sourceDataSetIdModal').find('#dataSetTypeahead'),
+            fieldNameElement: $('#add_sourceDataSetIdModal').find('#dataSetId'),
+            url: '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
+            showOption: @FilterShowFieldStyle.LabelsOnly.id
+        })
 
         $("#sourceDataSetIdDiv").on("rowAdded", refreshResultDataSetInfo)
         $("#sourceDataSetIdDiv").on("rowsRemoved", refreshResultDataSetInfo)

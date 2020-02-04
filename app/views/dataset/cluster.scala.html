@@ -38,12 +38,12 @@
                     var typeaheadData = data.map(function (item, index) {
                         return {name: item._id.$oid, label: item.name};
                     });
-                    populateFieldTypeahed(
-                        $('#mlModelTypeahead'),
-                        $('#mlModelId'),
-                        typeaheadData,
-                        @FilterShowFieldStyle.LabelsOnly.id
-                    );
+                    populateFieldTypeahead({
+                      typeaheadElement: $('#mlModelTypeahead'),
+                      fieldNameElement: $('#mlModelId'),
+                      fieldNameAndLabels: typeaheadData,
+                      showOption: @FilterShowFieldStyle.LabelsOnly.id
+                    });
                 }
             });
 

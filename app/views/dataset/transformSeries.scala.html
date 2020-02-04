@@ -54,12 +54,12 @@
 
     <script type="text/javascript">
         $(function () {
-            populateFieldTypeahedFromUrl(
-                $('#preserveFieldNameDiv #fieldTypeahead'),
-                $('#preserveFieldNameDiv #fieldName'),
-                '@Html(dataSetRouter.allFields.url)',
-                @setting.filterShowFieldStyle.getOrElse(NamesAndLabels).id
-            )
+            populateFieldTypeaheadFromUrl({
+                typeaheadElement: $('#preserveFieldNameDiv #fieldTypeahead'),
+                fieldNameElement: $('#preserveFieldNameDiv #fieldName'),
+                url: '@Html(dataSetRouter.allFields.url)',
+                showOption: @setting.filterShowFieldStyle.getOrElse(NamesAndLabels).id
+            })
         })
 
         function addAllFields() {

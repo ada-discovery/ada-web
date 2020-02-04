@@ -56,7 +56,12 @@
 
             dataSetTransformationJsRoutes2.org.ada.web.controllers.dataset.datatrans.DataSetTransformationController.filterIdAndNames(dataSetId).ajax({
                 success: function (data) {
-                    populateIdNameTypeahed($('#filterTypeahead'), $('#filterId'), data, true)
+                    populateIdNameTypeahead({
+                        typeaheadElement: $('#filterTypeahead'),
+                        idElement: $('#filterId'),
+                        idNames: data,
+                        initSelectByNameElement: true
+                    })
                 },
                 error: showErrorResponse
             })

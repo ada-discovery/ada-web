@@ -29,8 +29,8 @@
 
 @bottomResources = {
 
-    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-62349a9.min.js")"></script>
-    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-wrapper.min.js")"></script>
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-62349a9.js")"></script>
+    <script type="text/javascript" src="@CustomDirAssets.versioned("javascripts/ada-charts-wrapper.js")"></script>
 
     @helper.javascriptRouter("dataSetJsRoutes")(
         dataSetJsRouter.calcHeatmap,
@@ -64,8 +64,8 @@
 
             $('#inputDiv #valueFieldTypeahead').keypress(function (e) {
                 if (e.which == 13) {
-                    var valueFieldTypeahedVal = $('#inputDiv #valueFieldTypeahead').val();
-                    if (!valueFieldTypeahedVal)
+                    var valueFieldTypeaheadVal = $('#inputDiv #valueFieldTypeahead').val();
+                    if (!valueFieldTypeaheadVal)
                         $('#inputDiv #valueFieldName').val("")
 
                     calcHeatmap();

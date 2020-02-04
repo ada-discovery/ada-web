@@ -70,11 +70,11 @@
 
         <script type="text/javascript">
             $(function () {
-                populateIdNameTypeahedsFromUrl(
-                    [$("#dataSpaceTypeahead"), $("#parentSpaceTypeahead")],
-                    [$("#dataSpaceId"), $("#parentSpaceId")],
-                    '@Html(dataSpaceMetaInfoRoutes.idAndNames.url)'
-                )
+                populateIdNameTypeaheadsFromUrl({
+                    typeaheadElements: [$("#dataSpaceTypeahead"), $("#parentSpaceTypeahead")],
+                    idElements: [$("#dataSpaceId"), $("#parentSpaceId")],
+                    url: '@Html(dataSpaceMetaInfoRoutes.idAndNames.url)'
+                })
             })
 
             function moveDataSpace() {

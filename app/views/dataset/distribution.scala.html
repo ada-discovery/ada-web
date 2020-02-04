@@ -77,8 +77,8 @@
 
             $('#inputDiv #groupFieldTypeahead').keypress(function (e) {
                 if (e.which == 13) {
-                    var groupFieldTypeahedVal = $('#inputDiv #groupFieldTypeahead').val();
-                    if (!groupFieldTypeahedVal)
+                    var groupFieldTypeaheadVal = $('#inputDiv #groupFieldTypeahead').val();
+                    if (!groupFieldTypeaheadVal)
                         $('#inputDiv #groupFieldName').val("")
                     calcDistribution();
                     return false;

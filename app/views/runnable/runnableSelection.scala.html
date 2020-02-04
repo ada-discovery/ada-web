@@ -18,13 +18,13 @@
 
     <script type="text/javascript">
         $(function () {
-            populateFieldTypeahedFromUrl(
-                $('#classNameTypeahead'),
-                $('#className'),
-                '@Html(routes.RunnableController.getRunnableNames().url)',
-                @FilterShowFieldStyle.LabelsOnly.id,
-                function(){ setTimeout(function(){ $('#classNameTypeahead').focus();}, 250)}
-            )
+            populateFieldTypeaheadFromUrl({
+                typeaheadElement: $('#classNameTypeahead'),
+                fieldNameElement: $('#className'),
+                url: '@Html(routes.RunnableController.getRunnableNames().url)',
+                showOption: @FilterShowFieldStyle.LabelsOnly.id,
+                postFunction: function(){ setTimeout(function(){ $('#classNameTypeahead').focus();}, 250)}
+            })
         })
 
         $('#classNameTypeahead').on("keydown", function(e) {

@@ -27,11 +27,11 @@
 <script type="text/javascript">
     $(function () {
 
-        populateFieldTypeahedFromUrl(
-            $('#@{parentId} #permission-dataSetTypeahead'),
-            $('#@{parentId} #permission-dataSetId'),
-            '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
-            @FilterShowFieldStyle.LabelsOnly.id
-        )
+        populateFieldTypeaheadFromUrl({
+            typeaheadElement: $('#@{parentId} #permission-dataSetTypeahead'),
+            fieldNameElement: $('#@{parentId} #permission-dataSetId'),
+            url: '@Html(org.ada.web.controllers.routes.AdminController.dataSetIds().url)',
+            showOption: @FilterShowFieldStyle.LabelsOnly.id
+        })
     })
 </script>

@@ -114,13 +114,14 @@
             var nameElement = $('#inputDiv #' + fieldPrefix + 'Name');
             var focusFun = (isFocus) ? function() {setTimeout(function(){ $(typeaheadElement).focus();}, 250)} : null
 
-            populateFieldTypeahedFromUrl(
+            populateFieldTypeaheadFromUrl({
                 typeaheadElement,
-                nameElement,
+                fieldNameElement: nameElement,
                 url,
-                @setting.filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id,
-                focusFun
-            )
+                showOption: @setting.filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id,
+                postFunction: focusFun,
+                minLength: 2
+            })
         }
 
         function populateMultiFieldTypeaheadFromUrlAux(fieldPrefixes, url, isFocus) {
@@ -131,12 +132,12 @@
                         var typeaheadElement = $('#inputDiv #' + fieldPrefix + 'Typeahead');
                         var nameElement = $('#inputDiv #' + fieldPrefix + 'Name');
 
-                        populateFieldTypeahed(
-                            typeaheadElement,
-                            nameElement,
-                            data,
-                            @setting.filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
-                        );
+                        populateFieldTypeahead({
+                            typeaheadElement: typeaheadElement,
+                            fieldNameElement: nameElement,
+                            fieldNameAndLabels: data,
+                            showOption: @setting.filterShowFieldStyle.getOrElse(FilterShowFieldStyle.NamesAndLabels).id
+                        });
                         if (index == 0 && isFocus) {
                             setTimeout(function(){ $(typeaheadElement).focus();}, 250);
                         }

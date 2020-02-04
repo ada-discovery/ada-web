@@ -15,7 +15,12 @@
     $(function () {
         var showOption = @form.value.flatMap(_.filterShowFieldStyle).getOrElse(FilterShowFieldStyle.NamesAndLabels).id
 
-        populateIdNameTypeahedFromUrl($('#ownerTypeahead'), $('#ownerId'), '@Html(routes.UserController.idAndNames.url)', true)
+        populateIdNameTypeaheadFromUrl({
+            typeaheadElement: $('#ownerTypeahead'),
+            idElement: $('#ownerId'),
+            url: '@Html(routes.UserController.idAndNames.url)',
+            initSelectByNameElement: true
+        })
 
         $.ajax({
             url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
@@ -24,10 +29,34 @@
                 var fieldNamesAndLabelsWithNone = fieldNameAndLabels.concat([["", "[None]"]])
                 var fieldNamesAndLabelsWithIdAndNone = fieldNamesAndLabelsWithId.concat([["", "[None]"]])
 
-                populateFieldTypeahed($('#keyFieldTypeahead'), $('#keyFieldName'), fieldNamesAndLabelsWithId, showOption, true);
-                populateFieldTypeahed($('#exportOrderByFieldTypeahead'), $('#exportOrderByFieldName'), fieldNamesAndLabelsWithIdAndNone, showOption, true);
-                populateFieldTypeahed($('#defaultDistributionFieldTypeahead'), $('#defaultDistributionFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
-                populateFieldTypeahed($('#defaultCumulativeCountFieldTypeahead'), $('#defaultCumulativeCountFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahead({
+                  typeaheadElement: $('#keyFieldTypeahead'),
+                  fieldNameElement: $('#keyFieldName'),
+                  fieldNameAndLabels: fieldNamesAndLabelsWithId,
+                  showOption,
+                  initSelectByNameElement: true
+                });
+                populateFieldTypeahead({
+                  typeaheadElement: $('#exportOrderByFieldTypeahead'),
+                  fieldNameElement: $('#exportOrderByFieldName'),
+                  fieldNameAndLabels: fieldNamesAndLabelsWithIdAndNone,
+                  showOption,
+                  initSelectByNameElement: true
+                });
+                populateFieldTypeahead({
+                  typeaheadElement: $('#defaultDistributionFieldTypeahead'),
+                  fieldNameElement: $('#defaultDistributionFieldName'),
+                  fieldNameAndLabels: fieldNamesAndLabelsWithNone,
+                  showOption,
+                  initSelectByNameElement: true
+                });
+                populateFieldTypeahead({
+                  typeaheadElement: $('#defaultCumulativeCountFieldTypeahead'),
+                  fieldNameElement: $('#defaultCumulativeCountFieldName'),
+                  fieldNameAndLabels: fieldNamesAndLabelsWithNone,
+                  showOption,
+                  initSelectByNameElement: true
+                });
             },
             error: showErrorResponse
         });
@@ -37,8 +66,20 @@
             success: function (fieldNameAndLabels) {
                 var fieldNamesAndLabelsWithNone = fieldNameAndLabels.concat([["", "[None]"]])
 
-                populateFieldTypeahed($('#defaultScatterXFieldTypeahead'), $('#defaultScatterXFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
-                populateFieldTypeahed($('#defaultScatterYFieldTypeahead'), $('#defaultScatterYFieldName'), fieldNamesAndLabelsWithNone, showOption, true);
+                populateFieldTypeahead({
+                    typeaheadElement: $('#defaultScatterXFieldTypeahead'),
+                    fieldNameElement: $('#defaultScatterXFieldName'),
+                    fieldNameAndLabels: fieldNamesAndLabelsWithNone,
+                    showOption,
+                    initSelectByNameElement: true
+                });
+                populateFieldTypeahead({
+                    typeaheadElement: $('#defaultScatterYFieldTypeahead'),
+                    fieldNameElement: $('#defaultScatterYFieldName'),
+                    fieldNameAndLabels: fieldNamesAndLabelsWithNone,
+                    showOption,
+                    initSelectByNameElement: true
+                });
             },
             error: showErrorResponse
         });

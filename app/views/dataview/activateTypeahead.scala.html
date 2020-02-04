@@ -18,46 +18,48 @@
         $.ajax({
             url: '@Html(dataSetRouter.allFieldNamesAndLabels.url)',
             success: function (data) {
-                populateFieldTypeaheds(
-                    [
+                populateFieldTypeaheads({
+                    typeaheadElements: [
                         $('#add_tableColumnNameModal #fieldTypeahead'),
                         $('#add_widgetSpecModal #fieldNameTypeahead'),
                         $('#edit_widgetSpecModal #fieldNameTypeahead')
                     ],
-                    [
+                    fieldNameElements: [
                         $('#add_tableColumnNameModal #fieldName'),
                         $('#add_widgetSpecModal #fieldName'),
                         $('#edit_widgetSpecModal #fieldName')
                     ],
-                    data,
-                    showOption
-                );
+                    fieldNameAndLabels: data,
+                    showOption,
+                    minLength: 2
+                });
             }
         });
 
         $.ajax({
             url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Enum, FieldTypeId.String, FieldTypeId.Boolean, FieldTypeId.Json)).url)',
             success: function (data) {
-                populateFieldTypeaheds(
-                    [
+                populateFieldTypeaheads({
+                    typeaheadElements: [
                         $('#add_widgetSpecModal #groupFieldNameTypeahead'),
                         $('#edit_widgetSpecModal #groupFieldNameTypeahead')
                     ],
-                    [
+                    fieldNameElements: [
                         $('#add_widgetSpecModal #groupFieldName'),
                         $('#edit_widgetSpecModal #groupFieldName')
                     ],
-                    data,
-                    showOption
-                );
+                    fieldNameAndLabels: data,
+                    showOption,
+                    minLength: 2
+                });
             }
         });
 
         $.ajax({
             url: '@Html(dataSetRouter.fieldNamesAndLabels(Seq(FieldTypeId.Double, FieldTypeId.Integer, FieldTypeId.Date)).url)',
             success: function (data) {
-                populateFieldTypeaheds(
-                    [
+                populateFieldTypeaheads({
+                    typeaheadElements: [
                         $('#add_widgetSpecModal #xFieldNameTypeahead'),
                         $('#add_widgetSpecModal #yFieldNameTypeahead'),
                         $('#add_widgetSpecModal #valueFieldNameTypeahead'),
@@ -65,7 +67,7 @@
                         $('#edit_widgetSpecModal #yFieldNameTypeahead'),
                         $('#edit_widgetSpecModal #valueFieldNameTypeahead')
                     ],
-                    [
+                    fieldNameElements: [
                         $('#add_widgetSpecModal #xFieldName'),
                         $('#add_widgetSpecModal #yFieldName'),
                         $('#add_widgetSpecModal #valueFieldName'),
@@ -73,9 +75,10 @@
                         $('#edit_widgetSpecModal #yFieldName'),
                         $('#edit_widgetSpecModal #valueFieldName')
                     ],
-                    data,
-                    showOption
-                );
+                    fieldNameAndLabels: data,
+                    showOption,
+                    minLength: 2
+                });
             }
         });
 
@@ -85,12 +88,12 @@
                 var typeaheadData = data.map(function (item, index) {
                     return {name: item._id.$oid, label: item.name};
                 });
-                populateFieldTypeahed(
-                    $('#subFilterTypeahead'),
-                    $('#subFilterId'),
-                    typeaheadData,
-                    @FilterShowFieldStyle.LabelsOnly.id
-                );
+                populateFieldTypeahead({
+                    typeaheadElement: $('#subFilterTypeahead'),
+                    fieldNameElement: $('#subFilterId'),
+                    fieldNameAndLabels: typeaheadData,
+                    showOption: @FilterShowFieldStyle.LabelsOnly.id
+                });
             }
         });
     });

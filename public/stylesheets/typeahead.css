@@ -33,11 +33,12 @@
 
 .tt-menu {
     width: 300px;
+    max-height: 155px;
+    overflow-y: auto;
     margin: 12px 0;
     padding: 8px 0;
     background-color: #fff;
     border: 1px solid #ccc;
-    border: 1px solid rgba(0, 0, 0, 0.2);
     -webkit-border-radius: 8px;
     -moz-border-radius: 8px;
     border-radius: 8px;

@@ -34,12 +34,12 @@
             var typeaheadData = data.map( function(item, index) {
                 return {name: item._id.$oid, label: item.name};
             });
-            populateFieldTypeahed(
-                $('#categoryTypeahead'),
-                $('#categoryId'),
-                typeaheadData,
-                @FilterShowFieldStyle.LabelsOnly.id
-            );
+            populateFieldTypeahead({
+              typeaheadElement: $('#categoryTypeahead'),
+              fieldNameElement: $('#categoryId'),
+              fieldNameAndLabels: typeaheadData,
+              showOption: @FilterShowFieldStyle.LabelsOnly.id
+            });
         },
         error: function(data){
             showErrorResponse(data)

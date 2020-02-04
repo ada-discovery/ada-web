@@ -153,12 +153,12 @@
         handleModalButtonEnterPressed("addCustomDataSetPermissionModal", "addCustomDataSetPermissionSubmitButton", addCustomDataSetPermission, true)
         $("#permission-controller").val("")
 
-        populateFieldTypeahedFromUrl(
-            $('#classNameTypeahead'),
-            $('#className'),
-            '@Html(routes.RunnableController.getRunnableNames().url)',
-            @FilterShowFieldStyle.LabelsOnly.id
-        )
+        populateFieldTypeaheadFromUrl({
+            typeaheadElement: $('#classNameTypeahead'),
+            fieldNameElement: $('#className'),
+            url: '@Html(routes.RunnableController.getRunnableNames().url)',
+            showOption: @FilterShowFieldStyle.LabelsOnly.id
+        })
 
         $('#addRunnablePermissionModal #classNameTypeahead').on("keydown", function(e) {
             if(e.keyCode == 13) {

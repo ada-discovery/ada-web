@@ -652,3 +652,10 @@ a.carousel-control.right{
     background-color: #f5f5f5;
     padding-bottom: 0px;
 }
+
+.glyphicon-chevron-down > a,.glyphicon-chevron-up > a {
+    font-family: "Ubuntu",Tahoma,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    color: #2c8d3a;
+}
